@@ -1,4 +1,5 @@
 import { computed, markRaw, ref, toRaw } from 'vue'
+import type { ComputedRef } from 'vue'
 import type {
   KeyTipModel,
   RibbonContextValue,
@@ -8,6 +9,11 @@ import type {
   RibbonLayout,
   RibbonTabModel,
 } from '../types'
+
+interface UseRibbonStateResult {
+  context: RibbonContextValue
+  visibleTabs: ComputedRef<RibbonTabModel[]>
+}
 
 /**
  * Normalizes potential component definitions to non-reactive objects.
@@ -146,7 +152,7 @@ export function useRibbonState(
   initialLayout: RibbonLayout,
   initialMinimized: boolean,
   initialActiveTab: string,
-) {
+): UseRibbonStateResult {
   const layout = ref<RibbonLayout>(initialLayout)
   const minimized = ref(initialMinimized)
   const activeTab = ref(initialActiveTab)

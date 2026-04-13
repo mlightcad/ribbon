@@ -1,18 +1,39 @@
 {
   "name": "@mlightcad/ribbon",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "pnpm@10.33.0",
   "type": "module",
+  "main": "./dist/ml-ribbon.es.js",
+  "module": "./dist/ml-ribbon.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/ml-ribbon.es.js",
+      "default": "./dist/ml-ribbon.es.js"
+    }
+  },
+  "files": [
+    "dist/*.js",
+    "dist/*.css",
+    "dist/**/*.d.ts",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build --mode lib",
+    "build": "vite build --mode lib && pnpm build:types",
+    "build:types": "vue-tsc -p tsconfig.types.json",
     "build:demo": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "prepublishOnly": "pnpm build && pnpm test"
   },
   "peerDependencies": {
     "@element-plus/icons-vue": "^2.3.2",
