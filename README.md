@@ -51,8 +51,9 @@ pnpm add vue element-plus @element-plus/icons-vue
 
 ### 1. Import
 ```ts
-import { MlRibbon } from './src/ribbon'
-import type { RibbonTabModel } from './src/ribbon'
+import { MlRibbon } from '@mlightcad/ribbon'
+import '@mlightcad/ribbon/style.css'
+import type { RibbonTabModel } from '@mlightcad/ribbon'
 ```
 
 ### 2. Basic Example

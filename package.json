@@ -11,6 +11,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/ml-ribbon.es.js",
       "default": "./dist/ml-ribbon.es.js"
+    },
+    "./style.css": {
+      "default": "./dist/ml-ribbon.css"
     }
   },
   "files": [

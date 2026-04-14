@@ -1,3 +1,5 @@
+import './styles/ribbon.css'
+
 /**
  * @component MlRibbon
  * @description Root ribbon orchestrator component.
