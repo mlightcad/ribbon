@@ -58,7 +58,7 @@ Events:
 - `RibbonComponentSize = 'large' | 'default' | 'small'`
 - `RibbonItemType = 'button' | 'dropdown' | 'splitButton' | 'checkbox' | 'colorPicker' | 'comboBox' | 'groupButton' | 'gallery' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
-- `KeyTipModel`, `FileMenuItemModel`, `BackstageItemModel`
+- `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 
@@ -73,6 +73,7 @@ Controlled props:
 
 Slots:
 - `tabs-extra`: host-provided custom content rendered at the right side of ribbon tab area
+- `backstage`: host-provided custom backstage content rendered inside backstage shell
 
 ## 4. Boundaries with Element Plus
 - Reuse Element Plus base controls directly (`ElButton`, `ElDropdown`, `ElCheckbox`, `ElColorPicker`, `ElSelect`, etc.).

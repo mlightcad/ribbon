@@ -894,18 +894,50 @@ html.dark {
 }
 
 .ml-ribbon-backstage {
+  --ml-rb-backstage-scale: 1;
+  --ml-rb-backstage-nav-width: calc(260px * var(--ml-rb-backstage-scale));
+  --ml-rb-backstage-nav-padding: calc(16px * var(--ml-rb-backstage-scale));
+  --ml-rb-backstage-content-padding: calc(24px * var(--ml-rb-backstage-scale));
+  --ml-rb-backstage-title-size: calc(var(--el-font-size-extra-large) * var(--ml-rb-backstage-scale));
+  --ml-rb-backstage-text-size: calc(var(--el-font-size-base) * var(--ml-rb-backstage-scale));
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: var(--ml-rb-backstage-nav-width) 1fr;
   height: 100%;
+}
+
+.ml-ribbon-backstage.ml-ribbon-backstage--size-small {
+  --ml-rb-backstage-scale: 0.92;
+}
+
+.ml-ribbon-backstage.ml-ribbon-backstage--size-large {
+  --ml-rb-backstage-scale: 1.08;
 }
 
 .ml-ribbon-backstage__nav {
   border-right: 1px solid var(--ml-rb-border);
-  padding: 16px;
+  padding: var(--ml-rb-backstage-nav-padding);
 }
 
 .ml-ribbon-backstage__content {
-  padding: 24px;
+  padding: var(--ml-rb-backstage-content-padding);
+}
+
+.ml-ribbon-backstage__content h2 {
+  margin: 0;
+  font-size: var(--ml-rb-backstage-title-size);
+  line-height: 1.2;
+}
+
+.ml-ribbon-backstage__content p {
+  margin-top: calc(10px * var(--ml-rb-backstage-scale));
+  font-size: var(--ml-rb-backstage-text-size);
+  line-height: 1.6;
+}
+
+.ml-ribbon-backstage__menu .el-menu-item {
+  min-height: calc(36px * var(--ml-rb-backstage-scale));
+  line-height: calc(36px * var(--ml-rb-backstage-scale));
+  font-size: var(--ml-rb-backstage-text-size);
 }
 
 .ml-ribbon-keytips {

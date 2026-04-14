@@ -94,6 +94,5 @@ export type {
   RibbonDynamicApi,
   KeyTipModel,
   FileMenuItemModel,
-  BackstageItemModel,
   RibbonLocaleTexts,
 } from './types'

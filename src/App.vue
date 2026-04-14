@@ -34,7 +34,8 @@ import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabMod
  * Use this demo as a reference integration:
  * 1. Build a `RibbonTabModel[]` with groups/collections/items.
  * 2. Bind ribbon state through `v-model:active-tab`, `v-model:layout`, and `v-model:minimized`.
- * 3. Provide optional text overrides and file/backstage command sources.
+ * 3. Provide optional text overrides and file commands.
+ * 4. Optionally customize backstage entirely via `#backstage` slot.
  *
  * @example
  * ```vue
@@ -45,7 +46,6 @@ import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabMod
  *   :tabs="tabs"
  *   :texts="ribbonTexts"
  *   :file-menu-items="fileMenuItems"
- *   :backstage-items="backstageItems"
  * />
  * ```
  */
@@ -515,16 +515,35 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
       v-model:active-tab="activeTab"
       :tabs="tabs"
       :file-menu-items="fileMenuItems"
-      :backstage-items="backstageItems"
       :texts="ribbonTexts"
       @item-click="onRibbonItemClick"
     >
       <template #tabs-extra>
         <div class="ml-demo-language-switch">
           <ElSelect v-model="language" size="small" class="ml-demo-language-switch__select">
-            <ElOption v-for="option in languageOptions" :key="option.value" :value="option.value" :label="option.label" />
+          <ElOption v-for="option in languageOptions" :key="option.value" :value="option.value" :label="option.label" />
           </ElSelect>
         </div>
+      </template>
+      <template #backstage="{ close, size }">
+        <section class="ml-demo-backstage" :class="`ml-demo-backstage--size-${size}`">
+          <aside class="ml-demo-backstage__nav">
+            <button type="button" class="ml-demo-backstage__back" @click="close">
+              {{ ribbonTexts.backstageBackLabel ?? 'Back' }}
+            </button>
+            <ul class="ml-demo-backstage__menu">
+              <li v-for="item in backstageItems" :key="item.id" class="ml-demo-backstage__menu-item">
+                <strong>{{ item.label }}</strong>
+                <span>{{ item.description }}</span>
+              </li>
+            </ul>
+          </aside>
+          <section class="ml-demo-backstage__content">
+            <h2>{{ ribbonTexts.backstageTitle ?? 'Backstage' }}</h2>
+            <p>{{ ribbonTexts.backstageDescription ?? 'Manage your document and settings here.' }}</p>
+            <p class="ml-demo-backstage__meta">This whole area is rendered from the `#backstage` slot.</p>
+          </section>
+        </section>
       </template>
     </MlRibbon>
   </div>
@@ -571,5 +590,71 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
 
 .ml-demo-language-switch__select {
   width: 110px;
+}
+
+.ml-demo-backstage {
+  --ml-demo-backstage-scale: 1;
+  display: grid;
+  grid-template-columns: calc(260px * var(--ml-demo-backstage-scale)) 1fr;
+  height: 100%;
+}
+
+.ml-demo-backstage.ml-demo-backstage--size-small {
+  --ml-demo-backstage-scale: 0.92;
+}
+
+.ml-demo-backstage.ml-demo-backstage--size-large {
+  --ml-demo-backstage-scale: 1.08;
+}
+
+.ml-demo-backstage__nav {
+  border-right: 1px solid var(--el-border-color);
+  padding: calc(16px * var(--ml-demo-backstage-scale));
+  background: var(--el-fill-color-lighter);
+}
+
+.ml-demo-backstage__back {
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+  background: var(--el-color-primary);
+  color: #fff;
+  padding: calc(6px * var(--ml-demo-backstage-scale)) calc(12px * var(--ml-demo-backstage-scale));
+  cursor: pointer;
+}
+
+.ml-demo-backstage__menu {
+  list-style: none;
+  padding: 0;
+  margin: calc(14px * var(--ml-demo-backstage-scale)) 0 0;
+  display: grid;
+  gap: calc(10px * var(--ml-demo-backstage-scale));
+}
+
+.ml-demo-backstage__menu-item {
+  display: grid;
+  gap: 4px;
+  font-size: calc(13px * var(--ml-demo-backstage-scale));
+}
+
+.ml-demo-backstage__menu-item span {
+  color: var(--el-text-color-secondary);
+}
+
+.ml-demo-backstage__content {
+  padding: calc(24px * var(--ml-demo-backstage-scale));
+}
+
+.ml-demo-backstage__content h2 {
+  margin: 0 0 calc(10px * var(--ml-demo-backstage-scale));
+  font-size: calc(28px * var(--ml-demo-backstage-scale));
+}
+
+.ml-demo-backstage__content p {
+  margin: 0 0 calc(10px * var(--ml-demo-backstage-scale));
+}
+
+.ml-demo-backstage__meta {
+  color: var(--el-text-color-secondary);
+  font-size: calc(13px * var(--ml-demo-backstage-scale));
 }
 </style>

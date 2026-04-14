@@ -38,12 +38,14 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop hideMinimizeButton - Controls whether minimize button is hidden.
  * @prop hideKeyTipsToggle - Controls whether key tips toggle is hidden.
  * @prop showFileMenu - Enables/disables File menu tab.
+ * @prop showOpenBackstage - Controls whether "Open backstage" entry is shown in File menu.
  * @prop fileMenuItems - File menu command list.
- * @prop backstageItems - Backstage navigation entries.
  * @prop texts - Localized UI text bundle for labels/tooltips.
  *
  * @slot tabs-extra - Custom content rendered on the right side of the tab area.
  * Slot props: `{ activeTab, layout, minimized }`.
+ * @slot backstage - Fully custom backstage content.
+ * Slot props: `{ close, open, size, backLabel, title, description }`.
  *
  * @event update:activeTab - Fired when active tab changes.
  * @event update:layout - Fired when layout changes.
@@ -65,7 +67,6 @@ import MlRibbonGroup from './RibbonGroup.vue'
  *   v-model:minimized="minimized"
  *   :tabs="tabs"
  *   :file-menu-items="fileMenuItems"
- *   :backstage-items="backstageItems"
  *   :texts="ribbonTexts"
  *   @item-click="onRibbonItemClick"
  * />
@@ -181,8 +182,8 @@ const props = withDefaults(
     hideMinimizeButton?: boolean
     hideKeyTipsToggle?: boolean
     showFileMenu?: boolean
+    showOpenBackstage?: boolean
     fileMenuItems?: { id: string; label: string; disabled?: boolean }[]
-    backstageItems?: { id: string; label: string; description?: string }[]
     texts?: RibbonLocaleTexts
   }>(),
   {
@@ -196,8 +197,8 @@ const props = withDefaults(
     hideMinimizeButton: false,
     hideKeyTipsToggle: false,
     showFileMenu: true,
+    showOpenBackstage: true,
     fileMenuItems: () => [],
-    backstageItems: () => [],
     texts: () => ({}),
   },
 )
@@ -513,6 +514,13 @@ function onFileMenuSelect(id: string) {
 }
 
 /**
+ * Closes backstage panel.
+ */
+function closeBackstage() {
+  context.backdropOpen.value = false
+}
+
+/**
  * Emits normalized item click payload with active tab context.
  * @param groupId Source group id.
  * @param itemId Source item id.
@@ -715,6 +723,7 @@ defineExpose<RibbonDynamicApi>(context.api)
             :items="fileMenuItems"
             :label="ribbonTexts.fileMenuLabel"
             :open-backstage-label="ribbonTexts.fileMenuOpenBackstageLabel"
+            :show-open-backstage="showOpenBackstage"
             @select="onFileMenuSelect"
             @open-backstage="context.backdropOpen.value = true"
           />
@@ -859,12 +868,24 @@ defineExpose<RibbonDynamicApi>(context.api)
 
       <MlRibbonBackstage
         :open="context.backdropOpen.value"
-        :items="backstageItems"
+        :size="resolvedRibbonSize"
         :back-label="ribbonTexts.backstageBackLabel"
         :title="ribbonTexts.backstageTitle"
         :description="ribbonTexts.backstageDescription"
-        @close="context.backdropOpen.value = false"
-      />
+        @close="closeBackstage"
+      >
+        <template v-if="$slots.backstage" #default>
+          <slot
+            name="backstage"
+            :close="closeBackstage"
+            :open="context.backdropOpen.value"
+            :size="resolvedRibbonSize"
+            :back-label="ribbonTexts.backstageBackLabel"
+            :title="ribbonTexts.backstageTitle"
+            :description="ribbonTexts.backstageDescription"
+          />
+        </template>
+      </MlRibbonBackstage>
     </section>
   </ElConfigProvider>
 </template>

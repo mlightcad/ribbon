@@ -3,6 +3,8 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 import { ElConfigProvider } from 'element-plus'
 import MlRibbon from '../ribbon/components/Ribbon.vue'
+import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
+import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
 import type { RibbonTabModel } from '../ribbon'
 
 const tabs: RibbonTabModel[] = [
@@ -18,6 +20,63 @@ const tabs: RibbonTabModel[] = [
     ],
   },
 ]
+
+describe('MlRibbonBackstage', () => {
+  it('applies size class from ribbon size context', async () => {
+    const wrapper = mount(MlRibbonBackstage, {
+      props: {
+        open: true,
+        size: 'small',
+      },
+      global: {
+        stubs: {
+          ElDrawer: {
+            props: ['modelValue'],
+            template: '<div v-if="modelValue"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const backstage = wrapper.find('.ml-ribbon-backstage')
+      expect(backstage.exists()).toBe(true)
+      expect(backstage.classes()).toContain('ml-ribbon-backstage--size-small')
+
+      await wrapper.setProps({ size: 'large' })
+      expect(backstage.classes()).toContain('ml-ribbon-backstage--size-large')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders custom slot content and skips default layout when slot is provided', () => {
+    const wrapper = mount(MlRibbonBackstage, {
+      props: {
+        open: true,
+      },
+      slots: {
+        default: '<div class="ml-test-custom-backstage">Custom Backstage</div>',
+      },
+      global: {
+        stubs: {
+          ElDrawer: {
+            props: ['modelValue'],
+            template: '<div v-if="modelValue"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-test-custom-backstage').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-backstage__nav').exists()).toBe(false)
+      expect(wrapper.find('.ml-ribbon-backstage__content').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+})
 
 describe('MlRibbon', () => {
   it('renders tab and item', () => {
@@ -134,6 +193,61 @@ describe('MlRibbon', () => {
   it('supports size prop', () => {
     const wrapper = mount(MlRibbon, { props: { tabs, size: 'small' } })
     expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--size-small')
+  })
+
+  it('hides open backstage menu command when showOpenBackstage is false', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: {
+        tabs,
+        showOpenBackstage: false,
+        fileMenuItems: [{ id: 'open-file', label: 'Open File Unique' }],
+        texts: { fileMenuOpenBackstageLabel: 'Open Backstage Hidden Unique' },
+      },
+    })
+
+    try {
+      const fileTab = wrapper.find('.ml-ribbon-tab--file')
+      expect(fileTab.exists()).toBe(true)
+      await fileTab.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const menuItems = Array.from(document.body.querySelectorAll('.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item'))
+      const labels = menuItems.map((item) => item.textContent?.trim() ?? '')
+
+      expect(labels).toContain('Open File Unique')
+      expect(labels).not.toContain('Open Backstage Hidden Unique')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders custom backstage slot content in ribbon shell', async () => {
+    const wrapper = mount(MlRibbon, {
+      props: { tabs },
+      slots: {
+        backstage: '<div class="ml-test-custom-backstage-shell">Custom Backstage Shell</div>',
+      },
+      global: {
+        stubs: {
+          ElDrawer: {
+            props: ['modelValue'],
+            template: '<div v-if="modelValue"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      wrapper.findComponent(MlRibbonFileMenu).vm.$emit('open-backstage')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.ml-test-custom-backstage-shell').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-backstage__nav').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('renders custom tabs-extra slot content on the far-right side of ribbon header', () => {
