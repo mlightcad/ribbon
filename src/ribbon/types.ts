@@ -32,12 +32,6 @@ export interface FileMenuItemModel {
   disabled?: boolean
 }
 
-export interface BackstageItemModel {
-  id: string
-  label: string
-  description?: string
-}
-
 export interface RibbonLocaleTexts {
   layoutSwitcherTooltip?: string
   minimizeTooltip?: string

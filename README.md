@@ -114,8 +114,8 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `hide-minimize-button` whether to hide minimize button, default `false`
 - `hide-key-tips-toggle` whether to hide key tips toggle, default `false`
 - `show-file-menu` whether to show file menu, default `true`
+- `show-open-backstage` whether to show `Open backstage` command in File menu, default `true`
 - `file-menu-items` file menu item list
-- `backstage-items` backstage item list
 - `texts` localized UI text overrides
 
 ### 4. Common Events
@@ -133,6 +133,27 @@ Use `#tabs-extra` to render custom controls at the far-right side of the ribbon 
 <MlRibbon :tabs="tabs">
   <template #tabs-extra="{ activeTab, layout, minimized }">
     <MyLanguageSwitcher />
+  </template>
+</MlRibbon>
+```
+
+### 4.2 Custom Backstage Slot (Recommended)
+Use `#backstage` to fully customize backstage content.
+
+Slot props:
+- `close`: close backstage panel
+- `open`: current backstage open state
+- `size`: current ribbon size (`large` | `default` | `small`)
+- `backLabel`, `title`, `description`: default backstage text data
+
+```vue
+<MlRibbon :tabs="tabs" :file-menu-items="fileMenuItems">
+  <template #backstage="{ close, size }">
+    <section :class="`ml-my-backstage ml-my-backstage--size-${size}`">
+      <button type="button" @click="close">Back</button>
+      <h2>My Backstage</h2>
+      <p>Render any custom UI here.</p>
+    </section>
   </template>
 </MlRibbon>
 ```

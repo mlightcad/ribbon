@@ -11,6 +11,7 @@ import { ElDropdown, ElDropdownItem, ElDropdownMenu, useGlobalConfig } from 'ele
  * @prop items - File menu command list.
  * @prop label - File tab label text.
  * @prop openBackstageLabel - Label for the backstage opener row.
+ * @prop showOpenBackstage - Whether to show the backstage opener row.
  *
  * @event select - Emitted when a regular file menu command is selected.
  * @event open-backstage - Emitted when the backstage command is selected.
@@ -30,6 +31,7 @@ defineProps<{
   items: { id: string; label: string; disabled?: boolean }[]
   label?: string
   openBackstageLabel?: string
+  showOpenBackstage?: boolean
 }>()
 const emit = defineEmits<{ (e: 'select', id: string): void; (e: 'open-backstage'): void }>()
 const opened = ref(false)
@@ -70,11 +72,13 @@ function onCommand(value: string) {
     </button>
     <template #dropdown>
       <ElDropdownMenu>
-        <ElDropdownItem command="__backstage">{{ openBackstageLabel }}</ElDropdownItem>
+        <ElDropdownItem v-if="showOpenBackstage !== false" command="__backstage">
+          {{ openBackstageLabel }}
+        </ElDropdownItem>
         <ElDropdownItem
           v-for="(item, index) in items"
           :key="item.id"
-          :divided="index === 0"
+          :divided="showOpenBackstage !== false && index === 0"
           :command="item.id"
           :disabled="item.disabled"
         >
