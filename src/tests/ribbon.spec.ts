@@ -136,6 +136,49 @@ describe('MlRibbon', () => {
     expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--size-small')
   })
 
+  it('renders custom tabs-extra slot content on the far-right side of ribbon header', () => {
+    const wrapper = mount(MlRibbon, {
+      props: { tabs },
+      slots: {
+        'tabs-extra': '<button class="ml-test-tabs-extra">Language</button>',
+      },
+    })
+
+    const slotHost = wrapper.find('.ml-ribbon__head-right .ml-ribbon__tabs-extra')
+    expect(slotHost.exists()).toBe(true)
+    expect(slotHost.find('.ml-test-tabs-extra').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Language')
+  })
+
+  it('places minimize control beside tabs area', () => {
+    const wrapper = mount(MlRibbon, { props: { tabs } })
+    expect(wrapper.find('.ml-ribbon__head-left .ml-ribbon__control--minimize').exists()).toBe(true)
+  })
+
+  it('supports visibility toggles for layout switcher, minimize button and key tips toggle', () => {
+    const wrapper = mount(MlRibbon, {
+      props: {
+        tabs,
+        hideLayoutSwitcher: true,
+        hideMinimizeButton: true,
+        hideKeyTipsToggle: true,
+      },
+    })
+
+    expect(wrapper.find('.ml-ribbon__control--layout').exists()).toBe(false)
+    expect(wrapper.find('.ml-ribbon__control--minimize').exists()).toBe(false)
+    expect(wrapper.find('.ml-ribbon__control--keytips').exists()).toBe(false)
+  })
+
+  it('switches minimize button icon from down to up when ribbon is minimized', async () => {
+    const wrapper = mount(MlRibbon, { props: { tabs, minimized: false } })
+    const minimizeButton = wrapper.find('.ml-ribbon__control--minimize')
+    expect(minimizeButton.classes()).toContain('ml-ribbon__control--minimize-down')
+
+    await wrapper.setProps({ minimized: true })
+    expect(minimizeButton.classes()).toContain('ml-ribbon__control--minimize-up')
+  })
+
   it('uses externally provided i18n texts', () => {
     const contextualTabs: RibbonTabModel[] = [
       {
@@ -533,7 +576,12 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
-      expect(wrapper.find('.ml-ribbon-group__overflow-trigger').exists()).toBe(true)
+      const overflowTrigger = wrapper.find('.ml-ribbon-group__overflow-trigger')
+      expect(overflowTrigger.exists()).toBe(true)
+      await overflowTrigger.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      expect(overflowTrigger.classes()).toContain('is-open')
     } finally {
       rectSpy.mockRestore()
     }
@@ -554,6 +602,7 @@ describe('MlRibbon', () => {
           {
             id: 'clipboard',
             title: 'Clipboard',
+            footerMenuItems: [{ id: 'footer-find', type: 'button', label: 'Footer Find', props: { icon: IconStub } }],
             collections: [
               {
                 id: 'c1',
@@ -694,6 +743,59 @@ describe('MlRibbon', () => {
     expect(iconOnlyHost.find('.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow').exists()).toBe(true)
   })
 
+  it('switches dropdown trigger arrow to up when dropdown menu is open', async () => {
+    const dropdownTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'draw',
+            title: 'Draw',
+            collections: [
+              {
+                id: 'c1',
+                items: [
+                  {
+                    id: 'draw-circle',
+                    type: 'dropdown',
+                    label: 'Circle',
+                    props: {
+                      options: [
+                        { label: 'Center, Radius', value: 'circle-center-radius' },
+                        { label: '2-Point', value: 'circle-two-point' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: { tabs: dropdownTabs },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      const arrow = host.find('.ml-ribbon-item-host__dropdown-arrow')
+      expect(arrow.classes()).not.toContain('is-open')
+
+      const triggerButton = host.find('.el-button')
+      await triggerButton.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(arrow.classes()).toContain('is-open')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('renders option icons inside dropdown menu items', async () => {
     const IconStub = defineComponent({
       name: 'DropdownOptionIconStub',
@@ -740,7 +842,7 @@ describe('MlRibbon', () => {
       const triggerButton = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"] .el-button')
       expect(triggerButton.exists()).toBe(true)
 
-      await triggerButton.trigger('mouseenter')
+      await triggerButton.trigger('click')
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
@@ -793,7 +895,7 @@ describe('MlRibbon', () => {
       const triggerButton = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-rectangle"] .el-button')
       expect(triggerButton.exists()).toBe(true)
 
-      await triggerButton.trigger('mouseenter')
+      await triggerButton.trigger('click')
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
@@ -826,5 +928,38 @@ describe('MlRibbon', () => {
     const wrapper = mount(MlRibbon, { props: { tabs: footerMenuTabs } })
     expect(wrapper.find('.ml-ribbon-group__title').text()).toBe('Draw')
     expect(wrapper.find('.ml-ribbon-group__footer-trigger').exists()).toBe(true)
+  })
+
+  it('marks footer trigger as open after clicking footer dropdown', async () => {
+    const footerMenuTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'draw',
+            title: 'Draw',
+            footerMenuItems: [{ id: 'spline', type: 'button', hideLabel: true }],
+            collections: [{ id: 'c1', items: [{ id: 'line', type: 'button', label: 'Line' }] }],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: { tabs: footerMenuTabs },
+    })
+
+    try {
+      const footerTrigger = wrapper.find('.ml-ribbon-group__footer-trigger')
+      expect(footerTrigger.exists()).toBe(true)
+      await footerTrigger.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      expect(footerTrigger.classes()).toContain('is-open')
+    } finally {
+      wrapper.unmount()
+    }
   })
 })

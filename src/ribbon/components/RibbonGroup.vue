@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElButton, ElIcon, ElPopover } from 'element-plus'
-import { ArrowDown, Promotion } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowUp, Promotion } from '@element-plus/icons-vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import { useGlobalConfig } from 'element-plus'
@@ -102,6 +102,8 @@ const iconComponent = computed<Component | null>(() => {
 
 const hasOverflowItems = computed(() => overflowItemIds.value.length > 0)
 const hasFooterMenuItems = computed(() => (props.groupModel?.footerMenuItems?.length ?? 0) > 0)
+const isFooterMenuOpen = ref(false)
+const isOverflowMenuOpen = ref(false)
 
 const overflowGroupModel = computed<RibbonGroupModel | null>(() => {
   if (!props.groupModel || !overflowItemIds.value.length) return null
@@ -213,6 +215,36 @@ function recomputeFooterOffset() {
   if (footerSkidOffset.value !== nextOffset) footerSkidOffset.value = nextOffset
 }
 
+/**
+ * Syncs footer menu open state from popover lifecycle.
+ * @param value Next open state.
+ */
+function setFooterMenuOpen(value: boolean) {
+  isFooterMenuOpen.value = value
+}
+
+/**
+ * Syncs overflow menu open state from popover lifecycle.
+ * @param value Next open state.
+ */
+function setOverflowMenuOpen(value: boolean) {
+  isOverflowMenuOpen.value = value
+}
+
+/**
+ * Toggles footer menu open state on trigger click.
+ */
+function toggleFooterMenuOpen() {
+  isFooterMenuOpen.value = !isFooterMenuOpen.value
+}
+
+/**
+ * Toggles overflow menu open state on trigger click.
+ */
+function toggleOverflowMenuOpen() {
+  isOverflowMenuOpen.value = !isOverflowMenuOpen.value
+}
+
 let resizeObserver: ResizeObserver | null = null
 let observedContent: HTMLElement | null = null
 
@@ -273,15 +305,20 @@ onUnmounted(() => {
         placement="bottom-start"
         :popper-class="overflowPopperClass"
         :popper-options="footerPopperOptions"
+        @show="setFooterMenuOpen(true)"
+        @hide="setFooterMenuOpen(false)"
       >
         <template #reference>
           <button
             ref="footerTriggerRef"
             type="button"
             class="ml-ribbon-group__footer-trigger"
+            :class="{ 'is-open': isFooterMenuOpen }"
             :aria-label="overflowTriggerAriaLabel"
+            :aria-expanded="isFooterMenuOpen"
+            @click="toggleFooterMenuOpen"
           >
-            <ElIcon><ArrowDown /></ElIcon>
+            <ElIcon><component :is="isFooterMenuOpen ? ArrowUp : ArrowDown" /></ElIcon>
           </button>
         </template>
         <div class="ml-ribbon-group__overflow-content">
@@ -298,15 +335,20 @@ onUnmounted(() => {
         placement="bottom-start"
         :popper-class="overflowPopperClass"
         :popper-options="overflowPopperOptions"
+        @show="setOverflowMenuOpen(true)"
+        @hide="setOverflowMenuOpen(false)"
       >
         <template #reference>
           <button
             ref="overflowTriggerRef"
             type="button"
             class="ml-ribbon-group__overflow-trigger"
+            :class="{ 'is-open': isOverflowMenuOpen }"
             :aria-label="overflowTriggerAriaLabel"
+            :aria-expanded="isOverflowMenuOpen"
+            @click="toggleOverflowMenuOpen"
           >
-            <ElIcon><ArrowDown /></ElIcon>
+            <ElIcon><component :is="isOverflowMenuOpen ? ArrowUp : ArrowDown" /></ElIcon>
           </button>
         </template>
         <div class="ml-ribbon-group__overflow-content">

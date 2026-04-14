@@ -15,6 +15,7 @@ V1 scope (full alignment target):
 - File menu and backstage
 - Contextual tabs and key tips
 - Runtime dynamic API (add/remove/show/hide/update)
+- Customizable tab-right extension slot for host applications
 
 ## 2. Core Capabilities and Components
 Only components not provided by Element Plus should be newly implemented.
@@ -66,6 +67,12 @@ Controlled props:
 - `v-model:layout`
 - `v-model:minimized`
 - `size?: RibbonComponentSize` (inherits outer Element Plus `ElConfigProvider` size when omitted)
+- `hideLayoutSwitcher?: boolean` (default `false`)
+- `hideMinimizeButton?: boolean` (default `false`)
+- `hideKeyTipsToggle?: boolean` (default `false`)
+
+Slots:
+- `tabs-extra`: host-provided custom content rendered at the right side of ribbon tab area
 
 ## 4. Boundaries with Element Plus
 - Reuse Element Plus base controls directly (`ElButton`, `ElDropdown`, `ElCheckbox`, `ElColorPicker`, `ElSelect`, etc.).

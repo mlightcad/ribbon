@@ -75,6 +75,7 @@ function cloneGroup(group: RibbonGroupModel): RibbonGroupModel {
   return {
     ...group,
     icon: normalizeComponentCandidate(group.icon),
+    footerMenuItems: group.footerMenuItems?.map(cloneItem),
     collections: group.collections?.map((collection) => ({
       ...collection,
       items: collection.items.map(cloneItem),
