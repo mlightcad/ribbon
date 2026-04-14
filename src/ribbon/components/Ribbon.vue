@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, ref, toRaw, watch } from 'vue'
 import { ElButton, ElConfigProvider, ElIcon, ElPopover, ElSwitch, ElTooltip, useGlobalConfig } from 'element-plus'
-import { Grid, Menu, Operation } from '@element-plus/icons-vue'
+import { ArrowDownBold, ArrowUpBold, Grid, Menu } from '@element-plus/icons-vue'
 import type { Component } from 'vue'
 import type { ComponentSize } from 'element-plus'
 import { ribbonKey } from '../context'
@@ -34,11 +34,16 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop layout - Controlled layout (`v-model:layout`).
  * @prop size - Ribbon size delegated to Element Plus config provider.
  * @prop minimized - Controlled minimize state (`v-model:minimized`).
- * @prop hideLayoutSwitcher - Hides layout toggle button when true.
+ * @prop hideLayoutSwitcher - Controls whether layout switcher is hidden.
+ * @prop hideMinimizeButton - Controls whether minimize button is hidden.
+ * @prop hideKeyTipsToggle - Controls whether key tips toggle is hidden.
  * @prop showFileMenu - Enables/disables File menu tab.
  * @prop fileMenuItems - File menu command list.
  * @prop backstageItems - Backstage navigation entries.
  * @prop texts - Localized UI text bundle for labels/tooltips.
+ *
+ * @slot tabs-extra - Custom content rendered on the right side of the tab area.
+ * Slot props: `{ activeTab, layout, minimized }`.
  *
  * @event update:activeTab - Fired when active tab changes.
  * @event update:layout - Fired when layout changes.
@@ -173,6 +178,8 @@ const props = withDefaults(
     size?: ComponentSize
     minimized?: boolean
     hideLayoutSwitcher?: boolean
+    hideMinimizeButton?: boolean
+    hideKeyTipsToggle?: boolean
     showFileMenu?: boolean
     fileMenuItems?: { id: string; label: string; disabled?: boolean }[]
     backstageItems?: { id: string; label: string; description?: string }[]
@@ -186,6 +193,8 @@ const props = withDefaults(
     size: undefined,
     minimized: false,
     hideLayoutSwitcher: false,
+    hideMinimizeButton: false,
+    hideKeyTipsToggle: false,
     showFileMenu: true,
     fileMenuItems: () => [],
     backstageItems: () => [],
@@ -299,6 +308,7 @@ const ribbonTexts = computed<RibbonLocaleTexts>(() => ({
   contextualTabDefaultTitle: props.texts.contextualTabDefaultTitle || defaultRibbonTexts.contextualTabDefaultTitle,
   galleryPreviewFallback: props.texts.galleryPreviewFallback || defaultRibbonTexts.galleryPreviewFallback,
 }))
+const minimizeButtonIcon = computed(() => (context.minimized.value ? ArrowUpBold : ArrowDownBold))
 
 const classicInlineGroups = computed(() =>
   visibleGroups.value.filter((group) => !hiddenGroupIds.value.has(group.id)),
@@ -714,21 +724,39 @@ defineExpose<RibbonDynamicApi>(context.api)
             :default-contextual-title="ribbonTexts.contextualTabDefaultTitle"
             @select="onTabClick"
           />
+          <ElTooltip v-if="!props.hideMinimizeButton" :content="ribbonTexts.minimizeTooltip">
+            <ElButton
+              :class="[
+                'ml-ribbon__control',
+                'ml-ribbon__control--minimize',
+                context.minimized.value ? 'ml-ribbon__control--minimize-up' : 'ml-ribbon__control--minimize-down',
+              ]"
+              :icon="minimizeButtonIcon"
+              @click="toggleMinimize"
+            />
+          </ElTooltip>
         </div>
         <div class="ml-ribbon__head-right">
-          <ElTooltip v-if="!hideLayoutSwitcher" :content="ribbonTexts.layoutSwitcherTooltip">
-            <ElButton circle :icon="Menu" @click="toggleLayout" />
-          </ElTooltip>
-          <ElTooltip :content="ribbonTexts.minimizeTooltip">
-            <ElButton circle :icon="Operation" @click="toggleMinimize" />
+          <ElTooltip v-if="!props.hideLayoutSwitcher" :content="ribbonTexts.layoutSwitcherTooltip">
+            <ElButton circle class="ml-ribbon__control ml-ribbon__control--layout" :icon="Menu" @click="toggleLayout" />
           </ElTooltip>
           <ElSwitch
+            v-if="!props.hideKeyTipsToggle"
             inline-prompt
+            class="ml-ribbon__control ml-ribbon__control--keytips"
             :active-text="ribbonTexts.keyTipsToggleText"
             :inactive-text="ribbonTexts.keyTipsToggleText"
             :model-value="context.keyTipsOpen.value"
             @change="context.keyTipsOpen.value = !context.keyTipsOpen.value"
           />
+          <div v-if="$slots['tabs-extra']" class="ml-ribbon__tabs-extra">
+            <slot
+              name="tabs-extra"
+              :active-tab="context.activeTab.value"
+              :layout="context.layout.value"
+              :minimized="context.minimized.value"
+            />
+          </div>
         </div>
       </header>
 

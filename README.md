@@ -21,6 +21,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Internationalization-ready UI text model via `MlRibbon` `texts` prop (no built-in hard-coded visible strings in Ribbon components)
 - Icon-only command rendering via `RibbonItemModel.hideLabel`
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
+- Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
 
 ## Naming Conventions
 - Component names use `Ml` prefix.
@@ -109,6 +110,9 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `v-model:layout` ribbon layout (`classic` | `simplified`)
 - `v-model:minimized` minimize state
 - `size` uses Element Plus size (`large` | `default` | `small`)
+- `hide-layout-switcher` whether to hide layout switcher, default `false`
+- `hide-minimize-button` whether to hide minimize button, default `false`
+- `hide-key-tips-toggle` whether to hide key tips toggle, default `false`
 - `show-file-menu` whether to show file menu, default `true`
 - `file-menu-items` file menu item list
 - `backstage-items` backstage item list
@@ -121,6 +125,17 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `@file-menu-select="(id) => {}"` file menu command selected
 - `@overflow-open` / `@overflow-close`
 - `@backstage-open` / `@backstage-close`
+
+### 4.1 Tab-Right Custom Slot
+Use `#tabs-extra` to render custom controls at the far-right side of the ribbon header (for example language switchers).
+
+```vue
+<MlRibbon :tabs="tabs">
+  <template #tabs-extra="{ activeTab, layout, minimized }">
+    <MyLanguageSwitcher />
+  </template>
+</MlRibbon>
+```
 
 ### 5. Dynamic Runtime API (Component Ref)
 `MlRibbon` exposes `RibbonDynamicApi` via `ref`, allowing runtime mutations:

@@ -83,6 +83,18 @@ html.dark {
   gap: 4px;
 }
 
+.ml-ribbon__tabs-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ml-ribbon__control--minimize.el-button {
+  min-height: 24px;
+  height: 24px;
+  padding: 0 8px;
+}
+
 .ml-ribbon__head-right .el-button + .el-button {
   margin-left: 0;
 }

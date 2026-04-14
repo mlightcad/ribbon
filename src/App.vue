@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { ElRadioButton, ElRadioGroup } from 'element-plus'
+import { computed, ref, watch } from 'vue'
+import { ElOption, ElRadioButton, ElRadioGroup, ElSelect } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import {
   Aim,
@@ -22,7 +22,7 @@ import {
   Search,
 } from '@element-plus/icons-vue'
 import { MlRibbon } from './ribbon'
-import type { RibbonComponentSize, RibbonLayout, RibbonTabModel } from './ribbon'
+import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabModel } from './ribbon'
 
 /**
  * @component App
@@ -56,10 +56,11 @@ const activeTab = ref('home')
 const ribbonSize = ref<RibbonComponentSize>('default')
 // Global page theme used by demo toolbar.
 const theme = ref<'light' | 'dark'>('light')
+const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 
 // Sample ribbon schema that demonstrates common item types, priorities and overflow rules.
-const tabs = ref<RibbonTabModel[]>([
+const baseTabs: RibbonTabModel[] = [
   {
     id: 'home',
     title: 'Home',
@@ -306,21 +307,157 @@ const tabs = ref<RibbonTabModel[]>([
       },
     ],
   },
+]
+
+const zhCNMap: Record<string, string> = {
+  Home: '开始',
+  Insert: '插入',
+  'Chart Design': '图表设计',
+  'Chart Tools': '图表工具',
+  Draw: '绘图',
+  Clipboard: '剪贴板',
+  Font: '字体',
+  Editing: '编辑',
+  Editor: '编辑器',
+  Illustrations: '插图',
+  'Chart Style': '图表样式',
+  Line: '直线',
+  Polyline: '多段线',
+  Circle: '圆',
+  Rectangle: '矩形',
+  Ellipse: '椭圆',
+  Paste: '粘贴',
+  Cut: '剪切',
+  Copy: '复制',
+  'Format Painter': '格式刷',
+  Select: '选择',
+  'Font Family': '字体',
+  'Font Size': '字号',
+  'Font Color': '字体颜色',
+  Shapes: '形状',
+  Colors: '颜色',
+  Theme: '主题',
+  'Ribbon Size': 'Ribbon 尺寸',
+  Light: '浅色',
+  Dark: '深色',
+  Large: '大',
+  Default: '默认',
+  Small: '小',
+  'Press Alt to show Key Tips.': '按 Alt 显示快捷提示。',
+  'Try V / X / C / F then P on Home tab.': '在“开始”页签尝试 V / X / C / F 再按 P。',
+  'Last command:': '最后命令：',
+  'Current language:': '当前语言：',
+  Command: '命令',
+  New: '新建',
+  Open: '打开',
+  Save: '保存',
+  Info: '信息',
+  Print: '打印',
+  Share: '共享',
+  'Document info': '文档信息',
+  'Print settings': '打印设置',
+  'Sharing options': '共享选项',
+}
+
+const translate = (value?: string) => {
+  if (!value) return value
+  if (language.value !== 'zh-CN') return value
+  return zhCNMap[value] ?? value
+}
+
+const tabs = computed<RibbonTabModel[]>(() =>
+  baseTabs.map((tab) => ({
+    ...tab,
+    title: translate(tab.title) ?? tab.title,
+    contextualTitle: translate(tab.contextualTitle),
+    groups: tab.groups?.map((group) => ({
+      ...group,
+      title: translate(group.title) ?? group.title,
+      collections: group.collections?.map((collection) => ({
+        ...collection,
+        items: collection.items.map((item) => {
+          const options = Array.isArray(item.props?.options)
+            ? item.props.options.map((option) => {
+                if (!option || typeof option !== 'object') return option
+                const optionRecord = option as Record<string, unknown>
+                const optionLabel = typeof optionRecord.label === 'string' ? translate(optionRecord.label) : undefined
+                return optionLabel ? { ...optionRecord, label: optionLabel } : optionRecord
+              })
+            : item.props?.options
+          return {
+            ...item,
+            label: typeof item.label === 'string' ? translate(item.label) : item.label,
+            props: item.props ? { ...item.props, options } : item.props,
+          }
+        }),
+      })),
+      footerMenuItems: group.footerMenuItems?.map((item) => ({
+        ...item,
+        label: typeof item.label === 'string' ? translate(item.label) : item.label,
+      })),
+    })),
+  })),
+)
+
+const fileMenuItems = computed(() => [
+  { id: 'new', label: translate('New') ?? 'New' },
+  { id: 'open', label: translate('Open') ?? 'Open' },
+  { id: 'save', label: translate('Save') ?? 'Save' },
 ])
 
-// Top-left file menu entries for demoing file/backstage integration.
-const fileMenuItems = [
-  { id: 'new', label: 'New' },
-  { id: 'open', label: 'Open' },
-  { id: 'save', label: 'Save' },
-]
+const backstageItems = computed(() => [
+  { id: 'info', label: translate('Info') ?? 'Info', description: translate('Document info') ?? 'Document info' },
+  { id: 'print', label: translate('Print') ?? 'Print', description: translate('Print settings') ?? 'Print settings' },
+  {
+    id: 'share',
+    label: translate('Share') ?? 'Share',
+    description: translate('Sharing options') ?? 'Sharing options',
+  },
+])
 
-// Backstage navigation/content data used by the demo page.
-const backstageItems = [
-  { id: 'info', label: 'Info', description: 'Document info' },
-  { id: 'print', label: 'Print', description: 'Print settings' },
-  { id: 'share', label: 'Share', description: 'Sharing options' },
-]
+const ribbonTexts = computed<RibbonLocaleTexts>(() => {
+  if (language.value === 'zh-CN') {
+    return {
+      layoutSwitcherTooltip: '切换 Ribbon 布局',
+      minimizeTooltip: '最小化 Ribbon',
+      keyTipsToggleText: '快捷提示',
+      overflowTriggerAriaLabel: '打开溢出分组',
+      groupOverflowTriggerAriaLabel: '打开分组菜单',
+      fileMenuLabel: '文件',
+      fileMenuOpenBackstageLabel: '打开后台视图',
+      backstageBackLabel: '返回',
+      backstageTitle: '后台视图',
+      backstageDescription: '在这里管理文档与设置。',
+      keyTipsSequencePrefix: '按键序列：',
+      keyTipsEmptySequence: '无按键序列',
+      contextualTabDefaultTitle: '上下文',
+      galleryPreviewFallback: '预览不可用',
+    }
+  }
+
+  return {}
+})
+
+const languageOptions = [
+  { value: 'en-US', label: 'English' },
+  { value: 'zh-CN', label: '中文' },
+] as const
+
+const uiTexts = computed(() => ({
+  themeLabel: translate('Theme') ?? 'Theme',
+  ribbonSizeLabel: translate('Ribbon Size') ?? 'Ribbon Size',
+  light: translate('Light') ?? 'Light',
+  dark: translate('Dark') ?? 'Dark',
+  large: translate('Large') ?? 'Large',
+  default: translate('Default') ?? 'Default',
+  small: translate('Small') ?? 'Small',
+  keyTipHint: translate('Press Alt to show Key Tips.') ?? 'Press Alt to show Key Tips.',
+  sequenceHint: translate('Try V / X / C / F then P on Home tab.') ?? 'Try V / X / C / F then P on Home tab.',
+  lastCommand: translate('Last command:') ?? 'Last command:',
+  currentLanguage: translate('Current language:') ?? 'Current language:',
+  commandLabel: translate('Command') ?? 'Command',
+}))
+
 
 watch(
   theme,
@@ -341,7 +478,7 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
   lastCommand.value = `${payload.tabId}/${payload.groupId}/${payload.itemId}`
   ElMessage({
     type: 'success',
-    message: `Command: ${lastCommand.value}`,
+    message: `${uiTexts.value.commandLabel}: ${lastCommand.value}`,
     duration: 1500,
     showClose: true,
   })
@@ -351,23 +488,24 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
 <template>
   <div class="demo">
     <div class="ml-demo-toolbar">
-      <span class="ml-demo-toolbar__label">Theme</span>
+      <span class="ml-demo-toolbar__label">{{ uiTexts.themeLabel }}</span>
       <ElRadioGroup v-model="theme" size="small">
-        <ElRadioButton value="light">Light</ElRadioButton>
-        <ElRadioButton value="dark">Dark</ElRadioButton>
+        <ElRadioButton value="light">{{ uiTexts.light }}</ElRadioButton>
+        <ElRadioButton value="dark">{{ uiTexts.dark }}</ElRadioButton>
       </ElRadioGroup>
 
-      <span class="ml-demo-toolbar__label">Ribbon Size</span>
+      <span class="ml-demo-toolbar__label">{{ uiTexts.ribbonSizeLabel }}</span>
       <ElRadioGroup v-model="ribbonSize" size="small">
-        <ElRadioButton value="large">Large</ElRadioButton>
-        <ElRadioButton value="default">Default</ElRadioButton>
-        <ElRadioButton value="small">Small</ElRadioButton>
+        <ElRadioButton value="large">{{ uiTexts.large }}</ElRadioButton>
+        <ElRadioButton value="default">{{ uiTexts.default }}</ElRadioButton>
+        <ElRadioButton value="small">{{ uiTexts.small }}</ElRadioButton>
       </ElRadioGroup>
     </div>
     <div class="ml-demo-status">
-      <span class="ml-demo-status__hint">Press Alt to show Key Tips.</span>
-      <span class="ml-demo-status__hint">Try V / X / C / F then P on Home tab.</span>
-      <span class="ml-demo-status__value">Last command: {{ lastCommand }}</span>
+      <span class="ml-demo-status__hint">{{ uiTexts.keyTipHint }}</span>
+      <span class="ml-demo-status__hint">{{ uiTexts.sequenceHint }}</span>
+      <span class="ml-demo-status__value">{{ uiTexts.lastCommand }} {{ lastCommand }}</span>
+      <span class="ml-demo-status__value">{{ uiTexts.currentLanguage }} {{ language }}</span>
     </div>
     <MlRibbon
       :active-layout="layout"
@@ -378,8 +516,17 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
       :tabs="tabs"
       :file-menu-items="fileMenuItems"
       :backstage-items="backstageItems"
+      :texts="ribbonTexts"
       @item-click="onRibbonItemClick"
-    />
+    >
+      <template #tabs-extra>
+        <div class="ml-demo-language-switch">
+          <ElSelect v-model="language" size="small" class="ml-demo-language-switch__select">
+            <ElOption v-for="option in languageOptions" :key="option.value" :value="option.value" :label="option.label" />
+          </ElSelect>
+        </div>
+      </template>
+    </MlRibbon>
   </div>
 </template>
 
@@ -414,5 +561,15 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
 
 .ml-demo-status__value {
   color: var(--el-text-color-primary);
+}
+
+.ml-demo-language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ml-demo-language-switch__select {
+  width: 110px;
 }
 </style>

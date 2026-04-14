@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowDown } from '@element-plus/icons-vue'
-import { computed, inject } from 'vue'
+import { ArrowUp } from '@element-plus/icons-vue'
+import { computed, inject, ref } from 'vue'
 import {
   ElButton,
   ElCheckbox,
@@ -78,6 +79,7 @@ const iconComponent = computed<Component | null>(() => {
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
 const buttonAriaLabel = computed(() => props.item.label || props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
+const isDropdownOpen = ref(false)
 const shouldShowKeyTip = computed(() => {
   if (!ribbon?.keyTipsOpen.value) return false
   if (!keyTipText.value) return false
@@ -91,6 +93,29 @@ const shouldShowKeyTip = computed(() => {
  */
 function handleClick() {
   emit('item-click', props.id)
+}
+
+/**
+ * Syncs dropdown open state from Element Plus visibility event.
+ * @param value Whether dropdown menu is open.
+ */
+function setDropdownOpen(value: boolean) {
+  isDropdownOpen.value = value
+}
+
+/**
+ * Toggles dropdown arrow state on trigger click.
+ */
+function toggleDropdownOpen() {
+  isDropdownOpen.value = !isDropdownOpen.value
+}
+
+/**
+ * Handles dropdown option command and closes arrow state.
+ */
+function handleDropdownCommand() {
+  handleClick()
+  isDropdownOpen.value = false
 }
 
 /**
@@ -153,16 +178,20 @@ function optionIconAsClass(option: unknown): string | null {
 
     <ElDropdown
       v-else-if="item.type === 'dropdown'"
+      trigger="click"
       :disabled="item.disabled"
       :popper-class="dropdownPopperClass"
-      @command="handleClick"
+      @visible-change="setDropdownOpen"
+      @command="handleDropdownCommand"
     >
-      <ElButton type="default" :aria-label="buttonAriaLabel">
+      <ElButton type="default" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
         <span class="ml-ribbon-item-host__content">
           <ElIcon v-if="iconComponent" class="ml-ribbon-item-host__icon"><component :is="iconComponent" /></ElIcon>
           <span class="ml-ribbon-item-host__text-row">
             <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ item.label }}</span>
-            <ElIcon class="ml-ribbon-item-host__dropdown-arrow"><ArrowDown /></ElIcon>
+            <ElIcon class="ml-ribbon-item-host__dropdown-arrow" :class="{ 'is-open': isDropdownOpen }">
+              <component :is="isDropdownOpen ? ArrowUp : ArrowDown" />
+            </ElIcon>
           </span>
         </span>
       </ElButton>
