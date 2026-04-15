@@ -69,17 +69,47 @@ const selectPopperClass = computed(
   () => `ml-ribbon-select-dropdown ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
 )
 // Prefer icon declared in item props, then fallback to the top-level item icon.
-const iconComponent = computed<Component | null>(() => {
+const baseIconComponent = computed<Component | null>(() => {
   const byProps = props.item.props?.icon as Component | undefined
   if (byProps) return byProps
   if (typeof props.item.icon === 'string' || !props.item.icon) return null
   return props.item.icon as Component
+})
+const baseIconClass = computed<string | null>(() => {
+  const byProps = props.item.props?.icon
+  if (typeof byProps === 'string' && byProps.trim().length > 0) return byProps
+  if (typeof props.item.icon === 'string' && props.item.icon.trim().length > 0) return props.item.icon
+  return null
 })
 // Hide label only when the schema explicitly sets hideLabel to true.
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
 const buttonAriaLabel = computed(() => props.item.label || props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
 const isDropdownOpen = ref(false)
+const selectedDropdownValue = ref<unknown>(undefined)
+const selectedDropdownOption = computed(() => options.value.find((opt) => optionValue(opt) === selectedDropdownValue.value) ?? null)
+const dropdownLabel = computed(() => {
+  const option = selectedDropdownOption.value
+  if (option) {
+    const label = optionLabel(option)
+    if (label) return label
+  }
+  return props.item.label ?? props.item.id
+})
+const dropdownIconComponent = computed<Component | null>(() => {
+  if (selectedDropdownOption.value) {
+    const fromOption = optionIconAsComponent(selectedDropdownOption.value)
+    if (fromOption) return fromOption
+  }
+  return baseIconComponent.value
+})
+const dropdownIconClass = computed<string | null>(() => {
+  if (selectedDropdownOption.value) {
+    const fromOption = optionIconAsClass(selectedDropdownOption.value)
+    if (fromOption) return fromOption
+  }
+  return dropdownIconComponent.value ? null : baseIconClass.value
+})
 const shouldShowKeyTip = computed(() => {
   if (!ribbon?.keyTipsOpen.value) return false
   if (!keyTipText.value) return false
@@ -104,18 +134,43 @@ function setDropdownOpen(value: boolean) {
 }
 
 /**
- * Toggles dropdown arrow state on trigger click.
+ * Handles dropdown option command and closes arrow state.
+ */
+function handleDropdownCommand(command: unknown) {
+  selectedDropdownValue.value = command
+  emitDropdownCommand(command)
+  isDropdownOpen.value = false
+}
+
+/**
+ * Keeps trigger arrow state responsive while click-trigger menu is toggled.
  */
 function toggleDropdownOpen() {
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
 /**
- * Handles dropdown option command and closes arrow state.
+ * Executes the current dropdown command when the icon area is clicked.
  */
-function handleDropdownCommand() {
+function handleDropdownPrimaryClick() {
+  const option = selectedDropdownOption.value
+  if (!option) {
+    handleClick()
+    return
+  }
+  emitDropdownCommand(optionValue(option))
+}
+
+/**
+ * Emits dropdown command payload, normalizing non-primitive values to item id.
+ * @param command Dropdown command id/value.
+ */
+function emitDropdownCommand(command: unknown) {
+  if (typeof command === 'string' || typeof command === 'number') {
+    emit('item-click', String(command))
+    return
+  }
   handleClick()
-  isDropdownOpen.value = false
 }
 
 /**
@@ -140,6 +195,27 @@ function optionIconAsClass(option: unknown): string | null {
   const icon = (option as { icon?: unknown }).icon
   if (typeof icon !== 'string' || icon.trim().length === 0) return null
   return icon
+}
+
+/**
+ * Reads the command value from a dropdown option.
+ * @param option Dropdown option candidate.
+ * @returns Option value field or `undefined`.
+ */
+function optionValue(option: unknown): unknown {
+  if (!option || typeof option !== 'object') return undefined
+  return (option as { value?: unknown }).value
+}
+
+/**
+ * Reads the display label from a dropdown option.
+ * @param option Dropdown option candidate.
+ * @returns Option label string when available.
+ */
+function optionLabel(option: unknown): string | undefined {
+  if (!option || typeof option !== 'object') return undefined
+  const label = (option as { label?: unknown }).label
+  return typeof label === 'string' ? label : undefined
 }
 </script>
 
@@ -186,9 +262,24 @@ function optionIconAsClass(option: unknown): string | null {
     >
       <ElButton type="default" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
         <span class="ml-ribbon-item-host__content">
-          <ElIcon v-if="iconComponent" class="ml-ribbon-item-host__icon"><component :is="iconComponent" /></ElIcon>
+          <span
+            v-if="dropdownIconComponent"
+            class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--dropdown-primary"
+            @click.stop="handleDropdownPrimaryClick"
+          >
+            <ElIcon>
+              <component :is="dropdownIconComponent" />
+            </ElIcon>
+          </span>
+          <span
+            v-else-if="dropdownIconClass"
+            class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class ml-ribbon-item-host__icon--dropdown-primary"
+            @click.stop="handleDropdownPrimaryClick"
+          >
+            <i :class="dropdownIconClass" aria-hidden="true" />
+          </span>
           <span class="ml-ribbon-item-host__text-row">
-            <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ item.label }}</span>
+            <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ dropdownLabel }}</span>
             <ElIcon class="ml-ribbon-item-host__dropdown-arrow" :class="{ 'is-open': isDropdownOpen }">
               <component :is="isDropdownOpen ? ArrowUp : ArrowDown" />
             </ElIcon>
@@ -241,7 +332,13 @@ function optionIconAsClass(option: unknown): string | null {
     </ElSelect>
 
     <ElButton v-else :disabled="item.disabled" :aria-label="buttonAriaLabel" @click="handleClick">
-      <ElIcon v-if="iconComponent" class="ml-ribbon-item-host__icon"><component :is="iconComponent" /></ElIcon>
+      <ElIcon v-if="baseIconComponent" class="ml-ribbon-item-host__icon"><component :is="baseIconComponent" /></ElIcon>
+      <i
+        v-else-if="baseIconClass"
+        class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class"
+        :class="baseIconClass"
+        aria-hidden="true"
+      />
       <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ item.label ?? item.id }}</span>
     </ElButton>
   </div>

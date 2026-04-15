@@ -21,6 +21,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Internationalization-ready UI text model via `MlRibbon` `texts` prop (no built-in hard-coded visible strings in Ribbon components)
 - Icon-only command rendering via `RibbonItemModel.hideLabel`
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
+- Dropdown command memory: selected option updates trigger icon/label, icon click executes current option command, label/arrow opens menu
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
 
 ## Naming Conventions

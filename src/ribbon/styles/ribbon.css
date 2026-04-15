@@ -19,6 +19,10 @@
   --ml-rb-keytip-inline-bg: #1b212a;
   --ml-rb-keytip-inline-fg: #ffdc85;
   --ml-rb-keytip-inline-shadow: color-mix(in oklab, #000000 20%, transparent);
+  --ml-rb-split-icon-hover-bg: color-mix(in oklab, var(--el-color-primary) 14%, transparent);
+  --ml-rb-split-icon-hover-fg: var(--el-color-primary);
+  --ml-rb-split-label-hover-bg: color-mix(in oklab, #2f6feb 16%, transparent);
+  --ml-rb-split-label-hover-fg: #1f4fbf;
 }
 
 html.dark {
@@ -27,6 +31,10 @@ html.dark {
   --ml-rb-keytip-inline-bg: #f4f6fb;
   --ml-rb-keytip-inline-fg: #1d2530;
   --ml-rb-keytip-inline-shadow: color-mix(in oklab, #000000 35%, transparent);
+  --ml-rb-split-icon-hover-bg: color-mix(in oklab, var(--el-color-primary) 24%, transparent);
+  --ml-rb-split-icon-hover-fg: #8db9ff;
+  --ml-rb-split-label-hover-bg: color-mix(in oklab, #6aa3ff 20%, transparent);
+  --ml-rb-split-label-hover-fg: #a8ccff;
 }
 
 .ml-ribbon {
@@ -391,6 +399,28 @@ html.dark {
   font-size: var(--ml-rb-font-base);
 }
 
+.ml-ribbon-item-host__icon--class {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
+
+.ml-ribbon-item-host__icon--dropdown-primary {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 3px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ml-ribbon-item-host__icon--dropdown-primary:hover {
+  background: var(--ml-rb-split-icon-hover-bg);
+  color: var(--ml-rb-split-icon-hover-fg);
+}
+
 .ml-ribbon-item-host.is-label-hidden .ml-ribbon-item-host__icon {
   margin-right: 0;
 }
@@ -416,6 +446,19 @@ html.dark {
   display: inline-flex;
   align-items: center;
   gap: 2px;
+}
+
+.ml-ribbon-item-host.type-dropdown .ml-ribbon-item-host__text-row {
+  border-radius: 4px;
+  padding: 1px 4px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ml-ribbon-item-host.type-dropdown .ml-ribbon-item-host__text-row:hover {
+  background: var(--ml-rb-split-label-hover-bg);
+  color: var(--ml-rb-split-label-hover-fg);
 }
 
 .ml-ribbon-item-host__dropdown-arrow {
