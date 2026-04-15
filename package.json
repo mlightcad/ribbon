@@ -1,6 +1,6 @@
 {
   "name": "@mlightcad/ribbon",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "packageManager": "pnpm@10.33.0",
   "type": "module",
   "main": "./dist/ml-ribbon.es.js",
@@ -33,6 +33,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "release": "node tools/release.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
