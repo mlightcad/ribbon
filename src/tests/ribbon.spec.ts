@@ -293,6 +293,28 @@ describe('MlRibbon', () => {
     expect(minimizeButton.classes()).toContain('ml-ribbon__control--minimize-up')
   })
 
+  it('reclaims panel space by removing panel DOM when minimized', async () => {
+    const wrapper = mount(MlRibbon, { props: { tabs, minimized: false } })
+    expect(wrapper.find('.ml-ribbon__panel').exists()).toBe(true)
+
+    await wrapper.find('.ml-ribbon__control--minimize').trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.ml-ribbon__panel').exists()).toBe(false)
+    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--minimized')
+  })
+
+  it('emits update:minimized when minimized state changes', async () => {
+    const wrapper = mount(MlRibbon, { props: { tabs, minimized: false } })
+
+    await wrapper.find('.ml-ribbon__control--minimize').trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const updateEvents = wrapper.emitted('update:minimized') ?? []
+    expect(updateEvents).toHaveLength(1)
+    expect(updateEvents[0]).toEqual([true])
+  })
+
   it('uses externally provided i18n texts', () => {
     const contextualTabs: RibbonTabModel[] = [
       {

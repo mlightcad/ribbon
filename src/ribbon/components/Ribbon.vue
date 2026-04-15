@@ -266,7 +266,9 @@ watch(context.layout, (value) => {
   emit('update:layout', value)
   emit('layoutChange', value)
 })
-watch(context.minimized, (value) => emit('update:minimized', value))
+watch(context.minimized, (value) => {
+  emit('update:minimized', value)
+})
 watch(context.overflowOpen, (value) => {
   if (value) emit('overflowOpen')
   else emit('overflowClose')
