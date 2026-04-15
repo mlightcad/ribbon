@@ -85,6 +85,7 @@ Slots:
 - Support Element Plus light/dark theme switching without Ribbon-specific remount.
 - Group priority impacts collapse/overflow behavior.
 - Simplified mode keeps commands interactive via popup/overflow presentation.
+- Dropdown trigger supports split behavior: icon executes current option command; label/arrow opens option menu.
 - Keyboard interaction remains consistent between main ribbon and overflow.
 - KeyTips support Alt activation, sequence input, and Escape handling.
 - Contextual tabs can be dynamically shown/hidden.

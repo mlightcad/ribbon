@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 import { ElConfigProvider } from 'element-plus'
 import MlRibbon from '../ribbon/components/Ribbon.vue'
+import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
 import type { RibbonTabModel } from '../ribbon'
@@ -1018,6 +1019,117 @@ describe('MlRibbon', () => {
         '.ml-ribbon-dropdown-menu .ml-ribbon-dropdown-item__icon--class.ml-test-option-class-icon',
       )
       expect(classIcon).toBeTruthy()
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('updates dropdown trigger label after selecting a dropdown option', async () => {
+    const IconStub = defineComponent({
+      name: 'DropdownPrimaryIconStub',
+      template: '<span class="ml-test-dropdown-primary-icon" />',
+    })
+
+    const dropdownTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'draw',
+            title: 'Draw',
+            collections: [
+              {
+                id: 'c1',
+                items: [
+                  {
+                    id: 'draw-circle',
+                    type: 'dropdown',
+                    label: 'Circle',
+                    props: {
+                      options: [
+                        { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
+                        { label: '2-Point', value: 'circle-two-point', icon: IconStub },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: dropdownTabs },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
+
+      const dropdown = host.findComponent({ name: 'ElDropdown' })
+      dropdown.vm.$emit('command', 'circle-two-point')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('2-Point')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('executes selected dropdown command when clicking dropdown icon and keeps label click as menu trigger', async () => {
+    const IconStub = defineComponent({
+      name: 'DropdownPrimaryIconStub',
+      template: '<span class="ml-test-dropdown-primary-icon" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'draw-circle',
+        groupId: 'draw',
+        item: {
+          id: 'draw-circle',
+          type: 'dropdown',
+          label: 'Circle',
+          props: {
+            options: [
+              { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
+              { label: '2-Point', value: 'circle-two-point', icon: IconStub },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
+      dropdown.vm.$emit('command', 'circle-two-point')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const iconTrigger = host.find('.ml-ribbon-item-host__icon--dropdown-primary')
+      expect(iconTrigger.exists()).toBe(true)
+      iconTrigger.element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(2)
+      expect(emissions[0]?.[0]).toBe('circle-two-point')
+      expect(emissions[1]?.[0]).toBe('circle-two-point')
+
+      const labelTrigger = host.find('.ml-ribbon-item-host__text-row')
+      await labelTrigger.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const arrow = host.find('.ml-ribbon-item-host__dropdown-arrow')
+      expect(arrow.classes()).toContain('is-open')
+      expect((wrapper.emitted('item-click') ?? []).length).toBe(2)
     } finally {
       wrapper.unmount()
     }
