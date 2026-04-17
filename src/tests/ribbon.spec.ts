@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 import { ElConfigProvider } from 'element-plus'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import MlRibbon from '../ribbon/components/Ribbon.vue'
 import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
@@ -80,6 +82,38 @@ describe('MlRibbonBackstage', () => {
 })
 
 describe('MlRibbon', () => {
+  it('uses fixed classic panel height derived from content and footer css variables', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(/--ml-rb-panel-content-height:\s*calc\(/)
+    expect(css).toMatch(/--ml-rb-footer-height:\s*calc\(/)
+    expect(css).toContain('--ml-rb-panel-height: calc(var(--ml-rb-panel-content-height) + var(--ml-rb-footer-height));')
+    expect(css).toMatch(/\.ml-ribbon__panel\s*\{[\s\S]*min-height:\s*var\(--ml-rb-panel-height\);/)
+    expect(css).toMatch(/\.ml-ribbon__panel\s*\{[\s\S]*height:\s*var\(--ml-rb-panel-height\);/)
+  })
+
+  it('keeps color picker clear trigger compact across ribbon sizes', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-color-picker\s*\{[\s\S]*width:\s*var\(--ml-rb-compact-height\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-color-picker\s*\{[\s\S]*min-width:\s*var\(--ml-rb-compact-height\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-color-picker\s+\.el-color-picker__empty,\s*[\s\S]*font-size:\s*calc\(12px\s*\*\s*var\(--ml-rb-scale\)\);/,
+    )
+  })
+
+  it('highlights group footer when hovered', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(/\.ml-ribbon-group__footer:hover\s*\{[\s\S]*background:\s*var\(--ml-rb-hover-bg\);/)
+    expect(css).toMatch(/\.ml-ribbon-group__footer:hover\s*\{[\s\S]*border-color:\s*var\(--ml-rb-hover-border\);/)
+    expect(css).toMatch(/\.ml-ribbon-group__footer:hover\s*\{[\s\S]*color:\s*var\(--ml-rb-tab-text\);/)
+  })
+
   it('renders tab and item', () => {
     const wrapper = mount(MlRibbon, { props: { tabs } })
     expect(wrapper.text()).toContain('Home')
@@ -364,11 +398,10 @@ describe('MlRibbon', () => {
     const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
-      const element = this
-      if (element.classList.contains('ml-ribbon__panel')) {
+      if (this.classList.contains('ml-ribbon__panel')) {
         return new DOMRect(0, 0, panelWidth, 84)
       }
-      if (element.classList.contains('ml-ribbon-group')) {
+      if (this.classList.contains('ml-ribbon-group')) {
         return new DOMRect(0, 0, 120, 76)
       }
       return new DOMRect(0, 0, 80, 24)
@@ -431,11 +464,10 @@ describe('MlRibbon', () => {
     const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
-      const element = this
-      if (element.classList.contains('ml-ribbon__panel')) {
+      if (this.classList.contains('ml-ribbon__panel')) {
         return new DOMRect(0, 0, panelWidth, 84)
       }
-      if (element.classList.contains('ml-ribbon-group')) {
+      if (this.classList.contains('ml-ribbon-group')) {
         return new DOMRect(0, 0, 140, 76)
       }
       return new DOMRect(0, 0, 90, 24)
@@ -504,11 +536,10 @@ describe('MlRibbon', () => {
     const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
-      const element = this
-      if (element.classList.contains('ml-ribbon__panel')) {
+      if (this.classList.contains('ml-ribbon__panel')) {
         return new DOMRect(0, 0, 220, 84)
       }
-      if (element.classList.contains('ml-ribbon-group')) {
+      if (this.classList.contains('ml-ribbon-group')) {
         return new DOMRect(0, 0, 130, 76)
       }
       return new DOMRect(0, 0, 90, 24)
@@ -558,11 +589,10 @@ describe('MlRibbon', () => {
     const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
-      const element = this
-      if (element.classList.contains('ml-ribbon__panel')) {
+      if (this.classList.contains('ml-ribbon__panel')) {
         return new DOMRect(0, 0, panelWidth, 84)
       }
-      if (element.classList.contains('ml-ribbon-group')) {
+      if (this.classList.contains('ml-ribbon-group')) {
         return new DOMRect(0, 0, 130, 76)
       }
       return new DOMRect(0, 0, 90, 24)
@@ -608,12 +638,11 @@ describe('MlRibbon', () => {
     const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
-      const element = this
-      if (element.classList.contains('ml-ribbon__panel')) {
+      if (this.classList.contains('ml-ribbon__panel')) {
         return new DOMRect(0, 0, panelWidth, 84)
       }
-      if (element.classList.contains('ml-ribbon-group')) {
-        if (element.dataset.groupId === 'g1') return new DOMRect(0, 0, 190, 76)
+      if (this.classList.contains('ml-ribbon-group')) {
+        if (this.dataset.groupId === 'g1') return new DOMRect(0, 0, 190, 76)
         return new DOMRect(0, 0, 120, 76)
       }
       return new DOMRect(0, 0, 90, 24)
@@ -670,12 +699,11 @@ describe('MlRibbon', () => {
     const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: HTMLElement,
     ) {
-      const element = this
-      if (element.classList.contains('ml-ribbon-group__content')) {
+      if (this.classList.contains('ml-ribbon-group__content')) {
         return new DOMRect(0, 0, 100, 36)
       }
-      if (element.classList.contains('ml-ribbon-item-host')) {
-        if (element.dataset.itemId === 'btn-hidden') {
+      if (this.classList.contains('ml-ribbon-item-host')) {
+        if (this.dataset.itemId === 'btn-hidden') {
           return new DOMRect(110, 0, 24, 20)
         }
         return new DOMRect(4, 0, 24, 20)
