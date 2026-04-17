@@ -61,6 +61,7 @@ Events:
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
+- Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
 
 Controlled props:
 - `v-model:activeTab`
@@ -86,6 +87,7 @@ Slots:
 - Group priority impacts collapse/overflow behavior.
 - Simplified mode keeps commands interactive via popup/overflow presentation.
 - Dropdown trigger supports split behavior: icon executes current option command; label/arrow opens option menu.
+- By default, dropdown trigger label remains unchanged after selection while trigger icon follows selected option; label sync is opt-in.
 - Keyboard interaction remains consistent between main ribbon and overflow.
 - KeyTips support Alt activation, sequence input, and Escape handling.
 - Contextual tabs can be dynamically shown/hidden.

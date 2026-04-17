@@ -408,9 +408,13 @@ html.dark {
 }
 
 .ml-ribbon-item-host__icon--dropdown-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   cursor: pointer;
   border-radius: 4px;
-  padding: 1px 3px;
+  padding: 0;
   transition:
     background-color 0.15s ease,
     color 0.15s ease;

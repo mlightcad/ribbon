@@ -85,12 +85,13 @@ const baseIconClass = computed<string | null>(() => {
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
 const buttonAriaLabel = computed(() => props.item.label || props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
+const shouldSyncDropdownLabel = computed(() => props.item.props?.syncLabelWithSelection === true)
 const isDropdownOpen = ref(false)
 const selectedDropdownValue = ref<unknown>(undefined)
 const selectedDropdownOption = computed(() => options.value.find((opt) => optionValue(opt) === selectedDropdownValue.value) ?? null)
 const dropdownLabel = computed(() => {
   const option = selectedDropdownOption.value
-  if (option) {
+  if (option && shouldSyncDropdownLabel.value) {
     const label = optionLabel(option)
     if (label) return label
   }
