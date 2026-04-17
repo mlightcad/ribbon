@@ -1046,7 +1046,7 @@ describe('MlRibbon', () => {
     }
   })
 
-  it('updates dropdown trigger label after selecting a dropdown option', async () => {
+  it('keeps dropdown trigger label unchanged after selecting a dropdown option by default', async () => {
     const IconStub = defineComponent({
       name: 'DropdownPrimaryIconStub',
       template: '<span class="ml-test-dropdown-primary-icon" />',
@@ -1069,6 +1069,63 @@ describe('MlRibbon', () => {
                     type: 'dropdown',
                     label: 'Circle',
                     props: {
+                      options: [
+                        { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
+                        { label: '2-Point', value: 'circle-two-point', icon: IconStub },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: dropdownTabs },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
+
+      const dropdown = host.findComponent({ name: 'ElDropdown' })
+      dropdown.vm.$emit('command', 'circle-two-point')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('updates dropdown trigger label after selecting a dropdown option when enabled', async () => {
+    const IconStub = defineComponent({
+      name: 'DropdownPrimaryIconStub',
+      template: '<span class="ml-test-dropdown-primary-icon" />',
+    })
+
+    const dropdownTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'draw',
+            title: 'Draw',
+            collections: [
+              {
+                id: 'c1',
+                items: [
+                  {
+                    id: 'draw-circle',
+                    type: 'dropdown',
+                    label: 'Circle',
+                    props: {
+                      syncLabelWithSelection: true,
                       options: [
                         { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
                         { label: '2-Point', value: 'circle-two-point', icon: IconStub },
