@@ -106,6 +106,15 @@ describe('MlRibbon', () => {
     )
   })
 
+  it('keeps segmented controls aligned to ribbon compact height instead of raw element-plus size presets', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(/\.ml-ribbon-segmented__control\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);/)
+    expect(css).toMatch(
+      /\.ml-ribbon-segmented__control\s+\.el-segmented__item\s*\{[\s\S]*min-height:\s*calc\(var\(--ml-rb-compact-height\)\s*-\s*4px\);/,
+    )
+  })
+
   it('highlights group footer when hovered', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
 
@@ -228,6 +237,58 @@ describe('MlRibbon', () => {
   it('supports size prop', () => {
     const wrapper = mount(MlRibbon, { props: { tabs, size: 'small' } })
     expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--size-small')
+  })
+
+  it('disables the full ribbon surface when disabled is true', async () => {
+    const wrapper = mount(MlRibbon, {
+      props: {
+        tabs,
+        disabled: true,
+        fileMenuItems: [{ id: 'open', label: 'Open' }],
+      },
+    })
+
+    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--disabled')
+    expect(wrapper.find('.ml-ribbon-tab--file').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('.ml-ribbon__control--layout').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('.ml-ribbon__control--minimize').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button').attributes('disabled')).toBeDefined()
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.ml-ribbon').classes()).not.toContain('ml-ribbon--keytips-open')
+  })
+
+  it('blocks tab and item events while ribbon is disabled', async () => {
+    const interactiveTabs: RibbonTabModel[] = [
+      ...tabs,
+      {
+        id: 'insert',
+        title: 'Insert',
+        groups: [
+          {
+            id: 'insert-group',
+            title: 'Insert Group',
+            collections: [{ id: 'insert-collection', items: [{ id: 'insert-btn', type: 'button', label: 'Insert Action' }] }],
+          },
+        ],
+      },
+    ]
+    const wrapper = mount(MlRibbon, { props: { tabs: interactiveTabs, disabled: true } })
+
+    const homeItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
+    const insertTabButton = wrapper.findAll('.ml-ribbon-tab').find((node) => node.text() === 'Insert')
+
+    expect(homeItemButton.attributes('disabled')).toBeDefined()
+    expect(insertTabButton?.attributes('disabled')).toBeDefined()
+
+    await homeItemButton.trigger('click')
+    if (insertTabButton) await insertTabButton.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.emitted('itemClick')).toBeUndefined()
+    expect(wrapper.emitted('tabChange')).toBeUndefined()
   })
 
   it('hides open backstage menu command when showOpenBackstage is false', async () => {
@@ -778,7 +839,7 @@ describe('MlRibbon', () => {
                 items: [
                   {
                     id: 'find-replace',
-                    type: 'groupButton',
+                    type: 'buttonGroup',
                     label: 'Find/Replace',
                     props: {
                       options: [
@@ -1069,6 +1130,200 @@ describe('MlRibbon', () => {
         '.ml-ribbon-dropdown-menu .ml-ribbon-dropdown-item__icon--class.ml-test-option-class-icon',
       )
       expect(classIcon).toBeTruthy()
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders segmented options icon-first and reflects the controlled selected value', async () => {
+    const IconStub = defineComponent({
+      name: 'SegmentedIconStub',
+      template: '<span class="ml-test-segmented-icon" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'theme',
+        groupId: 'appearance',
+        item: {
+          id: 'theme',
+          type: 'segmented',
+          label: 'Theme',
+          props: {
+            modelValue: 'theme-dark',
+            options: [
+              { label: 'Light', value: 'theme-light', icon: IconStub },
+              { label: 'Dark', value: 'theme-dark', icon: IconStub },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="theme"]')
+      expect(host.findAll('.ml-test-segmented-icon')).toHaveLength(2)
+      expect(host.find('.ml-ribbon-segmented__option-label').exists()).toBe(false)
+      expect(host.findAll('.el-segmented__item.is-selected')).toHaveLength(1)
+      expect(host.find('.ml-ribbon-segmented__label').text()).toBe('Theme')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('falls back to visible labels for segmented options without icons and emits selected option value', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'ribbon-size',
+        groupId: 'appearance',
+        item: {
+          id: 'ribbon-size',
+          type: 'segmented',
+          label: 'Ribbon Size',
+          props: {
+            modelValue: 'size-default',
+            options: [
+              { label: 'Large', value: 'size-large' },
+              { label: 'Default', value: 'size-default' },
+              { label: 'Small', value: 'size-small' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="ribbon-size"]')
+      expect(host.findAll('.ml-ribbon-segmented__option-label')).toHaveLength(3)
+
+      const inputs = host.findAll('input[type="radio"]')
+      await inputs[0]!.trigger('change')
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('size-large')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('hides segmented caption when hideLabel is true while keeping option fallback labels', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'theme',
+        groupId: 'appearance',
+        item: {
+          id: 'theme',
+          type: 'segmented',
+          label: 'Theme',
+          hideLabel: true,
+          props: {
+            modelValue: 'theme-light',
+            options: [
+              { label: 'Light', value: 'theme-light' },
+              { label: 'Dark', value: 'theme-dark' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="theme"]')
+      expect(host.find('.ml-ribbon-segmented__label').exists()).toBe(false)
+      expect(host.findAll('.ml-ribbon-segmented__option-label')).toHaveLength(2)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits selected segmented option value from the ribbon surface instead of the segmented item id', async () => {
+    const segmentedTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'appearance',
+            title: 'Appearance',
+            collections: [
+              {
+                id: 'appearance-controls',
+                items: [
+                  {
+                    id: 'theme',
+                    type: 'segmented',
+                    label: 'Theme',
+                    props: {
+                      modelValue: 'theme-light',
+                      options: [
+                        { label: 'Light', value: 'theme-light' },
+                        { label: 'Dark', value: 'theme-dark' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, { props: { tabs: segmentedTabs, activeTab: 'home' } })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="theme"]')
+      const inputs = host.findAll('input[type="radio"]')
+      await inputs[1]!.trigger('change')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('itemClick') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'appearance', itemId: 'theme-dark' })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps group buttons visually unselected and emits the clicked option value', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'find-replace',
+        groupId: 'editing',
+        item: {
+          id: 'find-replace',
+          type: 'buttonGroup',
+          label: 'Find / Replace',
+          props: {
+            options: [
+              { label: 'Find', value: 'find' },
+              { label: 'Replace', value: 'replace' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="find-replace"]')
+      const buttons = host.findAll('.ml-ribbon-button-group .el-button')
+
+      expect(buttons).toHaveLength(2)
+
+      await buttons[1]!.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(host.find('.el-button--primary').exists()).toBe(false)
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('replace')
     } finally {
       wrapper.unmount()
     }

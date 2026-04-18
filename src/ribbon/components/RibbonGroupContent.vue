@@ -54,7 +54,7 @@ const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId:
         :item="item"
         :group-id="props.group.id"
         :gallery-preview-fallback="props.galleryPreviewFallback"
-        @item-click="emit('item-click', { groupId: props.group.id, itemId: item.id })"
+        @item-click="emit('item-click', { groupId: props.group.id, itemId: $event })"
       />
     </MlRibbonCollection>
   </div>

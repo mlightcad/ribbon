@@ -9,8 +9,9 @@ import type { RibbonItemModel } from '../types'
  *
  * @prop id - Template item identifier.
  * @prop item - Original ribbon item model passed to slot consumers.
+ * @prop disabled - Whether the hosting ribbon item is disabled.
  *
- * @slot default - Custom template content with `{ item }` slot prop.
+ * @slot default - Custom template content with `{ item, disabled }` slot prop.
  *
  * @example
  * ```vue
@@ -24,15 +25,15 @@ import type { RibbonItemModel } from '../types'
 defineProps<{
   id: string
   item: RibbonItemModel
+  disabled?: boolean
 }>()
 </script>
 
 <template>
-  <div class="ml-ribbon-template-item" :data-template-id="id">
-    <slot :item="item">
+  <div class="ml-ribbon-template-item" :data-template-id="id" :aria-disabled="disabled">
+    <slot :item="item" :disabled="disabled">
       <span>{{ item.label ?? item.id }}</span>
     </slot>
   </div>
 </template>
-
 

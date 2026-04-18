@@ -23,6 +23,7 @@ import { computed } from 'vue'
 const props = defineProps<{
   tabs: { id: string; title: string; visible?: boolean }[]
   activeTab: string
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{ (e: 'select', id: string): void }>()
@@ -39,11 +40,11 @@ const visibleTabs = computed(() => props.tabs.filter((x) => x.visible !== false)
       :class="{ 'is-active': activeTab === tab.id }"
       role="tab"
       :aria-selected="activeTab === tab.id"
+      :disabled="props.disabled"
       @click="emit('select', tab.id)"
     >
       {{ tab.title }}
     </button>
   </div>
 </template>
-
 

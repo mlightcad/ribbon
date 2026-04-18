@@ -18,7 +18,8 @@ import type { Component } from 'vue'
 import { ribbonKey } from '../context'
 import type { RibbonItemModel } from '../types'
 import MlRibbonGallery from '../items/RibbonGallery.vue'
-import MlRibbonGroupButton from '../items/RibbonGroupButton.vue'
+import MlRibbonButtonGroup from '../items/RibbonButtonGroup.vue'
+import MlRibbonSegmented from '../items/RibbonSegmented.vue'
 import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
 
 /**
@@ -113,16 +114,19 @@ const dropdownIconClass = computed<string | null>(() => {
 })
 const shouldShowKeyTip = computed(() => {
   if (!ribbon?.keyTipsOpen.value) return false
+  if (ribbon?.disabled.value) return false
   if (!keyTipText.value) return false
   const sequence = ribbon.keyTipsSequence.value.toLowerCase()
   if (!sequence) return true
   return keyTipText.value.toLowerCase().startsWith(sequence)
 })
+const isDisabled = computed(() => props.item.disabled === true || ribbon?.disabled.value === true)
 
 /**
  * Emits a normalized click payload so parent components only care about item id.
  */
 function handleClick() {
+  if (isDisabled.value) return
   emit('item-click', props.id)
 }
 
@@ -131,6 +135,10 @@ function handleClick() {
  * @param value Whether dropdown menu is open.
  */
 function setDropdownOpen(value: boolean) {
+  if (isDisabled.value) {
+    isDropdownOpen.value = false
+    return
+  }
   isDropdownOpen.value = value
 }
 
@@ -138,6 +146,7 @@ function setDropdownOpen(value: boolean) {
  * Handles dropdown option command and closes arrow state.
  */
 function handleDropdownCommand(command: unknown) {
+  if (isDisabled.value) return
   selectedDropdownValue.value = command
   emitDropdownCommand(command)
   isDropdownOpen.value = false
@@ -147,6 +156,7 @@ function handleDropdownCommand(command: unknown) {
  * Keeps trigger arrow state responsive while click-trigger menu is toggled.
  */
 function toggleDropdownOpen() {
+  if (isDisabled.value) return
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
@@ -154,6 +164,7 @@ function toggleDropdownOpen() {
  * Executes the current dropdown command when the icon area is clicked.
  */
 function handleDropdownPrimaryClick() {
+  if (isDisabled.value) return
   const option = selectedDropdownOption.value
   if (!option) {
     handleClick()
@@ -169,6 +180,32 @@ function handleDropdownPrimaryClick() {
 function emitDropdownCommand(command: unknown) {
   if (typeof command === 'string' || typeof command === 'number') {
     emit('item-click', String(command))
+    return
+  }
+  handleClick()
+}
+
+/**
+ * Emits segmented option value as the interaction payload.
+ * @param value Segmented selection value.
+ */
+function handleSegmentedChange(value: unknown) {
+  if (isDisabled.value) return
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    emit('item-click', String(value))
+    return
+  }
+  handleClick()
+}
+
+/**
+ * Emits the clicked group button option value instead of the parent group item id.
+ * @param value Group button option value.
+ */
+function handleButtonGroupChange(value: unknown) {
+  if (isDisabled.value) return
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    emit('item-click', String(value))
     return
   }
   handleClick()
@@ -229,14 +266,26 @@ function optionLabel(option: unknown): string | undefined {
   >
     <span v-if="shouldShowKeyTip" class="ml-ribbon-item-host__keytip">{{ keyTipText }}</span>
 
-    <MlRibbonGroupButton
-      v-if="item.type === 'groupButton'"
+    <MlRibbonButtonGroup
+      v-if="item.type === 'buttonGroup'"
       :id="item.id"
       :label="item.label ?? ''"
       :options="(item.props?.options as any[]) ?? []"
-      :multiple="Boolean(item.props?.multiple)"
-      :disabled="item.disabled"
-      @change="handleClick"
+      :disabled="isDisabled"
+      @change="handleButtonGroupChange"
+    />
+
+    <MlRibbonSegmented
+      v-else-if="item.type === 'segmented'"
+      :id="item.id"
+      :label="item.label ?? item.id"
+      :options="(item.props?.options as any[]) ?? []"
+      :model-value="item.props?.modelValue as any"
+      :direction="(item.props?.direction as any) ?? 'horizontal'"
+      :block="item.props?.block === true"
+      :disabled="isDisabled"
+      :hide-label="item.hideLabel === true"
+      @change="handleSegmentedChange"
     />
 
     <MlRibbonGallery
@@ -245,23 +294,23 @@ function optionLabel(option: unknown): string | undefined {
       :label="item.label ?? ''"
       :categories="(item.props?.categories as any[]) ?? []"
       :preview-fallback="props.galleryPreviewFallback"
-      :disabled="item.disabled"
+      :disabled="isDisabled"
       @select="handleClick"
     />
 
-    <MlRibbonTemplateItem v-else-if="item.type === 'template'" :id="item.id" :item="item">
-      <slot name="template" :item="item" />
+    <MlRibbonTemplateItem v-else-if="item.type === 'template'" :id="item.id" :item="item" :disabled="isDisabled">
+      <slot name="template" :item="item" :disabled="isDisabled" />
     </MlRibbonTemplateItem>
 
     <ElDropdown
       v-else-if="item.type === 'dropdown'"
       trigger="click"
-      :disabled="item.disabled"
+      :disabled="isDisabled"
       :popper-class="dropdownPopperClass"
       @visible-change="setDropdownOpen"
       @command="handleDropdownCommand"
     >
-      <ElButton type="default" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
+      <ElButton type="default" :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
         <span class="ml-ribbon-item-host__content">
           <span
             v-if="dropdownIconComponent"
@@ -311,15 +360,15 @@ function optionLabel(option: unknown): string | undefined {
       </template>
     </ElDropdown>
 
-    <ElCheckbox v-else-if="item.type === 'checkbox'" :disabled="item.disabled" @change="handleClick">
+    <ElCheckbox v-else-if="item.type === 'checkbox'" :disabled="isDisabled" @change="handleClick">
       {{ item.label }}
     </ElCheckbox>
 
-    <ElColorPicker v-else-if="item.type === 'colorPicker'" :disabled="item.disabled" @change="handleClick" />
+    <ElColorPicker v-else-if="item.type === 'colorPicker'" :disabled="isDisabled" @change="handleClick" />
 
     <ElSelect
       v-else-if="item.type === 'comboBox'"
-      :disabled="item.disabled"
+      :disabled="isDisabled"
       :popper-class="selectPopperClass"
       style="width: 92px"
       @change="handleClick"
@@ -332,7 +381,7 @@ function optionLabel(option: unknown): string | undefined {
       />
     </ElSelect>
 
-    <ElButton v-else :disabled="item.disabled" :aria-label="buttonAriaLabel" @click="handleClick">
+    <ElButton v-else :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="handleClick">
       <ElIcon v-if="baseIconComponent" class="ml-ribbon-item-host__icon"><component :is="baseIconComponent" /></ElIcon>
       <i
         v-else-if="baseIconClass"
@@ -344,5 +393,3 @@ function optionLabel(option: unknown): string | undefined {
     </ElButton>
   </div>
 </template>
-
-

@@ -33,6 +33,7 @@ const props = defineProps<{
     visible?: boolean
   }[]
   activeTab: string
+  disabled?: boolean
   defaultContextualTitle?: string
 }>()
 
@@ -45,6 +46,7 @@ const emit = defineEmits<{ (e: 'select', id: string): void }>()
       <MlRibbonTabs
         :tabs="props.tabs.filter((x) => !x.contextual)"
         :active-tab="activeTab"
+        :disabled="props.disabled"
         @select="emit('select', $event)"
       />
     </div>
@@ -56,10 +58,9 @@ const emit = defineEmits<{ (e: 'select', id: string): void }>()
         :style="{ '--ctx-color': ctx.contextualColor || '#67c23a' }"
       >
         <small>{{ ctx.contextualTitle || props.defaultContextualTitle }}</small>
-        <MlRibbonTabs :tabs="[ctx]" :active-tab="activeTab" @select="emit('select', $event)" />
+        <MlRibbonTabs :tabs="[ctx]" :active-tab="activeTab" :disabled="props.disabled" @select="emit('select', $event)" />
       </section>
     </div>
   </div>
 </template>
-
 
