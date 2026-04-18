@@ -36,7 +36,7 @@ import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
  *
  * @event item-click - Emitted when the hosted item is activated. Payload is item id.
  *
- * @slot template - Custom renderer slot for `template` item type.
+ * @slot template - Custom renderer slot fallback for `template` item type.
  *
  * @example
  * ```vue
@@ -125,6 +125,16 @@ const isDisabled = computed(() => props.item.disabled === true || ribbon?.disabl
 const toggleModelValue = computed(() => props.item.props?.modelValue as boolean | undefined)
 const toggleActiveLabel = computed(() => props.item.props?.activeLabel as string | undefined)
 const toggleInactiveLabel = computed(() => props.item.props?.inactiveLabel as string | undefined)
+const customItemComponent = computed<Component | null>(() => {
+  const candidate = props.item.props?.component
+  if (!candidate || typeof candidate === 'string') return null
+  return candidate as Component
+})
+const customItemComponentProps = computed<Record<string, unknown>>(() => {
+  const candidate = props.item.props?.componentProps
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return {}
+  return candidate as Record<string, unknown>
+})
 
 /**
  * Emits a normalized click payload so parent components only care about item id.
@@ -224,6 +234,19 @@ function handleButtonGroupChange(value: unknown) {
   if (isDisabled.value) return
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     emit('item-click', String(value))
+    return
+  }
+  handleClick()
+}
+
+/**
+ * Lets custom item components emit normalized ribbon commands back to the host.
+ * @param payload Optional command id override.
+ */
+function emitCustomItemClick(payload?: string | number | boolean) {
+  if (isDisabled.value) return
+  if (typeof payload === 'string' || typeof payload === 'number' || typeof payload === 'boolean') {
+    emit('item-click', String(payload))
     return
   }
   handleClick()
@@ -330,8 +353,22 @@ function optionLabel(option: unknown): string | undefined {
       @select="handleClick"
     />
 
-    <MlRibbonTemplateItem v-else-if="item.type === 'template'" :id="item.id" :item="item" :disabled="isDisabled">
-      <slot name="template" :item="item" :disabled="isDisabled" />
+    <MlRibbonTemplateItem
+      v-else-if="item.type === 'custom' || item.type === 'template'"
+      :id="item.id"
+      :item="item"
+      :disabled="isDisabled"
+    >
+      <component
+        :is="customItemComponent"
+        v-if="customItemComponent"
+        v-bind="customItemComponentProps"
+        :item="item"
+        :group-id="groupId"
+        :disabled="isDisabled"
+        :emit-item-click="emitCustomItemClick"
+      />
+      <slot v-else name="template" :item="item" :disabled="isDisabled" />
     </MlRibbonTemplateItem>
 
     <ElDropdown

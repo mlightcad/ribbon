@@ -14,6 +14,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
   - `MlRibbonSegmented`
   - `MlRibbonToggleButton`
   - `MlRibbonGallery`
+  - Schema-driven `custom` items for embedding host Vue components in groups
   - `MlRibbonTemplateItem`
 - File menu and backstage shells
 - Contextual tabs and key tips overlays
@@ -28,6 +29,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
+- Custom Vue components can be mounted directly from the ribbon schema with `type: 'custom'`, `props.component`, and `props.componentProps`
 
 ## Naming Conventions
 - Component names use `Ml` prefix.
@@ -179,6 +181,50 @@ Slot props:
     </section>
   </template>
 </MlRibbon>
+```
+
+### 4.3 Custom Vue Components Inside Groups
+Use `type: 'custom'` to mount a host component directly from your ribbon schema. The custom component receives:
+- `item`
+- `groupId`
+- `disabled`
+- `emitItemClick(payload?)`
+
+```vue
+<script setup lang="ts">
+import MyInspectorCard from './MyInspectorCard.vue'
+
+const tabs = [
+  {
+    id: 'home',
+    title: 'Home',
+    groups: [
+      {
+        id: 'inspector',
+        title: 'Inspector',
+        collections: [
+          {
+            id: 'inspector-main',
+            items: [
+              {
+                id: 'selection-panel',
+                type: 'custom',
+                size: 'large',
+                props: {
+                  component: MyInspectorCard,
+                  componentProps: {
+                    title: 'Selection',
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]
+</script>
 ```
 
 ### 5. Dynamic Runtime API (Component Ref)
