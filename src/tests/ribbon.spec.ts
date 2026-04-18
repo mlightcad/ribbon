@@ -115,6 +115,17 @@ describe('MlRibbon', () => {
     )
   })
 
+  it('keeps toggle buttons aligned to ribbon compact height across ribbon sizes', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.ml-ribbon-toggle\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.ml-ribbon-toggle\s*\{[\s\S]*height:\s*var\(--ml-rb-compact-height\);/,
+    )
+  })
+
   it('highlights group footer when hovered', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
 
@@ -1285,6 +1296,152 @@ describe('MlRibbon', () => {
       const emissions = wrapper.emitted('itemClick') ?? []
       expect(emissions).toHaveLength(1)
       expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'appearance', itemId: 'theme-dark' })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('toggles between inactive and active icons while emitting the current boolean state by default', async () => {
+    const ActiveIcon = defineComponent({
+      name: 'ToggleActiveIconStub',
+      template: '<span class="ml-test-toggle-icon-on" />',
+    })
+    const InactiveIcon = defineComponent({
+      name: 'ToggleInactiveIconStub',
+      template: '<span class="ml-test-toggle-icon-off" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'grid-snap',
+        groupId: 'view',
+        item: {
+          id: 'grid-snap',
+          type: 'toggle',
+          label: 'Grid Snap',
+          props: {
+            modelValue: false,
+            activeIcon: ActiveIcon,
+            inactiveIcon: InactiveIcon,
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="grid-snap"]')
+      const toggle = host.find('.ml-ribbon-toggle')
+
+      expect(host.find('.ml-test-toggle-icon-off').exists()).toBe(true)
+      expect(toggle.classes()).not.toContain('is-active')
+
+      await toggle.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(host.find('.ml-test-toggle-icon-on').exists()).toBe(true)
+      expect(toggle.classes()).toContain('is-active')
+
+      await toggle.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(host.find('.ml-test-toggle-icon-off').exists()).toBe(true)
+      expect(toggle.classes()).not.toContain('is-active')
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(2)
+      expect(emissions[0]?.[0]).toBe('true')
+      expect(emissions[1]?.[0]).toBe('false')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('hides toggle labels when hideLabel is true while keeping the icon visible', async () => {
+    const IconStub = defineComponent({
+      name: 'ToggleIconOnlyStub',
+      template: '<span class="ml-test-toggle-icon-only" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'grid-snap',
+        groupId: 'view',
+        item: {
+          id: 'grid-snap',
+          type: 'toggle',
+          label: 'Grid Snap',
+          hideLabel: true,
+          props: {
+            modelValue: true,
+            activeIcon: IconStub,
+            inactiveIcon: IconStub,
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="grid-snap"]')
+
+      expect(host.classes()).toContain('is-label-hidden')
+      expect(host.find('.ml-ribbon-toggle').exists()).toBe(true)
+      expect(host.find('.ml-test-toggle-icon-only').exists()).toBe(true)
+      expect(host.find('.ml-ribbon-item-host__label').exists()).toBe(false)
+      expect(host.text()).not.toContain('Grid Snap')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits configured active and inactive values for toggle items on the ribbon surface', async () => {
+    const toggleTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'view',
+            title: 'View',
+            collections: [
+              {
+                id: 'view-controls',
+                items: [
+                  {
+                    id: 'grid-snap',
+                    type: 'toggle',
+                    label: 'Grid Snap',
+                    props: {
+                      modelValue: false,
+                      activeValue: 'grid-snap-on',
+                      inactiveValue: 'grid-snap-off',
+                      activeIcon: 'ml-test-toggle-on-class',
+                      inactiveIcon: 'ml-test-toggle-off-class',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, { props: { tabs: toggleTabs, activeTab: 'home' } })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const toggle = wrapper.find('.ml-ribbon-item-host[data-item-id="grid-snap"] .ml-ribbon-toggle')
+
+      expect(toggle.find('.ml-test-toggle-off-class').exists()).toBe(true)
+
+      await toggle.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('itemClick') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'view', itemId: 'grid-snap-on' })
     } finally {
       wrapper.unmount()
     }

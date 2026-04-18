@@ -20,6 +20,7 @@ import type { RibbonItemModel } from '../types'
 import MlRibbonGallery from '../items/RibbonGallery.vue'
 import MlRibbonButtonGroup from '../items/RibbonButtonGroup.vue'
 import MlRibbonSegmented from '../items/RibbonSegmented.vue'
+import MlRibbonToggleButton from '../items/RibbonToggleButton.vue'
 import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
 
 /**
@@ -121,6 +122,9 @@ const shouldShowKeyTip = computed(() => {
   return keyTipText.value.toLowerCase().startsWith(sequence)
 })
 const isDisabled = computed(() => props.item.disabled === true || ribbon?.disabled.value === true)
+const toggleModelValue = computed(() => props.item.props?.modelValue as boolean | undefined)
+const toggleActiveLabel = computed(() => props.item.props?.activeLabel as string | undefined)
+const toggleInactiveLabel = computed(() => props.item.props?.inactiveLabel as string | undefined)
 
 /**
  * Emits a normalized click payload so parent components only care about item id.
@@ -196,6 +200,20 @@ function handleSegmentedChange(value: unknown) {
     return
   }
   handleClick()
+}
+
+/**
+ * Emits toggle state, optionally mapped to custom active/inactive values.
+ * @param value Current toggle state after interaction.
+ */
+function handleToggleChange(value: boolean) {
+  if (isDisabled.value) return
+  const mappedValue = value ? props.item.props?.activeValue : props.item.props?.inactiveValue
+  if (typeof mappedValue === 'string' || typeof mappedValue === 'number' || typeof mappedValue === 'boolean') {
+    emit('item-click', String(mappedValue))
+    return
+  }
+  emit('item-click', String(value))
 }
 
 /**
@@ -286,6 +304,20 @@ function optionLabel(option: unknown): string | undefined {
       :disabled="isDisabled"
       :hide-label="item.hideLabel === true"
       @change="handleSegmentedChange"
+    />
+
+    <MlRibbonToggleButton
+      v-else-if="item.type === 'toggle'"
+      :id="item.id"
+      :label="item.label ?? item.id"
+      :model-value="toggleModelValue"
+      :active-icon="((item.props?.activeIcon ?? item.props?.icon) as any) ?? item.icon"
+      :inactive-icon="((item.props?.inactiveIcon ?? item.props?.icon) as any) ?? item.icon"
+      :active-label="toggleActiveLabel"
+      :inactive-label="toggleInactiveLabel"
+      :disabled="isDisabled"
+      :hide-label="item.hideLabel === true"
+      @change="handleToggleChange"
     />
 
     <MlRibbonGallery

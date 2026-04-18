@@ -9,6 +9,7 @@ export type RibbonComponentSize = ComponentSize
 
 export type RibbonItemType =
   | 'button'
+  | 'toggle'
   | 'segmented'
   | 'dropdown'
   | 'splitButton'

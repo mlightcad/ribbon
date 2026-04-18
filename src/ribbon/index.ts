@@ -53,6 +53,12 @@ export { default as MlRibbonButtonGroup } from './items/RibbonButtonGroup.vue'
 export { default as MlRibbonSegmented } from './items/RibbonSegmented.vue'
 
 /**
+ * @component MlRibbonToggleButton
+ * @description Two-state ribbon toggle command with switchable icons.
+ */
+export { default as MlRibbonToggleButton } from './items/RibbonToggleButton.vue'
+
+/**
  * @component MlRibbonGallery
  * @description Categorized gallery selector ribbon item.
  */
