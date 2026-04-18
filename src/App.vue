@@ -58,6 +58,7 @@ const activeTab = ref('home')
 const ribbonSize = ref<RibbonComponentSize>('default')
 // Global page theme driven by demo ribbon commands.
 const theme = ref<'light' | 'dark'>('light')
+const gridSnap = ref(true)
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
@@ -256,7 +257,7 @@ const baseTabs: RibbonTabModel[] = [
           {
             id: 'appearance-controls',
             layout: 'column',
-            rows: 2,
+            rows: 3,
             items: [
               {
                 id: 'theme',
@@ -281,6 +282,17 @@ const baseTabs: RibbonTabModel[] = [
                     { label: 'Default', value: 'size-default' },
                     { label: 'Small', value: 'size-small' },
                   ],
+                },
+              },
+              {
+                id: 'grid-snap',
+                type: 'toggle',
+                label: 'Grid Snap',
+                props: {
+                  activeValue: 'grid-snap-on',
+                  inactiveValue: 'grid-snap-off',
+                  activeIcon: Aim,
+                  inactiveIcon: Pointer,
                 },
               },
             ],
@@ -383,6 +395,7 @@ const zhCNMap: Record<string, string> = {
   Colors: '颜色',
   Theme: '主题',
   'Ribbon Size': 'Ribbon 尺寸',
+  'Grid Snap': '栅格捕捉',
   Light: '浅色',
   Dark: '深色',
   Large: '大',
@@ -415,12 +428,14 @@ const translate = (value?: string) => {
   return zhCNMap[value] ?? value
 }
 
-function resolveAppearanceModelValue(itemId: string): string | undefined {
+function resolveAppearanceModelValue(itemId: string): string | boolean | undefined {
   switch (itemId) {
     case 'theme':
       return theme.value === 'dark' ? 'theme-dark' : 'theme-light'
     case 'ribbon-size':
       return `size-${ribbonSize.value}`
+    case 'grid-snap':
+      return gridSnap.value
     default:
       return undefined
   }
@@ -552,6 +567,12 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
         break
       case 'size-small':
         ribbonSize.value = 'small'
+        break
+      case 'grid-snap-on':
+        gridSnap.value = true
+        break
+      case 'grid-snap-off':
+        gridSnap.value = false
         break
     }
   }

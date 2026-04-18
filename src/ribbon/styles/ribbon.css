@@ -661,6 +661,20 @@ html.dark {
   color: var(--ml-rb-muted);
 }
 
+.ml-ribbon-item-host .ml-ribbon-toggle {
+  min-height: var(--ml-rb-compact-height);
+  height: var(--ml-rb-compact-height);
+  font-size: var(--ml-rb-font-sm);
+}
+
+.ml-ribbon-toggle.is-active,
+.ml-ribbon-toggle.is-active:hover,
+.ml-ribbon-toggle.is-active:focus-visible {
+  background: var(--ml-rb-active-bg);
+  border-color: var(--ml-rb-active-border);
+  color: var(--ml-rb-tab-text);
+}
+
 .ml-ribbon-segmented {
   display: flex;
   flex-direction: column;

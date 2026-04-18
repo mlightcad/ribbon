@@ -12,6 +12,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Advanced Ribbon-only items:
   - `MlRibbonButtonGroup`
   - `MlRibbonSegmented`
+  - `MlRibbonToggleButton`
   - `MlRibbonGallery`
   - `MlRibbonTemplateItem`
 - File menu and backstage shells
@@ -22,6 +23,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Internationalization-ready UI text model via `MlRibbon` `texts` prop (no built-in hard-coded visible strings in Ribbon components)
 - Icon-only command rendering via `RibbonItemModel.hideLabel`
 - Grouped command buttons via `buttonGroup` items; each button remains a stateless command and emits its own option value
+- Two-state toggle commands via `toggle` items with `props.modelValue`, `activeIcon`, and `inactiveIcon`
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
@@ -86,6 +88,18 @@ const tabs = ref<RibbonTabModel[]>([
             items: [
               { id: 'paste', type: 'button', label: 'Paste', size: 'large' },
               { id: 'copy', type: 'button', label: 'Copy', size: 'small' },
+              {
+                id: 'grid-snap',
+                type: 'toggle',
+                label: 'Grid Snap',
+                props: {
+                  modelValue: true,
+                  activeValue: 'grid-snap-on',
+                  inactiveValue: 'grid-snap-off',
+                  activeIcon: 'ml-icon-grid-snap-on',
+                  inactiveIcon: 'ml-icon-grid-snap-off',
+                },
+              },
             ],
           },
         ],
@@ -204,7 +218,7 @@ AGENTS.md
 ```
 
 ## Documentation
-- English requirements document: `docs/requirements.en.md`
+- Requirements document: `docs/requirements.md`
 - Agent coding conventions: `AGENTS.md`
 
 ## Current Status

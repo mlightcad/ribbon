@@ -10,7 +10,7 @@ Constraints:
 
 V1 scope (full alignment target):
 - Core Ribbon container and tab/group/collection structure
-- Advanced item types (group button, segmented, gallery, template)
+- Advanced item types (group button, segmented, toggle, gallery, template)
 - Layout modes and overflow/simplified behavior
 - File menu and backstage
 - Contextual tabs and key tips
@@ -30,6 +30,7 @@ Only components not provided by Element Plus should be newly implemented.
 ### 2.2 Advanced Items
 - `MlRibbonButtonGroup`: grouped command buttons with no persistent selected item state.
 - `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`.
+- `MlRibbonToggleButton`: two-state toggle command with optional active/inactive icon mapping.
 - `MlRibbonGallery`: categorized gallery with preview and select behavior.
 - `MlRibbonTemplateItem`: slot-driven template item integrated with Ribbon context.
 
@@ -57,11 +58,14 @@ Events:
 - `RibbonLayout = 'classic' | 'simplified'`
 - `RibbonItemSize = 'large' | 'medium' | 'small'`
 - `RibbonComponentSize = 'large' | 'default' | 'small'`
-- `RibbonItemType = 'button' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'gallery' | 'template'`
+- `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'gallery' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
 - `RibbonItemModel.props.modelValue?: string | number | boolean` for controlled segmented selection
+- `RibbonItemModel.props.modelValue?: boolean` for toggle default state / controlled sync
+- `RibbonItemModel.props.activeIcon` / `inactiveIcon` for toggle-state icon switching
+- `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
 

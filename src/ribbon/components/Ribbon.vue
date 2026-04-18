@@ -97,6 +97,12 @@ function normalizeItemProps(props?: Record<string, unknown>): Record<string, unk
   if ('icon' in nextProps) {
     nextProps.icon = normalizeComponentCandidate(nextProps.icon)
   }
+  if ('activeIcon' in nextProps) {
+    nextProps.activeIcon = normalizeComponentCandidate(nextProps.activeIcon)
+  }
+  if ('inactiveIcon' in nextProps) {
+    nextProps.inactiveIcon = normalizeComponentCandidate(nextProps.inactiveIcon)
+  }
   if (Array.isArray(nextProps.options)) {
     nextProps.options = nextProps.options.map((option) => {
       if (!option || typeof option !== 'object') return option
@@ -947,4 +953,3 @@ defineExpose<RibbonDynamicApi>(context.api)
     </section>
   </ElConfigProvider>
 </template>
-
