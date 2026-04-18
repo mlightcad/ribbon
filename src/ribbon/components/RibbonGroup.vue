@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ElButton, ElIcon, ElPopover } from 'element-plus'
 import { ArrowDown, ArrowUp, Promotion } from '@element-plus/icons-vue'
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { Component } from 'vue'
 import { useGlobalConfig } from 'element-plus'
+import { ribbonKey } from '../context'
 import type { RibbonGroupModel } from '../types'
 import MlRibbonGroupContent from './RibbonGroupContent.vue'
 
@@ -61,8 +62,10 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId: string }): void }>()
+const ribbon = inject(ribbonKey, null)
 
 const isAutoWidth = computed(() => props.autoWidth !== false)
+const isRibbonDisabled = computed(() => ribbon?.disabled.value === true)
 const groupSectionRef = ref<HTMLElement | null>(null)
 const overflowItemIds = ref<string[]>([])
 const overflowTriggerRef = ref<HTMLElement | null>(null)
@@ -235,6 +238,7 @@ function setOverflowMenuOpen(value: boolean) {
  * Toggles footer menu open state on trigger click.
  */
 function toggleFooterMenuOpen() {
+  if (isRibbonDisabled.value) return
   isFooterMenuOpen.value = !isFooterMenuOpen.value
 }
 
@@ -242,6 +246,7 @@ function toggleFooterMenuOpen() {
  * Toggles overflow menu open state on trigger click.
  */
 function toggleOverflowMenuOpen() {
+  if (isRibbonDisabled.value) return
   isOverflowMenuOpen.value = !isOverflowMenuOpen.value
 }
 
@@ -266,6 +271,14 @@ watch(
     scheduleOverflowRecompute()
   },
   { deep: true },
+)
+watch(
+  isRibbonDisabled,
+  (disabled) => {
+    if (!disabled) return
+    isFooterMenuOpen.value = false
+    isOverflowMenuOpen.value = false
+  },
 )
 
 onMounted(() => {
@@ -303,6 +316,7 @@ onUnmounted(() => {
         v-if="hasFooterMenuItems && footerMenuGroupModel"
         trigger="click"
         placement="bottom-start"
+        :disabled="isRibbonDisabled"
         :popper-class="overflowPopperClass"
         :popper-options="footerPopperOptions"
         @show="setFooterMenuOpen(true)"
@@ -316,6 +330,7 @@ onUnmounted(() => {
             :class="{ 'is-open': isFooterMenuOpen }"
             :aria-label="overflowTriggerAriaLabel"
             :aria-expanded="isFooterMenuOpen"
+            :disabled="isRibbonDisabled"
             @click="toggleFooterMenuOpen"
           >
             <ElIcon><component :is="isFooterMenuOpen ? ArrowUp : ArrowDown" /></ElIcon>
@@ -333,6 +348,7 @@ onUnmounted(() => {
         v-if="hasOverflowItems && overflowGroupModel"
         trigger="click"
         placement="bottom-start"
+        :disabled="isRibbonDisabled"
         :popper-class="overflowPopperClass"
         :popper-options="overflowPopperOptions"
         @show="setOverflowMenuOpen(true)"
@@ -346,6 +362,7 @@ onUnmounted(() => {
             :class="{ 'is-open': isOverflowMenuOpen }"
             :aria-label="overflowTriggerAriaLabel"
             :aria-expanded="isOverflowMenuOpen"
+            :disabled="isRibbonDisabled"
             @click="toggleOverflowMenuOpen"
           >
             <ElIcon><component :is="isOverflowMenuOpen ? ArrowUp : ArrowDown" /></ElIcon>
@@ -359,11 +376,10 @@ onUnmounted(() => {
           />
         </div>
       </ElPopover>
-      <ElButton v-if="showLauncherIcon ?? launcher" link class="ml-ribbon-group__launcher">
+      <ElButton v-if="showLauncherIcon ?? launcher" link class="ml-ribbon-group__launcher" :disabled="isRibbonDisabled">
         <ElIcon><Promotion /></ElIcon>
       </ElButton>
     </footer>
   </section>
 </template>
-
 

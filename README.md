@@ -10,7 +10,8 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Ribbon container/state orchestration (`MlRibbon`)
 - Tabs, groups, collections, and item host composition
 - Advanced Ribbon-only items:
-  - `MlRibbonGroupButton`
+  - `MlRibbonButtonGroup`
+  - `MlRibbonSegmented`
   - `MlRibbonGallery`
   - `MlRibbonTemplateItem`
 - File menu and backstage shells
@@ -20,6 +21,8 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Theme alignment with Element Plus light/dark mode (via `html.dark` class)
 - Internationalization-ready UI text model via `MlRibbon` `texts` prop (no built-in hard-coded visible strings in Ribbon components)
 - Icon-only command rendering via `RibbonItemModel.hideLabel`
+- Grouped command buttons via `buttonGroup` items; each button remains a stateless command and emits its own option value
+- Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
@@ -67,6 +70,7 @@ import type { RibbonLayout, RibbonTabModel } from './src/ribbon'
 const activeTab = ref('home')
 const layout = ref<RibbonLayout>('classic')
 const minimized = ref(false)
+const ribbonDisabled = ref(false)
 
 const tabs = ref<RibbonTabModel[]>([
   {
@@ -100,6 +104,7 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
     v-model:active-tab="activeTab"
     v-model:layout="layout"
     v-model:minimized="minimized"
+    :disabled="ribbonDisabled"
     :tabs="tabs"
     @item-click="handleItemClick"
   />
@@ -111,6 +116,7 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `v-model:active-tab` active tab id
 - `v-model:layout` ribbon layout (`classic` | `simplified`)
 - `v-model:minimized` minimize state
+- `disabled` disables the full ribbon interaction surface
 - `size` uses Element Plus size (`large` | `default` | `small`)
 - `hide-layout-switcher` whether to hide layout switcher, default `false`
 - `hide-minimize-button` whether to hide minimize button, default `false`
@@ -130,11 +136,12 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 
 ### 4.1 Tab-Right Custom Slot
 Use `#tabs-extra` to render custom controls at the far-right side of the ribbon header (for example language switchers).
+Slot props include `activeTab`, `layout`, `minimized`, and `disabled`.
 
 ```vue
 <MlRibbon :tabs="tabs">
-  <template #tabs-extra="{ activeTab, layout, minimized }">
-    <MyLanguageSwitcher />
+  <template #tabs-extra="{ disabled }">
+    <MyLanguageSwitcher :disabled="disabled" />
   </template>
 </MlRibbon>
 ```

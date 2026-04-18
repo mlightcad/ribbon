@@ -41,10 +41,16 @@ export { default as MlRibbonCollection } from './components/RibbonCollection.vue
 export { default as MlRibbonItemHost } from './components/RibbonItemHost.vue'
 
 /**
- * @component MlRibbonGroupButton
- * @description Segmented group button ribbon item.
+ * @component MlRibbonButtonGroup
+ * @description Ribbon button group item aligned with Element Plus naming.
  */
-export { default as MlRibbonGroupButton } from './items/RibbonGroupButton.vue'
+export { default as MlRibbonButtonGroup } from './items/RibbonButtonGroup.vue'
+
+/**
+ * @component MlRibbonSegmented
+ * @description Ribbon segmented selector built on top of Element Plus `ElSegmented`.
+ */
+export { default as MlRibbonSegmented } from './items/RibbonSegmented.vue'
 
 /**
  * @component MlRibbonGallery

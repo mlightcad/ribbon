@@ -10,7 +10,7 @@ Constraints:
 
 V1 scope (full alignment target):
 - Core Ribbon container and tab/group/collection structure
-- Advanced item types (group button, gallery, template)
+- Advanced item types (group button, segmented, gallery, template)
 - Layout modes and overflow/simplified behavior
 - File menu and backstage
 - Contextual tabs and key tips
@@ -28,7 +28,8 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonItemHost`: unified host for item size mode, disabled status, key tip, and overflow mounting.
 
 ### 2.2 Advanced Items
-- `MlRibbonGroupButton`: single-select / multi-select grouped command buttons.
+- `MlRibbonButtonGroup`: grouped command buttons with no persistent selected item state.
+- `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`.
 - `MlRibbonGallery`: categorized gallery with preview and select behavior.
 - `MlRibbonTemplateItem`: slot-driven template item integrated with Ribbon context.
 
@@ -56,10 +57,11 @@ Events:
 - `RibbonLayout = 'classic' | 'simplified'`
 - `RibbonItemSize = 'large' | 'medium' | 'small'`
 - `RibbonComponentSize = 'large' | 'default' | 'small'`
-- `RibbonItemType = 'button' | 'dropdown' | 'splitButton' | 'checkbox' | 'colorPicker' | 'comboBox' | 'groupButton' | 'gallery' | 'template'`
+- `RibbonItemType = 'button' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'gallery' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
+- `RibbonItemModel.props.modelValue?: string | number | boolean` for controlled segmented selection
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
 
@@ -67,6 +69,7 @@ Controlled props:
 - `v-model:activeTab`
 - `v-model:layout`
 - `v-model:minimized`
+- `disabled?: boolean` disables all ribbon interactions while preserving the current visual state
 - `size?: RibbonComponentSize` (inherits outer Element Plus `ElConfigProvider` size when omitted)
 - `hideLayoutSwitcher?: boolean` (default `false`)
 - `hideMinimizeButton?: boolean` (default `false`)
@@ -83,6 +86,7 @@ Slots:
 
 ## 5. Behavioral Acceptance
 - Support classic/simplified layout and runtime switching.
+- Support temporarily disabling the full ribbon during async host workflows such as opening files.
 - Support Element Plus light/dark theme switching without Ribbon-specific remount.
 - Group priority impacts collapse/overflow behavior.
 - Simplified mode keeps commands interactive via popup/overflow presentation.

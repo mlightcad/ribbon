@@ -150,10 +150,12 @@ function mutateItem(
 export function useRibbonState(
   ribbonId: string,
   initialTabs: RibbonTabModel[],
+  initialDisabled: boolean,
   initialLayout: RibbonLayout,
   initialMinimized: boolean,
   initialActiveTab: string,
 ): UseRibbonStateResult {
+  const disabled = ref(initialDisabled)
   const layout = ref<RibbonLayout>(initialLayout)
   const minimized = ref(initialMinimized)
   const activeTab = ref(initialActiveTab)
@@ -261,6 +263,7 @@ export function useRibbonState(
 
   const context: RibbonContextValue = {
     id: ribbonId,
+    disabled,
     layout,
     minimized,
     activeTab,

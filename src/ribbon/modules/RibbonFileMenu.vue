@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ElDropdown, ElDropdownItem, ElDropdownMenu, useGlobalConfig } from 'element-plus'
 
 /**
@@ -27,11 +27,12 @@ import { ElDropdown, ElDropdownItem, ElDropdownMenu, useGlobalConfig } from 'ele
  * />
  * ```
  */
-defineProps<{
+const props = defineProps<{
   items: { id: string; label: string; disabled?: boolean }[]
   label?: string
   openBackstageLabel?: string
   showOpenBackstage?: boolean
+  disabled?: boolean
 }>()
 const emit = defineEmits<{ (e: 'select', id: string): void; (e: 'open-backstage'): void }>()
 const opened = ref(false)
@@ -58,27 +59,40 @@ function onCommand(value: string) {
   }
   emit('select', value)
 }
+
+watch(
+  () => props.disabled,
+  (disabled) => {
+    if (disabled) opened.value = false
+  },
+)
 </script>
 
 <template>
   <ElDropdown
     trigger="click"
+    :disabled="props.disabled"
     :popper-class="popperClass"
     @command="onCommand"
     @visible-change="onVisibleChange"
   >
-    <button type="button" class="ml-ribbon-tab ml-ribbon-tab--file" :class="{ 'is-active': opened }">
-      {{ label }}
+    <button
+      type="button"
+      class="ml-ribbon-tab ml-ribbon-tab--file"
+      :class="{ 'is-active': opened }"
+      :disabled="props.disabled"
+    >
+      {{ props.label }}
     </button>
     <template #dropdown>
       <ElDropdownMenu>
-        <ElDropdownItem v-if="showOpenBackstage !== false" command="__backstage">
-          {{ openBackstageLabel }}
+        <ElDropdownItem v-if="props.showOpenBackstage !== false" command="__backstage">
+          {{ props.openBackstageLabel }}
         </ElDropdownItem>
         <ElDropdownItem
-          v-for="(item, index) in items"
+          v-for="(item, index) in props.items"
           :key="item.id"
-          :divided="showOpenBackstage !== false && index === 0"
+          :divided="props.showOpenBackstage !== false && index === 0"
           :command="item.id"
           :disabled="item.disabled"
         >
@@ -88,5 +102,4 @@ function onCommand(value: string) {
     </template>
   </ElDropdown>
 </template>
-
 

@@ -34,6 +34,7 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop layout - Controlled layout (`v-model:layout`).
  * @prop size - Ribbon size delegated to Element Plus config provider.
  * @prop minimized - Controlled minimize state (`v-model:minimized`).
+ * @prop disabled - Disables the entire ribbon interaction surface.
  * @prop hideLayoutSwitcher - Controls whether layout switcher is hidden.
  * @prop hideMinimizeButton - Controls whether minimize button is hidden.
  * @prop hideKeyTipsToggle - Controls whether key tips toggle is hidden.
@@ -43,9 +44,9 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop texts - Localized UI text bundle for labels/tooltips.
  *
  * @slot tabs-extra - Custom content rendered on the right side of the tab area.
- * Slot props: `{ activeTab, layout, minimized }`.
+ * Slot props: `{ activeTab, layout, minimized, disabled }`.
  * @slot backstage - Fully custom backstage content.
- * Slot props: `{ close, open, size, backLabel, title, description }`.
+ * Slot props: `{ close, open, size, backLabel, title, description, disabled }`.
  *
  * @event update:activeTab - Fired when active tab changes.
  * @event update:layout - Fired when layout changes.
@@ -178,6 +179,7 @@ const props = withDefaults(
     layout?: RibbonLayout
     size?: ComponentSize
     minimized?: boolean
+    disabled?: boolean
     hideLayoutSwitcher?: boolean
     hideMinimizeButton?: boolean
     hideKeyTipsToggle?: boolean
@@ -193,6 +195,7 @@ const props = withDefaults(
     layout: 'classic',
     size: undefined,
     minimized: false,
+    disabled: false,
     hideLayoutSwitcher: false,
     hideMinimizeButton: false,
     hideKeyTipsToggle: false,
@@ -220,6 +223,7 @@ const emit = defineEmits<{
 const { context, visibleTabs } = useRibbonState(
   props.id,
   props.tabs,
+  props.disabled,
   props.activeLayout
     ? String(props.activeLayout).toLowerCase() === 'simplified'
       ? 'simplified'
@@ -253,6 +257,9 @@ watch(() => props.activeLayout, (value) => {
 })
 watch(() => props.minimized, (value) => {
   if (value !== context.minimized.value) context.minimized.value = value
+})
+watch(() => props.disabled, (value) => {
+  if (value !== context.disabled.value) context.disabled.value = value
 })
 watch(() => props.activeTab, (value) => {
   if (value && value !== context.activeTab.value) context.activeTab.value = value
@@ -490,6 +497,7 @@ function scheduleClassicOverflowRecompute() {
  * @param tabId Tab id to activate.
  */
 function onTabClick(tabId: string) {
+  if (context.disabled.value) return
   context.activeTab.value = tabId
 }
 
@@ -497,6 +505,7 @@ function onTabClick(tabId: string) {
  * Toggles ribbon layout between classic and simplified.
  */
 function toggleLayout() {
+  if (context.disabled.value) return
   context.api.toggleSimplified()
 }
 
@@ -504,6 +513,7 @@ function toggleLayout() {
  * Toggles ribbon minimize state.
  */
 function toggleMinimize() {
+  if (context.disabled.value) return
   context.minimized.value = !context.minimized.value
 }
 
@@ -512,13 +522,23 @@ function toggleMinimize() {
  * @param id Selected file menu command id.
  */
 function onFileMenuSelect(id: string) {
+  if (context.disabled.value) return
   emit('fileMenuSelect', id)
+}
+
+/**
+ * Opens backstage panel when the ribbon is interactive.
+ */
+function openBackstage() {
+  if (context.disabled.value) return
+  context.backdropOpen.value = true
 }
 
 /**
  * Closes backstage panel.
  */
 function closeBackstage() {
+  if (context.disabled.value) return
   context.backdropOpen.value = false
 }
 
@@ -528,6 +548,7 @@ function closeBackstage() {
  * @param itemId Source item id.
  */
 function onItemClick(groupId: string, itemId: string) {
+  if (context.disabled.value) return
   emit('itemClick', { tabId: context.activeTab.value, groupId, itemId })
 }
 
@@ -547,6 +568,10 @@ function isEditableTarget(target: EventTarget | null): boolean {
  * Builds key-tip models for the active tab from visible, enabled items.
  */
 function syncActiveTabKeyTips() {
+  if (context.disabled.value) {
+    context.keyTips.value = []
+    return
+  }
   const tab = activeTabModel.value
   if (!tab?.groups?.length) {
     context.keyTips.value = []
@@ -582,6 +607,7 @@ function syncActiveTabKeyTips() {
  * @param tip Matched key-tip model.
  */
 function onKeyTipActivate(tip: { targetId: string }) {
+  if (context.disabled.value) return
   const tab = activeTabModel.value
   if (!tab?.groups?.length) return
   for (const group of tab.groups) {
@@ -609,6 +635,7 @@ function resetKeyTipsSequence() {
  * @param event Window keyboard event.
  */
 function onWindowKeydown(event: KeyboardEvent) {
+  if (context.disabled.value) return
   if (isEditableTarget(event.target)) return
   if (event.altKey && !event.ctrlKey && !event.metaKey && event.key === 'Alt') {
     event.preventDefault()
@@ -662,7 +689,7 @@ watch([visibleGroups, () => context.layout.value, () => context.minimized.value]
   scheduleClassicOverflowRecompute()
 })
 watch(
-  [activeTabModel, () => context.tabs.value],
+  [activeTabModel, () => context.tabs.value, () => context.disabled.value],
   () => {
     syncActiveTabKeyTips()
     resetKeyTipsSequence()
@@ -674,6 +701,16 @@ watch(
   () => context.keyTipsOpen.value,
   (open) => {
     if (!open) resetKeyTipsSequence()
+  },
+)
+watch(
+  () => context.disabled.value,
+  (disabled) => {
+    if (!disabled) return
+    context.overflowOpen.value = false
+    context.backdropOpen.value = false
+    context.keyTipsOpen.value = false
+    resetKeyTipsSequence()
   },
 )
 watch(
@@ -708,11 +745,15 @@ defineExpose<RibbonDynamicApi>(context.api)
 <template>
   <ElConfigProvider :size="props.size">
     <section
+      :key="context.disabled.value ? 'ml-ribbon-disabled' : 'ml-ribbon-enabled'"
       class="ml-ribbon"
+      :inert="context.disabled.value"
+      :aria-disabled="context.disabled.value"
       :class="[
         `ml-ribbon--${context.layout.value}`,
         `ml-ribbon--size-${resolvedRibbonSize}`,
         {
+          'ml-ribbon--disabled': context.disabled.value,
           'ml-ribbon--minimized': context.minimized.value,
           'ml-ribbon--keytips-open': context.keyTipsOpen.value,
         },
@@ -723,15 +764,17 @@ defineExpose<RibbonDynamicApi>(context.api)
           <MlRibbonFileMenu
             v-if="showFileMenu"
             :items="fileMenuItems"
+            :disabled="context.disabled.value"
             :label="ribbonTexts.fileMenuLabel"
             :open-backstage-label="ribbonTexts.fileMenuOpenBackstageLabel"
             :show-open-backstage="showOpenBackstage"
             @select="onFileMenuSelect"
-            @open-backstage="context.backdropOpen.value = true"
+            @open-backstage="openBackstage"
           />
           <MlRibbonContextualTabs
             :tabs="visibleTabs"
             :active-tab="context.activeTab.value"
+            :disabled="context.disabled.value"
             :default-contextual-title="ribbonTexts.contextualTabDefaultTitle"
             @select="onTabClick"
           />
@@ -743,13 +786,20 @@ defineExpose<RibbonDynamicApi>(context.api)
                 context.minimized.value ? 'ml-ribbon__control--minimize-up' : 'ml-ribbon__control--minimize-down',
               ]"
               :icon="minimizeButtonIcon"
+              :disabled="context.disabled.value"
               @click="toggleMinimize"
             />
           </ElTooltip>
         </div>
         <div class="ml-ribbon__head-right">
           <ElTooltip v-if="!props.hideLayoutSwitcher" :content="ribbonTexts.layoutSwitcherTooltip">
-            <ElButton circle class="ml-ribbon__control ml-ribbon__control--layout" :icon="Menu" @click="toggleLayout" />
+            <ElButton
+              circle
+              class="ml-ribbon__control ml-ribbon__control--layout"
+              :icon="Menu"
+              :disabled="context.disabled.value"
+              @click="toggleLayout"
+            />
           </ElTooltip>
           <ElSwitch
             v-if="!props.hideKeyTipsToggle"
@@ -758,6 +808,7 @@ defineExpose<RibbonDynamicApi>(context.api)
             :active-text="ribbonTexts.keyTipsToggleText"
             :inactive-text="ribbonTexts.keyTipsToggleText"
             :model-value="context.keyTipsOpen.value"
+            :disabled="context.disabled.value"
             @change="context.keyTipsOpen.value = !context.keyTipsOpen.value"
           />
           <div v-if="$slots['tabs-extra']" class="ml-ribbon__tabs-extra">
@@ -766,6 +817,7 @@ defineExpose<RibbonDynamicApi>(context.api)
               :active-tab="context.activeTab.value"
               :layout="context.layout.value"
               :minimized="context.minimized.value"
+              :disabled="context.disabled.value"
             />
           </div>
         </div>
@@ -808,6 +860,7 @@ defineExpose<RibbonDynamicApi>(context.api)
               trigger="click"
               placement="bottom-end"
               :width="classicOverflowPopoverWidth"
+              :disabled="context.disabled.value"
               :popper-class="classicOverflowPopoverClass"
               @show="context.overflowOpen.value = true"
               @hide="context.overflowOpen.value = false"
@@ -817,6 +870,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                   type="button"
                   class="ml-ribbon-overflow-trigger"
                   :aria-label="ribbonTexts.overflowTriggerAriaLabel"
+                  :disabled="context.disabled.value"
                 >
                   <span class="ml-ribbon-overflow-trigger__dots">...</span>
                 </button>
@@ -848,10 +902,11 @@ defineExpose<RibbonDynamicApi>(context.api)
           trigger="click"
           placement="bottom-start"
           :width="340"
+          :disabled="context.disabled.value"
           :popper-class="simplifiedGroupPopoverClass"
         >
           <template #reference>
-            <button class="ml-ribbon-simplified-group" type="button">
+            <button class="ml-ribbon-simplified-group" type="button" :disabled="context.disabled.value">
               <ElIcon v-if="resolveGroupIcon(group)" class="ml-ribbon-simplified-group__icon">
                 <component :is="resolveGroupIcon(group)" />
               </ElIcon>
@@ -885,11 +940,11 @@ defineExpose<RibbonDynamicApi>(context.api)
             :back-label="ribbonTexts.backstageBackLabel"
             :title="ribbonTexts.backstageTitle"
             :description="ribbonTexts.backstageDescription"
+            :disabled="context.disabled.value"
           />
         </template>
       </MlRibbonBackstage>
     </section>
   </ElConfigProvider>
 </template>
-
 

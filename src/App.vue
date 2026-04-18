@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { ElOption, ElRadioButton, ElRadioGroup, ElSelect } from 'element-plus'
+import { ElOption, ElSelect } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import {
   Aim,
@@ -15,11 +15,13 @@ import {
   FullScreen,
   MagicStick,
   Minus,
+  Moon,
   Operation,
   Pointer,
   Position,
   Scissor,
   Search,
+  Sunny,
 } from '@element-plus/icons-vue'
 import { MlRibbon } from './ribbon'
 import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabModel } from './ribbon'
@@ -54,10 +56,11 @@ const minimized = ref(false)
 const activeTab = ref('home')
 // Demo-only size switch; mirrors external consumer-controlled ribbon sizing.
 const ribbonSize = ref<RibbonComponentSize>('default')
-// Global page theme used by demo toolbar.
+// Global page theme driven by demo ribbon commands.
 const theme = ref<'light' | 'dark'>('light')
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
+const ribbonDisabled = ref(false)
 
 // Sample ribbon schema that demonstrates common item types, priorities and overflow rules.
 const baseTabs: RibbonTabModel[] = [
@@ -218,7 +221,7 @@ const baseTabs: RibbonTabModel[] = [
             items: [
               {
                 id: 'find-replace',
-                type: 'groupButton',
+                type: 'buttonGroup',
                 keyTip: 'FD',
                 props: {
                   options: [
@@ -236,6 +239,47 @@ const baseTabs: RibbonTabModel[] = [
                   options: [
                     { label: 'Select All', value: 'all' },
                     { label: 'Select Objects', value: 'objects' },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'appearance',
+        title: 'Appearance',
+        orientation: 'row',
+        enableGroupOverflow: true,
+        priority: 85,
+        collections: [
+          {
+            id: 'appearance-controls',
+            layout: 'column',
+            rows: 2,
+            items: [
+              {
+                id: 'theme',
+                type: 'segmented',
+                label: 'Theme',
+                hideLabel: true,
+                props: {
+                  options: [
+                    { label: 'Light', value: 'theme-light', icon: Sunny },
+                    { label: 'Dark', value: 'theme-dark', icon: Moon },
+                  ],
+                },
+              },
+              {
+                id: 'ribbon-size',
+                type: 'segmented',
+                label: 'Ribbon Size',
+                hideLabel: true, 
+                props: {
+                  options: [
+                    { label: 'Large', value: 'size-large' },
+                    { label: 'Default', value: 'size-default' },
+                    { label: 'Small', value: 'size-small' },
                   ],
                 },
               },
@@ -318,6 +362,7 @@ const zhCNMap: Record<string, string> = {
   Clipboard: '剪贴板',
   Font: '字体',
   Editing: '编辑',
+  Appearance: '外观',
   Editor: '编辑器',
   Illustrations: '插图',
   'Chart Style': '图表样式',
@@ -347,6 +392,11 @@ const zhCNMap: Record<string, string> = {
   'Try V / X / C / F then P on Home tab.': '在“开始”页签尝试 V / X / C / F 再按 P。',
   'Last command:': '最后命令：',
   'Current language:': '当前语言：',
+  'Ribbon state:': 'Ribbon 状态：',
+  Enabled: '已启用',
+  Disabled: '已禁用',
+  'Disable Ribbon': '禁用 Ribbon',
+  'Enable Ribbon': '启用 Ribbon',
   Command: '命令',
   New: '新建',
   Open: '打开',
@@ -363,6 +413,17 @@ const translate = (value?: string) => {
   if (!value) return value
   if (language.value !== 'zh-CN') return value
   return zhCNMap[value] ?? value
+}
+
+function resolveAppearanceModelValue(itemId: string): string | undefined {
+  switch (itemId) {
+    case 'theme':
+      return theme.value === 'dark' ? 'theme-dark' : 'theme-light'
+    case 'ribbon-size':
+      return `size-${ribbonSize.value}`
+    default:
+      return undefined
+  }
 }
 
 const tabs = computed<RibbonTabModel[]>(() =>
@@ -384,10 +445,12 @@ const tabs = computed<RibbonTabModel[]>(() =>
                 return optionLabel ? { ...optionRecord, label: optionLabel } : optionRecord
               })
             : item.props?.options
+          const modelValue = resolveAppearanceModelValue(item.id)
+          const nextProps = item.props ? { ...item.props, options } : options ? { options } : undefined
           return {
             ...item,
             label: typeof item.label === 'string' ? translate(item.label) : item.label,
-            props: item.props ? { ...item.props, options } : item.props,
+            props: modelValue === undefined ? nextProps : { ...(nextProps ?? {}), modelValue },
           }
         }),
       })),
@@ -444,17 +507,15 @@ const languageOptions = [
 ] as const
 
 const uiTexts = computed(() => ({
-  themeLabel: translate('Theme') ?? 'Theme',
-  ribbonSizeLabel: translate('Ribbon Size') ?? 'Ribbon Size',
-  light: translate('Light') ?? 'Light',
-  dark: translate('Dark') ?? 'Dark',
-  large: translate('Large') ?? 'Large',
-  default: translate('Default') ?? 'Default',
-  small: translate('Small') ?? 'Small',
   keyTipHint: translate('Press Alt to show Key Tips.') ?? 'Press Alt to show Key Tips.',
   sequenceHint: translate('Try V / X / C / F then P on Home tab.') ?? 'Try V / X / C / F then P on Home tab.',
   lastCommand: translate('Last command:') ?? 'Last command:',
   currentLanguage: translate('Current language:') ?? 'Current language:',
+  ribbonState: translate('Ribbon state:') ?? 'Ribbon state:',
+  enabled: translate('Enabled') ?? 'Enabled',
+  disabled: translate('Disabled') ?? 'Disabled',
+  disableRibbon: translate('Disable Ribbon') ?? 'Disable Ribbon',
+  enableRibbon: translate('Enable Ribbon') ?? 'Enable Ribbon',
   commandLabel: translate('Command') ?? 'Command',
 }))
 
@@ -475,6 +536,26 @@ watch(
  * @param payload Ribbon click payload.
  */
 function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: string }) {
+  if (payload.groupId === 'appearance') {
+    switch (payload.itemId) {
+      case 'theme-light':
+        theme.value = 'light'
+        break
+      case 'theme-dark':
+        theme.value = 'dark'
+        break
+      case 'size-large':
+        ribbonSize.value = 'large'
+        break
+      case 'size-default':
+        ribbonSize.value = 'default'
+        break
+      case 'size-small':
+        ribbonSize.value = 'small'
+        break
+    }
+  }
+
   lastCommand.value = `${payload.tabId}/${payload.groupId}/${payload.itemId}`
   ElMessage({
     type: 'success',
@@ -483,33 +564,35 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
     showClose: true,
   })
 }
+
+function setRibbonDisabled(value: boolean) {
+  ribbonDisabled.value = value
+}
 </script>
 
 <template>
   <div class="demo">
     <div class="ml-demo-toolbar">
-      <span class="ml-demo-toolbar__label">{{ uiTexts.themeLabel }}</span>
-      <ElRadioGroup v-model="theme" size="small">
-        <ElRadioButton value="light">{{ uiTexts.light }}</ElRadioButton>
-        <ElRadioButton value="dark">{{ uiTexts.dark }}</ElRadioButton>
-      </ElRadioGroup>
-
-      <span class="ml-demo-toolbar__label">{{ uiTexts.ribbonSizeLabel }}</span>
-      <ElRadioGroup v-model="ribbonSize" size="small">
-        <ElRadioButton value="large">{{ uiTexts.large }}</ElRadioButton>
-        <ElRadioButton value="default">{{ uiTexts.default }}</ElRadioButton>
-        <ElRadioButton value="small">{{ uiTexts.small }}</ElRadioButton>
-      </ElRadioGroup>
+      <ElButton size="small" :disabled="ribbonDisabled" @click="setRibbonDisabled(true)">
+        {{ uiTexts.disableRibbon }}
+      </ElButton>
+      <ElButton size="small" :disabled="!ribbonDisabled" @click="setRibbonDisabled(false)">
+        {{ uiTexts.enableRibbon }}
+      </ElButton>
     </div>
     <div class="ml-demo-status">
       <span class="ml-demo-status__hint">{{ uiTexts.keyTipHint }}</span>
       <span class="ml-demo-status__hint">{{ uiTexts.sequenceHint }}</span>
       <span class="ml-demo-status__value">{{ uiTexts.lastCommand }} {{ lastCommand }}</span>
       <span class="ml-demo-status__value">{{ uiTexts.currentLanguage }} {{ language }}</span>
+      <span class="ml-demo-status__value">
+        {{ uiTexts.ribbonState }} {{ ribbonDisabled ? uiTexts.disabled : uiTexts.enabled }}
+      </span>
     </div>
     <MlRibbon
       :active-layout="layout"
       :size="ribbonSize"
+      :disabled="ribbonDisabled"
       v-model:layout="layout"
       v-model:minimized="minimized"
       v-model:active-tab="activeTab"
@@ -518,10 +601,15 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
       :texts="ribbonTexts"
       @item-click="onRibbonItemClick"
     >
-      <template #tabs-extra>
+      <template #tabs-extra="{ disabled }">
         <div class="ml-demo-language-switch">
-          <ElSelect v-model="language" size="small" class="ml-demo-language-switch__select">
-          <ElOption v-for="option in languageOptions" :key="option.value" :value="option.value" :label="option.label" />
+          <ElSelect v-model="language" size="small" class="ml-demo-language-switch__select" :disabled="disabled">
+            <ElOption
+              v-for="option in languageOptions"
+              :key="option.value"
+              :value="option.value"
+              :label="option.label"
+            />
           </ElSelect>
         </div>
       </template>
@@ -558,12 +646,7 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
-}
-
-.ml-demo-toolbar__label {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
+  margin-bottom: 8px;
 }
 
 .ml-demo-status {

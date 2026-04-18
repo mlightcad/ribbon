@@ -9,12 +9,13 @@ export type RibbonComponentSize = ComponentSize
 
 export type RibbonItemType =
   | 'button'
+  | 'segmented'
   | 'dropdown'
   | 'splitButton'
+  | 'buttonGroup'
   | 'checkbox'
   | 'colorPicker'
   | 'comboBox'
-  | 'groupButton'
   | 'gallery'
   | 'template'
 
@@ -139,6 +140,7 @@ export interface RibbonDynamicApi {
 
 export interface RibbonContextValue {
   id: string
+  disabled: import('vue').Ref<boolean>
   layout: import('vue').Ref<RibbonLayout>
   minimized: import('vue').Ref<boolean>
   activeTab: import('vue').Ref<string>
