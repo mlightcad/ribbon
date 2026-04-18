@@ -643,6 +643,18 @@ html.dark {
   border-color: var(--ml-rb-hover-border);
 }
 
+.ml-ribbon-template-item {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  min-height: var(--ml-rb-compact-height);
+}
+
+.ml-ribbon-item-host.is-large .ml-ribbon-template-item {
+  height: 100%;
+}
+
 .ml-ribbon-button-group {
   display: flex;
   flex-direction: column;

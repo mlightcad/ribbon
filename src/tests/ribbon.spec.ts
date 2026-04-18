@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, ref } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 import { ElConfigProvider } from 'element-plus'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -8,6 +8,7 @@ import MlRibbon from '../ribbon/components/Ribbon.vue'
 import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
+import MlDemoCustomPanel from '../components/MlDemoCustomPanel.vue'
 import type { RibbonTabModel } from '../ribbon'
 
 const tabs: RibbonTabModel[] = [
@@ -75,6 +76,40 @@ describe('MlRibbonBackstage', () => {
       expect(wrapper.find('.ml-test-custom-backstage').exists()).toBe(true)
       expect(wrapper.find('.ml-ribbon-backstage__nav').exists()).toBe(false)
       expect(wrapper.find('.ml-ribbon-backstage__content').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+})
+
+describe('MlDemoCustomPanel', () => {
+  it('tracks ribbon size from Element Plus config and applies matching classes', async () => {
+    const wrapper = mount(ElConfigProvider, {
+      props: {
+        size: 'small',
+      },
+      slots: {
+        default: () =>
+          h(MlDemoCustomPanel, {
+            item: { id: 'selection-panel', type: 'custom' },
+            groupId: 'inspector',
+            disabled: false,
+            emitItemClick: vi.fn(),
+            title: 'Selection',
+          }),
+      },
+    })
+
+    try {
+      let panel = wrapper.find('.ml-demo-custom-panel')
+      expect(panel.exists()).toBe(true)
+      expect(panel.classes()).toContain('ml-demo-custom-panel--size-small')
+
+      await wrapper.setProps({ size: 'large' })
+      await wrapper.vm.$nextTick()
+
+      panel = wrapper.find('.ml-demo-custom-panel')
+      expect(panel.classes()).toContain('ml-demo-custom-panel--size-large')
     } finally {
       wrapper.unmount()
     }
@@ -369,6 +404,142 @@ describe('MlRibbon', () => {
     expect(slotHost.exists()).toBe(true)
     expect(slotHost.find('.ml-test-tabs-extra').exists()).toBe(true)
     expect(wrapper.text()).toContain('Language')
+  })
+
+  it('renders schema-driven custom components inside ribbon groups and forwards emitted item ids', async () => {
+    const CustomItem = defineComponent({
+      name: 'RibbonCustomItemStub',
+      props: ['title', 'item', 'groupId', 'disabled', 'emitItemClick'],
+      template: `
+        <div class="ml-test-custom-item">
+          <span class="ml-test-custom-item__title">{{ title }}</span>
+          <span class="ml-test-custom-item__group">{{ groupId }}</span>
+          <span class="ml-test-custom-item__id">{{ item.id }}</span>
+          <button class="ml-test-custom-item__action" :disabled="disabled" @click="emitItemClick('custom-apply')">
+            Apply
+          </button>
+        </div>
+      `,
+    })
+
+    const customTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'inspector',
+            title: 'Inspector',
+            collections: [
+              {
+                id: 'inspector-main',
+                items: [
+                  {
+                    id: 'selection-panel',
+                    type: 'custom',
+                    props: {
+                      component: CustomItem,
+                      componentProps: { title: 'Selection' },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, { props: { tabs: customTabs, activeTab: 'home' } })
+
+    try {
+      const customItem = wrapper.find('.ml-test-custom-item')
+      expect(customItem.exists()).toBe(true)
+      expect(customItem.find('.ml-test-custom-item__title').text()).toBe('Selection')
+      expect(customItem.find('.ml-test-custom-item__group').text()).toBe('inspector')
+      expect(customItem.find('.ml-test-custom-item__id').text()).toBe('selection-panel')
+
+      await customItem.find('.ml-test-custom-item__action').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('itemClick') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'inspector', itemId: 'custom-apply' })
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders custom and standard ribbon items together inside the same group', () => {
+    const CustomItem = defineComponent({
+      name: 'RibbonMixedCustomItemStub',
+      props: ['title'],
+      template: '<div class="ml-test-mixed-custom">{{ title }}</div>',
+    })
+
+    const mixedTabs: RibbonTabModel[] = [
+      {
+        id: 'custom',
+        title: 'Custom',
+        groups: [
+          {
+            id: 'inspector',
+            title: 'Inspector',
+            orientation: 'row',
+            collections: [
+              {
+                id: 'inspector-panel',
+                layout: 'row',
+                items: [
+                  {
+                    id: 'selection-panel',
+                    type: 'custom',
+                    size: 'large',
+                    props: {
+                      component: CustomItem,
+                      componentProps: { title: 'Selection' },
+                    },
+                  },
+                ],
+              },
+              {
+                id: 'inspector-controls',
+                layout: 'column',
+                rows: 2,
+                items: [
+                  {
+                    id: 'refresh-preview',
+                    type: 'button',
+                    label: 'Refresh',
+                  },
+                  {
+                    id: 'view-preset',
+                    type: 'dropdown',
+                    label: 'View',
+                    props: {
+                      options: [{ label: 'Fit', value: 'view-fit' }],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, { props: { tabs: mixedTabs, activeTab: 'custom' } })
+
+    try {
+      expect(wrapper.find('.ml-test-mixed-custom').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-item-host[data-item-id="refresh-preview"]').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-item-host[data-item-id="view-preset"]').exists()).toBe(true)
+      expect(wrapper.text()).toContain('Selection')
+      expect(wrapper.text()).toContain('Refresh')
+      expect(wrapper.text()).toContain('View')
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('places minimize control beside tabs area', () => {
@@ -1481,6 +1652,55 @@ describe('MlRibbon', () => {
       const emissions = wrapper.emitted('item-click') ?? []
       expect(emissions).toHaveLength(1)
       expect(emissions[0]?.[0]).toBe('replace')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders custom item components in the host and exposes normalized ribbon bindings', async () => {
+    const CustomItem = defineComponent({
+      name: 'RibbonCustomItemHostStub',
+      props: ['title', 'item', 'groupId', 'disabled', 'emitItemClick'],
+      template: `
+        <div class="ml-test-custom-host">
+          <span class="ml-test-custom-host__title">{{ title }}</span>
+          <span class="ml-test-custom-host__group">{{ groupId }}</span>
+          <span class="ml-test-custom-host__id">{{ item.id }}</span>
+          <button class="ml-test-custom-host__action" :disabled="disabled" @click="emitItemClick()">
+            Trigger
+          </button>
+        </div>
+      `,
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'selection-panel',
+        groupId: 'inspector',
+        item: {
+          id: 'selection-panel',
+          type: 'custom',
+          props: {
+            component: CustomItem,
+            componentProps: { title: 'Selection' },
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="selection-panel"]')
+      expect(host.find('.ml-test-custom-host').exists()).toBe(true)
+      expect(host.find('.ml-test-custom-host__title').text()).toBe('Selection')
+      expect(host.find('.ml-test-custom-host__group').text()).toBe('inspector')
+      expect(host.find('.ml-test-custom-host__id').text()).toBe('selection-panel')
+
+      await host.find('.ml-test-custom-host__action').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('selection-panel')
     } finally {
       wrapper.unmount()
     }

@@ -106,6 +106,7 @@ export type {
   RibbonCollectionModel,
   RibbonItemModel,
   RibbonDynamicApi,
+  RibbonCustomItemBindings,
   KeyTipModel,
   FileMenuItemModel,
   RibbonLocaleTexts,

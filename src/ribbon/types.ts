@@ -18,6 +18,7 @@ export type RibbonItemType =
   | 'colorPicker'
   | 'comboBox'
   | 'gallery'
+  | 'custom'
   | 'template'
 
 export interface KeyTipModel {
@@ -61,6 +62,13 @@ export interface RibbonItemModel {
   size?: RibbonItemSize
   keyTip?: string
   props?: Record<string, unknown>
+}
+
+export interface RibbonCustomItemBindings {
+  item: RibbonItemModel
+  groupId: string
+  disabled: boolean
+  emitItemClick: (payload?: string | number | boolean) => void
 }
 
 export interface RibbonCollectionModel {

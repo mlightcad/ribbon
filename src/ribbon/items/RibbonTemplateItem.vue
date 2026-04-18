@@ -5,7 +5,8 @@ import type { RibbonItemModel } from '../types'
  * @component MlRibbonTemplateItem
  * @description
  * Wrapper for fully custom ribbon item rendering while preserving ribbon layout
- * and item metadata context.
+ * and item metadata context. Used by both slot-driven `template` items and
+ * schema-driven `custom` items.
  *
  * @prop id - Template item identifier.
  * @prop item - Original ribbon item model passed to slot consumers.
@@ -36,4 +37,3 @@ defineProps<{
     </slot>
   </div>
 </template>
-

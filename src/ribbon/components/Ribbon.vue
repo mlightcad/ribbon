@@ -94,6 +94,9 @@ function normalizeComponentCandidate<T>(value: T): T {
 function normalizeItemProps(props?: Record<string, unknown>): Record<string, unknown> | undefined {
   if (!props) return undefined
   const nextProps: Record<string, unknown> = { ...props }
+  if ('component' in nextProps) {
+    nextProps.component = normalizeComponentCandidate(nextProps.component)
+  }
   if ('icon' in nextProps) {
     nextProps.icon = normalizeComponentCandidate(nextProps.icon)
   }

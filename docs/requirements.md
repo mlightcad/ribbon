@@ -10,7 +10,7 @@ Constraints:
 
 V1 scope (full alignment target):
 - Core Ribbon container and tab/group/collection structure
-- Advanced item types (group button, segmented, toggle, gallery, template)
+- Advanced item types (group button, segmented, toggle, gallery, custom, template)
 - Layout modes and overflow/simplified behavior
 - File menu and backstage
 - Contextual tabs and key tips
@@ -32,6 +32,7 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`.
 - `MlRibbonToggleButton`: two-state toggle command with optional active/inactive icon mapping.
 - `MlRibbonGallery`: categorized gallery with preview and select behavior.
+- Schema-driven custom item mounting for host Vue components inside ribbon groups.
 - `MlRibbonTemplateItem`: slot-driven template item integrated with Ribbon context.
 
 ### 2.3 Modules
@@ -58,7 +59,7 @@ Events:
 - `RibbonLayout = 'classic' | 'simplified'`
 - `RibbonItemSize = 'large' | 'medium' | 'small'`
 - `RibbonComponentSize = 'large' | 'default' | 'small'`
-- `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'gallery' | 'template'`
+- `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'gallery' | 'custom' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
@@ -68,6 +69,9 @@ Events:
 - `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
+- Custom item option: `RibbonItemModel.props.component?: Component` mounts a host-supplied Vue component
+- Custom item option: `RibbonItemModel.props.componentProps?: Record<string, unknown>` forwards extra props into that mounted component
+- Custom item bindings: mounted components receive `item`, `groupId`, `disabled`, and `emitItemClick(payload?)`
 
 Controlled props:
 - `v-model:activeTab`

@@ -25,6 +25,7 @@ import {
 } from '@element-plus/icons-vue'
 import { MlRibbon } from './ribbon'
 import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabModel } from './ribbon'
+import MlDemoCustomPanel from './components/MlDemoCustomPanel.vue'
 
 /**
  * @component App
@@ -38,6 +39,7 @@ import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabMod
  * 2. Bind ribbon state through `v-model:active-tab`, `v-model:layout`, and `v-model:minimized`.
  * 3. Provide optional text overrides and file commands.
  * 4. Optionally customize backstage entirely via `#backstage` slot.
+ * 5. Embed schema-driven custom Vue components inside ribbon groups with `type: 'custom'`.
  *
  * @example
  * ```vue
@@ -275,7 +277,7 @@ const baseTabs: RibbonTabModel[] = [
                 id: 'ribbon-size',
                 type: 'segmented',
                 label: 'Ribbon Size',
-                hideLabel: true, 
+                hideLabel: true,
                 props: {
                   options: [
                     { label: 'Large', value: 'size-large' },
@@ -321,25 +323,102 @@ const baseTabs: RibbonTabModel[] = [
     ],
   },
   {
-    id: 'insert',
-    title: 'Insert',
+    id: 'custom',
+    title: 'Custom',
     groups: [
       {
-        id: 'illustrations',
-        title: 'Illustrations',
+        id: 'inspector',
+        title: 'Inspector',
+        orientation: 'row',
+        autoWidth: true,
         priority: 20,
         collections: [
           {
-            id: 'ill-1',
+            id: 'inspector-panel',
+            layout: 'row',
             items: [
               {
-                id: 'shape',
-                type: 'dropdown',
-                label: 'Shapes',
+                id: 'selection-panel',
+                type: 'custom',
+                size: 'large',
+                props: {
+                  component: MlDemoCustomPanel,
+                  componentProps: {
+                    title: 'Selection',
+                    description: 'Custom Vue component inside a Ribbon group.',
+                    primaryLabel: 'Toggle Snap',
+                    secondaryLabel: 'Toggle Theme',
+                  },
+                },
+              },
+            ],
+          },
+          {
+            id: 'inspector-controls',
+            layout: 'column',
+            rows: 3,
+            items: [
+              {
+                id: 'inspector-theme',
+                type: 'segmented',
+                label: 'Theme',
+                hideLabel: true,
                 props: {
                   options: [
-                    { label: 'Rectangle', value: 'rect' },
-                    { label: 'Circle', value: 'circle' },
+                    { label: 'Light', value: 'theme-light', icon: Sunny },
+                    { label: 'Dark', value: 'theme-dark', icon: Moon },
+                  ],
+                },
+              },
+              {
+                id: 'inspector-size',
+                type: 'segmented',
+                label: 'Ribbon Size',
+                hideLabel: true,
+                props: {
+                  options: [
+                    { label: 'Large', value: 'size-large' },
+                    { label: 'Default', value: 'size-default' },
+                    { label: 'Small', value: 'size-small' },
+                  ],
+                },
+              },
+              {
+                id: 'inspector-grid-snap',
+                type: 'toggle',
+                label: 'Grid Snap',
+                props: {
+                  activeValue: 'grid-snap-on',
+                  inactiveValue: 'grid-snap-off',
+                  activeIcon: Aim,
+                  inactiveIcon: Pointer,
+                },
+              },
+            ],
+          },
+          {
+            id: 'inspector-actions',
+            layout: 'column',
+            rows: 2,
+            items: [
+              {
+                id: 'refresh-preview',
+                type: 'button',
+                label: 'Refresh',
+                size: 'small',
+                props: { icon: MagicStick },
+              },
+              {
+                id: 'view-preset',
+                type: 'dropdown',
+                label: 'View',
+                size: 'small',
+                props: {
+                  icon: FullScreen,
+                  options: [
+                    { label: 'Fit', value: 'view-fit', icon: FullScreen },
+                    { label: '100%', value: 'view-100', icon: Crop },
+                    { label: '200%', value: 'view-200', icon: Aim },
                   ],
                 },
               },
@@ -367,7 +446,7 @@ const baseTabs: RibbonTabModel[] = [
 
 const zhCNMap: Record<string, string> = {
   Home: '开始',
-  Insert: '插入',
+  Custom: '自定义',
   'Chart Design': '图表设计',
   'Chart Tools': '图表工具',
   Draw: '绘图',
@@ -376,8 +455,21 @@ const zhCNMap: Record<string, string> = {
   Editing: '编辑',
   Appearance: '外观',
   Editor: '编辑器',
-  Illustrations: '插图',
+  Inspector: '检查器',
   'Chart Style': '图表样式',
+  Selection: '当前选择',
+  Refresh: '刷新',
+  View: '视图',
+  Fit: '适应',
+  '100%': '100%',
+  '200%': '200%',
+  'Custom Vue component inside a Ribbon group.': '一个直接放在 Ribbon group 中的自定义 Vue 组件。',
+  'Toggle Snap': '切换捕捉',
+  'Toggle Theme': '切换主题',
+  'Light / Snap On': '浅色 / 捕捉开',
+  'Light / Snap Off': '浅色 / 捕捉关',
+  'Dark / Snap On': '深色 / 捕捉开',
+  'Dark / Snap Off': '深色 / 捕捉关',
   Line: '直线',
   Polyline: '多段线',
   Circle: '圆',
@@ -431,14 +523,24 @@ const translate = (value?: string) => {
 function resolveAppearanceModelValue(itemId: string): string | boolean | undefined {
   switch (itemId) {
     case 'theme':
+    case 'inspector-theme':
       return theme.value === 'dark' ? 'theme-dark' : 'theme-light'
     case 'ribbon-size':
+    case 'inspector-size':
       return `size-${ribbonSize.value}`
     case 'grid-snap':
+    case 'inspector-grid-snap':
       return gridSnap.value
     default:
       return undefined
   }
+}
+
+function translateRecordStrings(value?: Record<string, unknown>): Record<string, unknown> | undefined {
+  if (!value) return value
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, typeof entry === 'string' ? translate(entry) : entry]),
+  )
 }
 
 const tabs = computed<RibbonTabModel[]>(() =>
@@ -460,8 +562,19 @@ const tabs = computed<RibbonTabModel[]>(() =>
                 return optionLabel ? { ...optionRecord, label: optionLabel } : optionRecord
               })
             : item.props?.options
+          const componentProps =
+            item.id === 'selection-panel'
+              ? {
+                  ...(translateRecordStrings((item.props?.componentProps as Record<string, unknown> | undefined) ?? {}) ?? {}),
+                  status: translate(`${theme.value === 'dark' ? 'Dark' : 'Light'} / ${gridSnap.value ? 'Snap On' : 'Snap Off'}`),
+                }
+              : translateRecordStrings(item.props?.componentProps as Record<string, unknown> | undefined)
           const modelValue = resolveAppearanceModelValue(item.id)
-          const nextProps = item.props ? { ...item.props, options } : options ? { options } : undefined
+          const nextProps = item.props
+            ? { ...item.props, options, componentProps }
+            : options || componentProps
+              ? { options, componentProps }
+              : undefined
           return {
             ...item,
             label: typeof item.label === 'string' ? translate(item.label) : item.label,
@@ -573,6 +686,12 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
         break
       case 'grid-snap-off':
         gridSnap.value = false
+        break
+      case 'selection-panel-primary':
+        gridSnap.value = !gridSnap.value
+        break
+      case 'selection-panel-secondary':
+        theme.value = theme.value === 'dark' ? 'light' : 'dark'
         break
     }
   }
