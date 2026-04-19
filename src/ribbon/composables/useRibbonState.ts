@@ -154,6 +154,8 @@ export function useRibbonState(
   initialLayout: RibbonLayout,
   initialMinimized: boolean,
   initialActiveTab: string,
+  initialTooltipShowAfter: number,
+  initialTooltipHideAfter: number,
 ): UseRibbonStateResult {
   const disabled = ref(initialDisabled)
   const layout = ref<RibbonLayout>(initialLayout)
@@ -165,6 +167,8 @@ export function useRibbonState(
   const keyTipsOpen = ref(false)
   const keyTips = ref<KeyTipModel[]>([])
   const keyTipsSequence = ref('')
+  const tooltipShowAfter = ref(initialTooltipShowAfter)
+  const tooltipHideAfter = ref(initialTooltipHideAfter)
 
   const visibleTabs = computed(() => tabs.value.filter((tab) => tab.visible !== false))
 
@@ -273,6 +277,8 @@ export function useRibbonState(
     keyTipsOpen,
     keyTips,
     keyTipsSequence,
+    tooltipShowAfter,
+    tooltipHideAfter,
     registerKeyTip,
     unregisterKeyTip,
     api,

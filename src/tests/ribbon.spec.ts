@@ -8,8 +8,16 @@ import MlRibbon from '../ribbon/components/Ribbon.vue'
 import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
-import MlDemoCustomPanel from '../components/MlDemoCustomPanel.vue'
+import MlDemoColorDropdown from '../components/MlDemoColorDropdown.vue'
+import MlDemoLineTypeDropdown from '../components/MlDemoLineTypeDropdown.vue'
+import MlDemoLineWeightDropdown from '../components/MlDemoLineWeightDropdown.vue'
 import type { RibbonTabModel } from '../ribbon'
+
+async function waitForRibbonLayout(wrapper: { vm: { $nextTick: () => Promise<unknown> } }, ticks = 3) {
+  for (let index = 0; index < ticks; index += 1) {
+    await wrapper.vm.$nextTick()
+  }
+}
 
 const tabs: RibbonTabModel[] = [
   {
@@ -82,7 +90,7 @@ describe('MlRibbonBackstage', () => {
   })
 })
 
-describe('MlDemoCustomPanel', () => {
+describe('MlDemoColorDropdown', () => {
   it('tracks ribbon size from Element Plus config and applies matching classes', async () => {
     const wrapper = mount(ElConfigProvider, {
       props: {
@@ -90,33 +98,261 @@ describe('MlDemoCustomPanel', () => {
       },
       slots: {
         default: () =>
-          h(MlDemoCustomPanel, {
-            item: { id: 'selection-panel', type: 'custom' },
-            groupId: 'inspector',
+          h(MlDemoColorDropdown, {
+            item: { id: 'entity-color', type: 'custom' },
+            groupId: 'entity-properties',
             disabled: false,
             emitItemClick: vi.fn(),
-            title: 'Selection',
+            title: 'Color',
           }),
       },
     })
 
     try {
-      let panel = wrapper.find('.ml-demo-custom-panel')
-      expect(panel.exists()).toBe(true)
-      expect(panel.classes()).toContain('ml-demo-custom-panel--size-small')
+      let dropdown = wrapper.find('.ml-demo-cad-dropdown')
+      expect(dropdown.exists()).toBe(true)
+      expect(dropdown.classes()).toContain('ml-demo-cad-dropdown--size-small')
+      expect(wrapper.find('.ml-demo-cad-dropdown__title').exists()).toBe(false)
+      expect(wrapper.find('.ml-demo-cad-dropdown__leading-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-demo-cad-dropdown > .ml-demo-cad-dropdown__leading-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__leading-icon').exists()).toBe(false)
+      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__swatch').exists()).toBe(true)
 
       await wrapper.setProps({ size: 'large' })
       await wrapper.vm.$nextTick()
 
-      panel = wrapper.find('.ml-demo-custom-panel')
-      expect(panel.classes()).toContain('ml-demo-custom-panel--size-large')
+      dropdown = wrapper.find('.ml-demo-cad-dropdown')
+      expect(dropdown.classes()).toContain('ml-demo-cad-dropdown--size-large')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits the configured command when a CAD-style option is selected', async () => {
+    const emitItemClick = vi.fn()
+    const wrapper = mount(MlDemoColorDropdown, {
+      props: {
+        item: { id: 'entity-color', type: 'custom' },
+        groupId: 'entity-properties',
+        disabled: false,
+        emitItemClick,
+        title: 'Color',
+        modelValue: 'bylayer',
+        options: [
+          { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
+          { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const options = wrapper.findAll('.ml-demo-cad-dropdown__option')
+      expect(options).toHaveLength(2)
+
+      await options[1]!.trigger('click')
+      expect(emitItemClick).toHaveBeenCalledWith('entity-color-red')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders color preview swatches for dropdown options', () => {
+    const wrapper = mount(MlDemoColorDropdown, {
+      props: {
+        item: { id: 'entity-color', type: 'custom' },
+        groupId: 'entity-properties',
+        disabled: false,
+        emitItemClick: vi.fn(),
+        modelValue: 'bylayer',
+        options: [
+          { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
+          { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const optionSwatches = wrapper.findAll('.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__swatch')
+      expect(optionSwatches).toHaveLength(2)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('reflects disabled state and blocks option commands', async () => {
+    const emitItemClick = vi.fn()
+    const wrapper = mount(MlDemoColorDropdown, {
+      props: {
+        item: { id: 'entity-color', type: 'custom' },
+        groupId: 'entity-properties',
+        disabled: true,
+        emitItemClick,
+        title: 'Color',
+        modelValue: 'bylayer',
+        options: [
+          { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
+          { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible', 'disabled'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const root = wrapper.find('.ml-demo-cad-dropdown')
+      const trigger = wrapper.find('.ml-demo-cad-dropdown__trigger')
+      const options = wrapper.findAll('.ml-demo-cad-dropdown__option')
+
+      expect(root.classes()).toContain('ml-demo-cad-dropdown--disabled')
+      expect(root.attributes('aria-disabled')).toBe('true')
+      expect(trigger.attributes('disabled')).toBeDefined()
+      expect(options[0]?.attributes('disabled')).toBeDefined()
+
+      await options[1]!.trigger('click')
+      expect(emitItemClick).not.toHaveBeenCalled()
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders line previews inline for line-type trigger and dropdown options', () => {
+    const wrapper = mount(MlDemoLineTypeDropdown, {
+      props: {
+        item: { id: 'entity-line-type', type: 'custom' },
+        groupId: 'entity-properties',
+        disabled: false,
+        emitItemClick: vi.fn(),
+        modelValue: 'continuous',
+        options: [
+          { value: 'continuous', label: 'Continuous', pattern: 'solid', command: 'entity-line-type-continuous' },
+          { value: 'dashed', label: 'Dashed', pattern: 'dashed', command: 'entity-line-type-dashed' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__line').exists()).toBe(true)
+      expect(wrapper.findAll('.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__line')).toHaveLength(2)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders weight previews inline for line-weight trigger and dropdown options', () => {
+    const wrapper = mount(MlDemoLineWeightDropdown, {
+      props: {
+        item: { id: 'entity-line-weight', type: 'custom' },
+        groupId: 'entity-properties',
+        disabled: false,
+        emitItemClick: vi.fn(),
+        modelValue: '0.25',
+        options: [
+          { value: '0.25', label: '0.25 mm', weight: 2, command: 'entity-line-weight-0.25' },
+          { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__line').exists()).toBe(true)
+      expect(wrapper.findAll('.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__line')).toHaveLength(2)
     } finally {
       wrapper.unmount()
     }
   })
 })
 
+describe('App demo', () => {
+  it('configures entity property dropdowns as a single column collection with three rows', () => {
+    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+
+    expect(appSource).toContain("id: 'entity-properties'")
+    expect(appSource).toContain('width: 220')
+    expect(appSource).toContain("id: 'entity-properties-main'")
+    expect(appSource).toContain("layout: 'column'")
+    expect(appSource).toContain('rows: 3')
+    expect(appSource).toContain(":deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content)")
+    expect(appSource).toContain(":deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-collection--column)")
+    expect(appSource).toContain('grid-auto-columns: minmax(0, 1fr);')
+    expect(appSource).toContain("id: 'entity-color'")
+    expect(appSource).toContain("id: 'entity-line-type'")
+    expect(appSource).toContain("id: 'entity-line-weight'")
+    expect(appSource).toMatch(/id:\s*'entity-color'[\s\S]*?size:\s*'small'/)
+    expect(appSource).toMatch(/id:\s*'entity-line-type'[\s\S]*?size:\s*'small'/)
+    expect(appSource).toMatch(/id:\s*'entity-line-weight'[\s\S]*?size:\s*'small'/)
+  })
+})
+
 describe('MlRibbon', () => {
+  it('applies fixed group width from schema', () => {
+    const fixedWidthTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'properties',
+            title: 'Properties',
+            width: 220,
+            collections: [{ id: 'properties-main', items: [{ id: 'inspect', type: 'button', label: 'Inspect' }] }],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, { props: { tabs: fixedWidthTabs } })
+    const group = wrapper.find('.ml-ribbon-group[data-group-id="properties"]')
+
+    expect(group.exists()).toBe(true)
+    expect(group.attributes('style')).toContain('width: 220px')
+    expect(group.attributes('style')).toContain('min-width: 220px')
+    expect(group.attributes('style')).toContain('max-width: 220px')
+    expect(group.attributes('style')).toContain('flex: 0 0 220px')
+  })
+
   it('uses fixed classic panel height derived from content and footer css variables', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
 
@@ -139,6 +375,13 @@ describe('MlRibbon', () => {
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.el-color-picker\s+\.el-color-picker__empty,\s*[\s\S]*font-size:\s*calc\(12px\s*\*\s*var\(--ml-rb-scale\)\);/,
     )
+  })
+
+  it('keeps CAD demo dropdowns stretched to the parent item width', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/MlDemoCadDropdown.vue'), 'utf-8')
+
+    expect(source).toMatch(/\.ml-demo-cad-dropdown\s*\{[\s\S]*width:\s*100%;/)
+    expect(source).toMatch(/\.ml-demo-cad-dropdown\s*\{[\s\S]*max-width:\s*100%;/)
   })
 
   it('keeps segmented controls aligned to ribbon compact height instead of raw element-plus size presets', () => {
@@ -283,6 +526,48 @@ describe('MlRibbon', () => {
   it('supports size prop', () => {
     const wrapper = mount(MlRibbon, { props: { tabs, size: 'small' } })
     expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--size-small')
+  })
+
+  it('passes global tooltip delays to ribbon controls and item hosts', () => {
+    const wrapper = mount(MlRibbon, {
+      props: {
+        tabs,
+        tooltipShowAfter: 750,
+        tooltipHideAfter: 0,
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled', 'showAfter', 'hideAfter'],
+            template: `
+              <div
+                class="ml-test-tooltip"
+                :data-content="content"
+                :data-disabled="String(disabled)"
+                :data-show-after="String(showAfter)"
+                :data-hide-after="String(hideAfter)"
+              >
+                <slot />
+              </div>
+            `,
+          },
+        },
+      },
+    })
+
+    try {
+      const itemTooltip = wrapper.find('.ml-test-tooltip[data-content="Run"]')
+      expect(itemTooltip.exists()).toBe(true)
+      expect(itemTooltip.attributes('data-show-after')).toBe('750')
+      expect(itemTooltip.attributes('data-hide-after')).toBe('0')
+
+      const minimizeTooltip = wrapper.find('.ml-test-tooltip[data-content="Minimize ribbon"]')
+      expect(minimizeTooltip.exists()).toBe(true)
+      expect(minimizeTooltip.attributes('data-show-after')).toBe('750')
+      expect(minimizeTooltip.attributes('data-hide-after')).toBe('0')
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('disables the full ribbon surface when disabled is true', async () => {
@@ -582,6 +867,79 @@ describe('MlRibbon', () => {
     expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--minimized')
   })
 
+  it('opens the active tab panel in a popover when minimized tab is clicked', async () => {
+    const minimizedTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'home-group',
+            title: 'Clipboard',
+            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste' }] }],
+          },
+        ],
+      },
+      {
+        id: 'insert',
+        title: 'Insert',
+        groups: [
+          {
+            id: 'insert-group',
+            title: 'Shapes',
+            collections: [{ id: 'c2', items: [{ id: 'shape', type: 'button', label: 'Shape' }] }],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: { tabs: minimizedTabs, minimized: true, showFileMenu: false },
+    })
+
+    try {
+      const insertTab = wrapper
+        .findAll<HTMLButtonElement>('.ml-ribbon-tab')
+        .find((button) => button.text() === 'Insert')
+      expect(insertTab).toBeTruthy()
+
+      await insertTab!.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const popoverPanel = Array.from(
+        document.body.querySelectorAll('.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating'),
+      ).find((panel) => panel.textContent?.includes('Shapes') && panel.textContent?.includes('Shape'))
+
+      expect(popoverPanel).not.toBeNull()
+      expect(wrapper.emitted('update:activeTab')?.at(-1)).toEqual(['insert'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders floating panel when clicking the active tab while minimized', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: { tabs, minimized: true, showFileMenu: false },
+    })
+
+    try {
+      const homeTab = wrapper
+        .findAll<HTMLButtonElement>('.ml-ribbon-tab')
+        .find((button) => button.text() === 'Home')
+      expect(homeTab).toBeTruthy()
+
+      await homeTab!.trigger('click')
+      await waitForRibbonLayout(wrapper)
+
+      expect(document.body.querySelector('.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating')).not.toBeNull()
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('emits update:minimized when minimized state changes', async () => {
     const wrapper = mount(MlRibbon, { props: { tabs, minimized: false } })
 
@@ -683,16 +1041,14 @@ describe('MlRibbon', () => {
 
     try {
       const wrapper = mount(MlRibbon, { props: { tabs: overflowTabs } })
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(true)
 
       // Trigger reactive relayout by changing props after expanding available panel width.
       panelWidth = 480
       await wrapper.setProps({ tabs: overflowTabs.map((tab) => ({ ...tab })) })
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(false)
     } finally {
@@ -747,14 +1103,12 @@ describe('MlRibbon', () => {
     })
 
     try {
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       const overflowTrigger = wrapper.find('.ml-ribbon-overflow-trigger')
       expect(overflowTrigger.exists()).toBe(true)
       await overflowTrigger.trigger('click')
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       // Overflow popover is teleported to body by Element Plus.
       const hiddenButton = Array.from(
@@ -816,8 +1170,7 @@ describe('MlRibbon', () => {
 
     try {
       const wrapper = mount(MlRibbon, { props: { tabs: overflowTabs } })
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(true)
     } finally {
@@ -862,8 +1215,7 @@ describe('MlRibbon', () => {
 
     try {
       const wrapper = mount(MlRibbon, { props: { tabs: overflowTabs } })
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       const inlineGroups = wrapper
         .findAll('.ml-ribbon__panel .ml-ribbon-group[data-group-id]')
@@ -918,8 +1270,7 @@ describe('MlRibbon', () => {
 
     try {
       const wrapper = mount(MlRibbon, { props: { tabs: overflowTabs } })
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       expect(wrapper.findAll('.ml-ribbon__panel .ml-ribbon-group').length).toBe(2)
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(true)
@@ -927,8 +1278,7 @@ describe('MlRibbon', () => {
       // Simulate grow event and force recalculation through prop update.
       panelWidth = 480
       await wrapper.setProps({ tabs: overflowTabs.map((tab) => ({ ...tab })) })
-      await wrapper.vm.$nextTick()
-      await wrapper.vm.$nextTick()
+      await waitForRibbonLayout(wrapper)
 
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(false)
       expect(wrapper.findAll('.ml-ribbon__panel .ml-ribbon-group').length).toBe(3)
@@ -1349,6 +1699,143 @@ describe('MlRibbon', () => {
       expect(host.find('.ml-ribbon-segmented__option-label').exists()).toBe(false)
       expect(host.findAll('.el-segmented__item.is-selected')).toHaveLength(1)
       expect(host.find('.ml-ribbon-segmented__label').text()).toBe('Theme')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('uses an explicit item tooltip when provided', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'copy',
+        groupId: 'clipboard',
+        item: {
+          id: 'copy',
+          type: 'button',
+          label: 'Copy',
+          tooltip: 'Copy selection',
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled', 'showAfter', 'hideAfter'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)" :data-show-after="String(showAfter)" :data-hide-after="String(hideAfter)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltip = wrapper.find('.ml-test-tooltip')
+      expect(tooltip.attributes('data-content')).toBe('Copy selection')
+      expect(tooltip.attributes('data-disabled')).toBe('false')
+      expect(tooltip.attributes('data-show-after')).toBe('1000')
+      expect(tooltip.attributes('data-hide-after')).toBe('0')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Copy selection')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('falls back to the localized label for tooltip content when tooltip is omitted', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'line',
+        groupId: 'draw',
+        item: {
+          id: 'line',
+          type: 'button',
+          label: '直线',
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled', 'showAfter', 'hideAfter'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)" :data-show-after="String(showAfter)" :data-hide-after="String(hideAfter)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltip = wrapper.find('.ml-test-tooltip')
+      expect(tooltip.attributes('data-content')).toBe('直线')
+      expect(tooltip.attributes('data-disabled')).toBe('false')
+      expect(tooltip.attributes('data-show-after')).toBe('1000')
+      expect(tooltip.attributes('data-hide-after')).toBe('0')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('直线')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('falls back to a humanized item id for icon-only commands without label or tooltip', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'draw-ellipse',
+        groupId: 'draw',
+        item: {
+          id: 'draw-ellipse',
+          type: 'button',
+          hideLabel: true,
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltip = wrapper.find('.ml-test-tooltip')
+      expect(tooltip.attributes('data-content')).toBe('Draw Ellipse')
+      expect(tooltip.attributes('data-disabled')).toBe('false')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Draw Ellipse')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('derives tooltip content from button group option labels when the group has no label', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'find-replace',
+        groupId: 'editing',
+        item: {
+          id: 'find-replace',
+          type: 'buttonGroup',
+          props: {
+            options: [
+              { label: 'Find', value: 'find' },
+              { label: 'Replace', value: 'replace' },
+            ],
+          },
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltip = wrapper.find('.ml-test-tooltip')
+      expect(tooltip.attributes('data-content')).toBe('Find / Replace')
+      expect(tooltip.attributes('data-disabled')).toBe('false')
     } finally {
       wrapper.unmount()
     }

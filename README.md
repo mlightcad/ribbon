@@ -23,10 +23,13 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Theme alignment with Element Plus light/dark mode (via `html.dark` class)
 - Internationalization-ready UI text model via `MlRibbon` `texts` prop (no built-in hard-coded visible strings in Ribbon components)
 - Icon-only command rendering via `RibbonItemModel.hideLabel`
+- Per-item tooltip support via `RibbonItemModel.tooltip`; when omitted, the item `label` is used as the tooltip fallback
+- Global tooltip timing control via `MlRibbon` `tooltip-show-after` and `tooltip-hide-after`
 - Grouped command buttons via `buttonGroup` items; each button remains a stateless command and emits its own option value
 - Two-state toggle commands via `toggle` items with `props.modelValue`, `activeIcon`, and `inactiveIcon`
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
+- Fixed group width via `RibbonGroupModel.width` (pixels)
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
 - Custom Vue components can be mounted directly from the ribbon schema with `type: 'custom'`, `props.component`, and `props.componentProps`
@@ -89,7 +92,7 @@ const tabs = ref<RibbonTabModel[]>([
             id: 'clipboard-actions',
             items: [
               { id: 'paste', type: 'button', label: 'Paste', size: 'large' },
-              { id: 'copy', type: 'button', label: 'Copy', size: 'small' },
+              { id: 'copy', type: 'button', label: 'Copy', tooltip: 'Copy selection', size: 'small' },
               {
                 id: 'grid-snap',
                 type: 'toggle',
@@ -141,6 +144,8 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `show-open-backstage` whether to show `Open backstage` command in File menu, default `true`
 - `file-menu-items` file menu item list
 - `texts` localized UI text overrides
+- `tooltip-show-after` global tooltip show delay in milliseconds, default `1000`
+- `tooltip-hide-after` global tooltip hide delay in milliseconds, default `0`
 
 ### 4. Common Events
 - `@tab-change="(tabId) => {}"` tab switched

@@ -110,4 +110,5 @@ export type {
   KeyTipModel,
   FileMenuItemModel,
   RibbonLocaleTexts,
+  RibbonTooltipSettings,
 } from './types'

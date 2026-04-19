@@ -42,6 +42,8 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop showOpenBackstage - Controls whether "Open backstage" entry is shown in File menu.
  * @prop fileMenuItems - File menu command list.
  * @prop texts - Localized UI text bundle for labels/tooltips.
+ * @prop tooltipShowAfter - Global tooltip show delay in milliseconds.
+ * @prop tooltipHideAfter - Global tooltip hide delay in milliseconds.
  *
  * @slot tabs-extra - Custom content rendered on the right side of the tab area.
  * Slot props: `{ activeTab, layout, minimized, disabled }`.
@@ -162,6 +164,17 @@ function cloneTabs(value: RibbonTabModel[]): RibbonTabModel[] {
   }))
 }
 
+/**
+ * Normalizes tooltip delay props so Element Plus always receives a safe number.
+ * @param value Candidate tooltip delay in milliseconds.
+ * @param fallback Default delay used when value is invalid.
+ * @returns Non-negative integer delay.
+ */
+function normalizeTooltipDelay(value: unknown, fallback: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) return fallback
+  return Math.max(0, Math.round(value))
+}
+
 const defaultRibbonTexts: Required<RibbonLocaleTexts> = {
   layoutSwitcherTooltip: 'Switch ribbon layout',
   minimizeTooltip: 'Minimize ribbon',
@@ -196,6 +209,8 @@ const props = withDefaults(
     showOpenBackstage?: boolean
     fileMenuItems?: { id: string; label: string; disabled?: boolean }[]
     texts?: RibbonLocaleTexts
+    tooltipShowAfter?: number
+    tooltipHideAfter?: number
   }>(),
   {
     id: 'ml-ribbon-root',
@@ -212,6 +227,8 @@ const props = withDefaults(
     showOpenBackstage: true,
     fileMenuItems: () => [],
     texts: () => ({}),
+    tooltipShowAfter: 1000,
+    tooltipHideAfter: 0,
   },
 )
 
@@ -240,6 +257,8 @@ const { context, visibleTabs } = useRibbonState(
     : props.layout,
   props.minimized,
   props.activeTab || props.tabs[0]?.id || '',
+  normalizeTooltipDelay(props.tooltipShowAfter, 1000),
+  normalizeTooltipDelay(props.tooltipHideAfter, 0),
 )
 
 provide(ribbonKey, context)
@@ -273,6 +292,14 @@ watch(() => props.disabled, (value) => {
 watch(() => props.activeTab, (value) => {
   if (value && value !== context.activeTab.value) context.activeTab.value = value
 })
+watch(() => props.tooltipShowAfter, (value) => {
+  const normalized = normalizeTooltipDelay(value, 1000)
+  if (normalized !== context.tooltipShowAfter.value) context.tooltipShowAfter.value = normalized
+})
+watch(() => props.tooltipHideAfter, (value) => {
+  const normalized = normalizeTooltipDelay(value, 0)
+  if (normalized !== context.tooltipHideAfter.value) context.tooltipHideAfter.value = normalized
+})
 
 watch(context.activeTab, (value) => {
   emit('update:activeTab', value)
@@ -296,7 +323,18 @@ watch(context.backdropOpen, (value) => {
 
 const activeTabModel = computed(() => visibleTabs.value.find((x) => x.id === context.activeTab.value))
 const visibleGroups = computed(() => activeTabModel.value?.groups?.filter((x) => x.visible !== false) ?? [])
+const ribbonRootRef = ref<HTMLElement | null>(null)
+const ribbonHeaderRef = ref<HTMLElement | null>(null)
 const classicPanelRef = ref<HTMLElement | null>(null)
+const minimizedClassicPanelRef = ref<HTMLElement | null>(null)
+const minimizedTabPanelOpen = ref(false)
+const minimizedTabPanelWidth = ref(0)
+const minimizedTabPanelAnchorStyle = ref({
+  left: '0px',
+  top: '0px',
+  width: '1px',
+  height: '0px',
+})
 // Group ids hidden in classic mode and shown in the overflow popover.
 const hiddenGroupIds = ref<Set<string>>(new Set())
 // Cache measured widths by group id to reduce fallback width estimates on recalculation.
@@ -308,6 +346,9 @@ const simplifiedGroupPopoverClass = computed(
 )
 const classicOverflowPopoverClass = computed(
   () => `ml-ribbon-overflow-popover ml-ribbon-overflow-popover--size-${resolvedRibbonSize.value}`,
+)
+const minimizedTabPopoverClass = computed(
+  () => `ml-ribbon-tab-panel-popover ml-ribbon-tab-panel-popover--size-${resolvedRibbonSize.value}`,
 )
 const ribbonTexts = computed<RibbonLocaleTexts>(() => ({
   layoutSwitcherTooltip: props.texts.layoutSwitcherTooltip || defaultRibbonTexts.layoutSwitcherTooltip,
@@ -327,6 +368,8 @@ const ribbonTexts = computed<RibbonLocaleTexts>(() => ({
   contextualTabDefaultTitle: props.texts.contextualTabDefaultTitle || defaultRibbonTexts.contextualTabDefaultTitle,
   galleryPreviewFallback: props.texts.galleryPreviewFallback || defaultRibbonTexts.galleryPreviewFallback,
 }))
+const resolvedTooltipShowAfter = computed(() => normalizeTooltipDelay(props.tooltipShowAfter, 1000))
+const resolvedTooltipHideAfter = computed(() => normalizeTooltipDelay(props.tooltipHideAfter, 0))
 const minimizeButtonIcon = computed(() => (context.minimized.value ? ArrowUpBold : ArrowDownBold))
 
 const classicInlineGroups = computed(() =>
@@ -389,6 +432,9 @@ function getGroupPriority(group: RibbonGroupModel): number {
  * @returns Estimated width in pixels.
  */
 function estimateGroupWidth(group: RibbonGroupModel): number {
+  if (typeof group.width === 'number' && Number.isFinite(group.width) && group.width > 0) {
+    return group.width
+  }
   if (group.autoWidth !== false) return 140
   return 190
 }
@@ -408,6 +454,20 @@ function collectRenderedGroupWidths(panel: HTMLElement): Record<string, number> 
     if (measured > 0) widths[groupId] = measured
   })
   return widths
+}
+
+/**
+ * Estimates floating classic panel width when layout metrics are temporarily unavailable.
+ * @returns Fallback width in pixels.
+ */
+function estimateClassicPanelWidth(): number {
+  const totalWidth = visibleGroups.value.reduce((sum, group) => {
+    const measured = measuredGroupWidths.value[group.id]
+    const estimated = measured ?? estimateGroupWidth(group)
+    return sum + Math.max(estimated, estimateGroupWidth(group))
+  }, 0)
+
+  return Math.max(220, totalWidth)
 }
 
 const DEFAULT_CLASSIC_OVERFLOW_SLOT_WIDTH = 40
@@ -431,7 +491,7 @@ function recomputeClassicOverflow() {
     hiddenGroupIds.value = new Set()
     return
   }
-  const panel = classicPanelRef.value
+  const panel = context.minimized.value ? minimizedClassicPanelRef.value : classicPanelRef.value
   if (!panel) return
 
   const groups = visibleGroups.value
@@ -502,12 +562,62 @@ function scheduleClassicOverflowRecompute() {
 }
 
 /**
+ * Aligns minimized tab popover with the original ribbon panel origin and width.
+ */
+function syncMinimizedTabPanelAnchor() {
+  const ribbonEl = ribbonRootRef.value
+  const headerEl = ribbonHeaderRef.value
+  if (!ribbonEl || !headerEl) return
+
+  const ribbonRect = ribbonEl.getBoundingClientRect()
+  const headerRect = headerEl.getBoundingClientRect()
+  const borderWidth = Number.parseFloat(getComputedStyle(ribbonEl).borderLeftWidth || '0') || 0
+  const measuredWidth = Math.max(
+    ribbonRect.width - borderWidth * 2,
+    ribbonEl.clientWidth,
+    headerRect.width,
+    headerEl.clientWidth,
+  )
+
+  minimizedTabPanelWidth.value = Math.round(
+    measuredWidth > 0
+      ? measuredWidth
+      : context.layout.value === 'classic'
+        ? estimateClassicPanelWidth()
+        : Math.max(360, visibleGroups.value.length * 120),
+  )
+  minimizedTabPanelAnchorStyle.value = {
+    left: `${Math.round(ribbonRect.left - headerRect.left + borderWidth)}px`,
+    top: '0px',
+    width: '1px',
+    height: `${Math.round(headerRect.height)}px`,
+  }
+}
+
+/**
+ * Closes minimized tab panel popover.
+ */
+function closeMinimizedTabPanel() {
+  minimizedTabPanelOpen.value = false
+}
+
+/**
  * Selects active tab.
  * @param tabId Tab id to activate.
  */
-function onTabClick(tabId: string) {
+function onTabClick(payload: { id: string; triggerEl: HTMLElement | null }) {
   if (context.disabled.value) return
-  context.activeTab.value = tabId
+
+  const isSameTab = context.activeTab.value === payload.id
+  context.activeTab.value = payload.id
+
+  if (!context.minimized.value) {
+    closeMinimizedTabPanel()
+    return
+  }
+
+  syncMinimizedTabPanelAnchor()
+  minimizedTabPanelOpen.value = isSameTab ? !minimizedTabPanelOpen.value : true
 }
 
 /**
@@ -523,6 +633,7 @@ function toggleLayout() {
  */
 function toggleMinimize() {
   if (context.disabled.value) return
+  if (!context.minimized.value) closeMinimizedTabPanel()
   context.minimized.value = !context.minimized.value
 }
 
@@ -532,6 +643,7 @@ function toggleMinimize() {
  */
 function onFileMenuSelect(id: string) {
   if (context.disabled.value) return
+  closeMinimizedTabPanel()
   emit('fileMenuSelect', id)
 }
 
@@ -540,6 +652,7 @@ function onFileMenuSelect(id: string) {
  */
 function openBackstage() {
   if (context.disabled.value) return
+  closeMinimizedTabPanel()
   context.backdropOpen.value = true
 }
 
@@ -559,6 +672,7 @@ function closeBackstage() {
 function onItemClick(groupId: string, itemId: string) {
   if (context.disabled.value) return
   emit('itemClick', { tabId: context.activeTab.value, groupId, itemId })
+  if (context.minimized.value) closeMinimizedTabPanel()
 }
 
 /**
@@ -694,6 +808,14 @@ function resolveGroupIcon(group: RibbonGroupModel): Component | null {
   return null
 }
 
+/**
+ * Syncs controlled popover visibility emitted by Element Plus.
+ * @param value Latest popover visibility.
+ */
+function onMinimizedTabPanelVisibleChange(value: boolean) {
+  minimizedTabPanelOpen.value = value
+}
+
 watch([visibleGroups, () => context.layout.value, () => context.minimized.value], () => {
   scheduleClassicOverflowRecompute()
 })
@@ -719,34 +841,64 @@ watch(
     context.overflowOpen.value = false
     context.backdropOpen.value = false
     context.keyTipsOpen.value = false
+    closeMinimizedTabPanel()
     resetKeyTipsSequence()
   },
 )
 watch(
-  classicPanelRef,
-  (panel, previous) => {
-    if (previous && resizeObserver) resizeObserver.unobserve(previous)
-    if (panel && resizeObserver) resizeObserver.observe(panel)
+  [() => context.minimized.value, () => context.layout.value, activeTabModel],
+  ([minimized, , activeTab]) => {
+    if (!minimized || !activeTab) closeMinimizedTabPanel()
+  },
+)
+watch(
+  [classicPanelRef, minimizedClassicPanelRef],
+  ([classicPanel, minimizedPanel], [previousClassicPanel, previousMinimizedPanel]) => {
+    if (previousClassicPanel && resizeObserver) resizeObserver.unobserve(previousClassicPanel)
+    if (previousMinimizedPanel && resizeObserver) resizeObserver.unobserve(previousMinimizedPanel)
+    if (classicPanel && resizeObserver) resizeObserver.observe(classicPanel)
+    if (minimizedPanel && resizeObserver) resizeObserver.observe(minimizedPanel)
+    if (classicPanel || minimizedPanel) scheduleClassicOverflowRecompute()
   },
   { flush: 'post' },
 )
+watch(minimizedTabPanelOpen, (open) => {
+  if (!open) return
+  nextTick(() => {
+    syncMinimizedTabPanelAnchor()
+    scheduleClassicOverflowRecompute()
+  })
+})
 
 let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   window.addEventListener('keydown', onWindowKeydown)
+  window.addEventListener('resize', onWindowResize)
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
+      syncMinimizedTabPanelAnchor()
       scheduleClassicOverflowRecompute()
     })
     if (classicPanelRef.value) resizeObserver.observe(classicPanelRef.value)
+    if (minimizedClassicPanelRef.value) resizeObserver.observe(minimizedClassicPanelRef.value)
   }
+  syncMinimizedTabPanelAnchor()
   scheduleClassicOverflowRecompute()
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onWindowKeydown)
+  window.removeEventListener('resize', onWindowResize)
   resizeObserver?.disconnect()
 })
+
+/**
+ * Keeps minimized popover aligned after viewport changes.
+ */
+function onWindowResize() {
+  if (!minimizedTabPanelOpen.value) return
+  syncMinimizedTabPanelAnchor()
+}
 
 defineExpose<RibbonDynamicApi>(context.api)
 </script>
@@ -754,6 +906,7 @@ defineExpose<RibbonDynamicApi>(context.api)
 <template>
   <ElConfigProvider :size="props.size">
     <section
+      ref="ribbonRootRef"
       :key="context.disabled.value ? 'ml-ribbon-disabled' : 'ml-ribbon-enabled'"
       class="ml-ribbon"
       :inert="context.disabled.value"
@@ -768,7 +921,7 @@ defineExpose<RibbonDynamicApi>(context.api)
         },
       ]"
     >
-      <header class="ml-ribbon__header">
+      <header ref="ribbonHeaderRef" class="ml-ribbon__header">
         <div class="ml-ribbon__head-left">
           <MlRibbonFileMenu
             v-if="showFileMenu"
@@ -787,7 +940,12 @@ defineExpose<RibbonDynamicApi>(context.api)
             :default-contextual-title="ribbonTexts.contextualTabDefaultTitle"
             @select="onTabClick"
           />
-          <ElTooltip v-if="!props.hideMinimizeButton" :content="ribbonTexts.minimizeTooltip">
+          <ElTooltip
+            v-if="!props.hideMinimizeButton"
+            :content="ribbonTexts.minimizeTooltip"
+            :show-after="resolvedTooltipShowAfter"
+            :hide-after="resolvedTooltipHideAfter"
+          >
             <ElButton
               :class="[
                 'ml-ribbon__control',
@@ -801,7 +959,12 @@ defineExpose<RibbonDynamicApi>(context.api)
           </ElTooltip>
         </div>
         <div class="ml-ribbon__head-right">
-          <ElTooltip v-if="!props.hideLayoutSwitcher" :content="ribbonTexts.layoutSwitcherTooltip">
+          <ElTooltip
+            v-if="!props.hideLayoutSwitcher"
+            :content="ribbonTexts.layoutSwitcherTooltip"
+            :show-after="resolvedTooltipShowAfter"
+            :hide-after="resolvedTooltipHideAfter"
+          >
             <ElButton
               circle
               class="ml-ribbon__control ml-ribbon__control--layout"
@@ -830,6 +993,129 @@ defineExpose<RibbonDynamicApi>(context.api)
             />
           </div>
         </div>
+
+        <ElPopover
+          v-if="activeTabModel"
+          placement="bottom-start"
+          :visible="minimizedTabPanelOpen"
+          :width="minimizedTabPanelWidth || undefined"
+          :disabled="context.disabled.value || !context.minimized.value"
+          :show-arrow="false"
+          :offset="0"
+          :popper-class="minimizedTabPopoverClass"
+          @update:visible="onMinimizedTabPanelVisibleChange"
+        >
+          <template #reference>
+            <span
+              aria-hidden="true"
+              class="ml-ribbon__minimized-anchor"
+              :style="minimizedTabPanelAnchorStyle"
+            />
+          </template>
+
+          <main
+            v-if="context.layout.value === 'classic'"
+            ref="minimizedClassicPanelRef"
+            class="ml-ribbon__panel ml-ribbon__panel--floating"
+            :data-active-tab="activeTabModel.id"
+          >
+            <MlRibbonGroup
+              v-for="group in classicInlineGroups"
+              :id="group.id"
+              :key="group.id"
+              :data-group-id="group.id"
+              :title="group.title"
+              :icon="group.icon"
+              :group-icon-css="group.groupIconCss"
+              :orientation="group.orientation"
+              :auto-width="group.autoWidth"
+              :width="group.width"
+              :priority="group.priority ?? 100"
+              :launcher="group.launcher"
+              :show-launcher-icon="group.showLauncherIcon"
+              :group-model="group"
+              :overflow-trigger-aria-label="ribbonTexts.groupOverflowTriggerAriaLabel"
+              :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+              @item-click="onItemClick($event.groupId, $event.itemId)"
+            >
+              <MlRibbonGroupContent
+                :group="group"
+                :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                @item-click="onItemClick($event.groupId, $event.itemId)"
+              />
+            </MlRibbonGroup>
+
+            <section v-if="classicOverflowGroups.length" class="ml-ribbon-group ml-ribbon-group--overflow">
+              <div class="ml-ribbon-group__body ml-ribbon-group__body--overflow">
+                <ElPopover
+                  trigger="click"
+                  placement="bottom-end"
+                  :width="classicOverflowPopoverWidth"
+                  :disabled="context.disabled.value"
+                  :show-arrow="false"
+                  :popper-class="classicOverflowPopoverClass"
+                  @show="context.overflowOpen.value = true"
+                  @hide="context.overflowOpen.value = false"
+                >
+                  <template #reference>
+                    <button
+                      type="button"
+                      class="ml-ribbon-overflow-trigger"
+                      :aria-label="ribbonTexts.overflowTriggerAriaLabel"
+                      :disabled="context.disabled.value"
+                    >
+                      <span class="ml-ribbon-overflow-trigger__dots">...</span>
+                    </button>
+                  </template>
+                  <div class="ml-ribbon-overflow-list">
+                    <section v-for="group in classicOverflowGroups" :key="group.id" class="ml-ribbon-overflow-group">
+                      <header class="ml-ribbon-overflow-group__header">{{ group.title }}</header>
+                      <MlRibbonGroupContent
+                        :group="group"
+                        :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                        @item-click="onItemClick($event.groupId, $event.itemId)"
+                      />
+                    </section>
+                  </div>
+                </ElPopover>
+              </div>
+              <footer class="ml-ribbon-group__footer ml-ribbon-group__footer--overflow" />
+            </section>
+          </main>
+
+          <main
+            v-else
+            class="ml-ribbon__panel ml-ribbon__panel--simplified ml-ribbon__panel--floating"
+            :data-active-tab="activeTabModel.id"
+          >
+            <ElPopover
+              v-for="group in visibleGroups"
+              :key="group.id"
+              trigger="click"
+              placement="bottom-start"
+              :width="340"
+              :disabled="context.disabled.value"
+              :show-arrow="false"
+              :popper-class="simplifiedGroupPopoverClass"
+            >
+              <template #reference>
+                <button class="ml-ribbon-simplified-group" type="button" :disabled="context.disabled.value">
+                  <ElIcon v-if="resolveGroupIcon(group)" class="ml-ribbon-simplified-group__icon">
+                    <component :is="resolveGroupIcon(group)" />
+                  </ElIcon>
+                  <span>{{ group.title }}</span>
+                </button>
+              </template>
+              <div class="ml-ribbon-simplified-group__panel">
+                <MlRibbonGroupContent
+                  :group="toSimplifiedPanelGroup(group)"
+                  :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                  @item-click="onItemClick($event.groupId, $event.itemId)"
+                />
+              </div>
+            </ElPopover>
+          </main>
+        </ElPopover>
       </header>
 
       <main
@@ -848,6 +1134,7 @@ defineExpose<RibbonDynamicApi>(context.api)
           :group-icon-css="group.groupIconCss"
           :orientation="group.orientation"
           :auto-width="group.autoWidth"
+          :width="group.width"
           :priority="group.priority ?? 100"
           :launcher="group.launcher"
           :show-launcher-icon="group.showLauncherIcon"

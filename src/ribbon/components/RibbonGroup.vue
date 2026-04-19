@@ -20,6 +20,7 @@ import MlRibbonGroupContent from './RibbonGroupContent.vue'
  * @prop groupIconCss - Optional CSS marker used by host logic to map string icons.
  * @prop orientation - Primary group layout direction.
  * @prop autoWidth - Whether group width is auto-sized.
+ * @prop width - Fixed group width in pixels.
  * @prop priority - Overflow priority hint (higher values overflow first).
  * @prop launcher - Enables launcher affordance.
  * @prop showLauncherIcon - Explicit launcher icon visibility override.
@@ -53,6 +54,7 @@ const props = defineProps<{
   groupIconCss?: string
   orientation?: 'row' | 'column'
   autoWidth?: boolean
+  width?: number
   priority?: number
   launcher?: boolean
   showLauncherIcon?: boolean
@@ -64,7 +66,17 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId: string }): void }>()
 const ribbon = inject(ribbonKey, null)
 
-const isAutoWidth = computed(() => props.autoWidth !== false)
+const isAutoWidth = computed(() => props.width == null && props.autoWidth !== false)
+const fixedWidthStyle = computed(() => {
+  if (typeof props.width !== 'number' || Number.isNaN(props.width) || props.width <= 0) return undefined
+  const value = `${props.width}px`
+  return {
+    width: value,
+    minWidth: value,
+    maxWidth: value,
+    flex: `0 0 ${value}`,
+  }
+})
 const isRibbonDisabled = computed(() => ribbon?.disabled.value === true)
 const groupSectionRef = ref<HTMLElement | null>(null)
 const overflowItemIds = ref<string[]>([])
@@ -305,6 +317,7 @@ onUnmounted(() => {
     class="ml-ribbon-group"
     :class="{ 'ml-ribbon-group--auto-width': isAutoWidth }"
     :data-priority="priority ?? 100"
+    :style="fixedWidthStyle"
   >
     <div class="ml-ribbon-group__body">
       <slot />
@@ -382,4 +395,3 @@ onUnmounted(() => {
     </footer>
   </section>
 </template>
-

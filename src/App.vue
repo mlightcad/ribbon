@@ -25,7 +25,10 @@ import {
 } from '@element-plus/icons-vue'
 import { MlRibbon } from './ribbon'
 import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabModel } from './ribbon'
-import MlDemoCustomPanel from './components/MlDemoCustomPanel.vue'
+import MlDemoColorDropdown from './components/MlDemoColorDropdown.vue'
+import MlDemoLineTypeDropdown from './components/MlDemoLineTypeDropdown.vue'
+import MlDemoLineWeightDropdown from './components/MlDemoLineWeightDropdown.vue'
+import type { MlDemoCadDropdownOption } from './components/demoCadDropdown'
 
 /**
  * @component App
@@ -61,6 +64,9 @@ const ribbonSize = ref<RibbonComponentSize>('default')
 // Global page theme driven by demo ribbon commands.
 const theme = ref<'light' | 'dark'>('light')
 const gridSnap = ref(true)
+const entityColor = ref('bylayer')
+const entityLineType = ref('continuous')
+const entityLineWeight = ref('0.25')
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
@@ -117,6 +123,7 @@ const baseTabs: RibbonTabModel[] = [
               {
                 id: 'draw-rectangle',
                 type: 'dropdown',
+                tooltip: 'Rectangle',
                 hideLabel: true,
                 size: 'small',
                 props: {
@@ -128,8 +135,8 @@ const baseTabs: RibbonTabModel[] = [
                   ],
                 },
               },
-              { id: 'draw-ellipse', type: 'button', hideLabel: true, size: 'small', props: { icon: Aim } },
-              { id: 'draw-hatch', type: 'button', hideLabel: true, size: 'small', props: { icon: MagicStick } },
+              { id: 'draw-ellipse', type: 'button', tooltip: 'Ellipse', hideLabel: true, size: 'small', props: { icon: Aim } },
+              { id: 'draw-hatch', type: 'button', tooltip: 'Hatch', hideLabel: true, size: 'small', props: { icon: MagicStick } },
             ],
           },
         ],
@@ -225,6 +232,7 @@ const baseTabs: RibbonTabModel[] = [
               {
                 id: 'find-replace',
                 type: 'buttonGroup',
+                tooltip: 'Find / Replace',
                 keyTip: 'FD',
                 props: {
                   options: [
@@ -324,102 +332,42 @@ const baseTabs: RibbonTabModel[] = [
   },
   {
     id: 'custom',
-    title: 'Custom',
+    title: 'Properties',
     groups: [
       {
-        id: 'inspector',
-        title: 'Inspector',
+        id: 'entity-properties',
+        title: 'Entity Properties',
         orientation: 'row',
-        autoWidth: true,
+        width: 220,
         priority: 20,
         collections: [
           {
-            id: 'inspector-panel',
-            layout: 'row',
-            items: [
-              {
-                id: 'selection-panel',
-                type: 'custom',
-                size: 'large',
-                props: {
-                  component: MlDemoCustomPanel,
-                  componentProps: {
-                    title: 'Selection',
-                    description: 'Custom Vue component inside a Ribbon group.',
-                    primaryLabel: 'Toggle Snap',
-                    secondaryLabel: 'Toggle Theme',
-                  },
-                },
-              },
-            ],
-          },
-          {
-            id: 'inspector-controls',
+            id: 'entity-properties-main',
             layout: 'column',
             rows: 3,
             items: [
               {
-                id: 'inspector-theme',
-                type: 'segmented',
-                label: 'Theme',
-                hideLabel: true,
-                props: {
-                  options: [
-                    { label: 'Light', value: 'theme-light', icon: Sunny },
-                    { label: 'Dark', value: 'theme-dark', icon: Moon },
-                  ],
-                },
-              },
-              {
-                id: 'inspector-size',
-                type: 'segmented',
-                label: 'Ribbon Size',
-                hideLabel: true,
-                props: {
-                  options: [
-                    { label: 'Large', value: 'size-large' },
-                    { label: 'Default', value: 'size-default' },
-                    { label: 'Small', value: 'size-small' },
-                  ],
-                },
-              },
-              {
-                id: 'inspector-grid-snap',
-                type: 'toggle',
-                label: 'Grid Snap',
-                props: {
-                  activeValue: 'grid-snap-on',
-                  inactiveValue: 'grid-snap-off',
-                  activeIcon: Aim,
-                  inactiveIcon: Pointer,
-                },
-              },
-            ],
-          },
-          {
-            id: 'inspector-actions',
-            layout: 'column',
-            rows: 2,
-            items: [
-              {
-                id: 'refresh-preview',
-                type: 'button',
-                label: 'Refresh',
-                size: 'small',
-                props: { icon: MagicStick },
-              },
-              {
-                id: 'view-preset',
-                type: 'dropdown',
-                label: 'View',
+                id: 'entity-color',
+                type: 'custom',
                 size: 'small',
                 props: {
-                  icon: FullScreen,
-                  options: [
-                    { label: 'Fit', value: 'view-fit', icon: FullScreen },
-                    { label: '100%', value: 'view-100', icon: Crop },
-                    { label: '200%', value: 'view-200', icon: Aim },
-                  ],
+                  component: MlDemoColorDropdown,
+                },
+              },
+              {
+                id: 'entity-line-type',
+                type: 'custom',
+                size: 'small',
+                props: {
+                  component: MlDemoLineTypeDropdown,
+                },
+              },
+              {
+                id: 'entity-line-weight',
+                type: 'custom',
+                size: 'small',
+                props: {
+                  component: MlDemoLineWeightDropdown,
                 },
               },
             ],
@@ -446,7 +394,7 @@ const baseTabs: RibbonTabModel[] = [
 
 const zhCNMap: Record<string, string> = {
   Home: '开始',
-  Custom: '自定义',
+  Properties: '属性',
   'Chart Design': '图表设计',
   'Chart Tools': '图表工具',
   Draw: '绘图',
@@ -455,21 +403,22 @@ const zhCNMap: Record<string, string> = {
   Editing: '编辑',
   Appearance: '外观',
   Editor: '编辑器',
-  Inspector: '检查器',
+  'Entity Properties': '对象属性',
   'Chart Style': '图表样式',
-  Selection: '当前选择',
-  Refresh: '刷新',
-  View: '视图',
-  Fit: '适应',
-  '100%': '100%',
-  '200%': '200%',
-  'Custom Vue component inside a Ribbon group.': '一个直接放在 Ribbon group 中的自定义 Vue 组件。',
-  'Toggle Snap': '切换捕捉',
-  'Toggle Theme': '切换主题',
-  'Light / Snap On': '浅色 / 捕捉开',
-  'Light / Snap Off': '浅色 / 捕捉关',
-  'Dark / Snap On': '深色 / 捕捉开',
-  'Dark / Snap Off': '深色 / 捕捉关',
+  Color: '颜色',
+  'Line Type': '线型',
+  'Line Weight': '线宽',
+  ByLayer: '随层',
+  Red: '红色',
+  Yellow: '黄色',
+  Green: '绿色',
+  Cyan: '青色',
+  Blue: '蓝色',
+  Magenta: '洋红',
+  Continuous: '连续',
+  Dashed: '虚线',
+  Hidden: '隐藏线',
+  Center: '中心线',
   Line: '直线',
   Polyline: '多段线',
   Circle: '圆',
@@ -523,13 +472,10 @@ const translate = (value?: string) => {
 function resolveAppearanceModelValue(itemId: string): string | boolean | undefined {
   switch (itemId) {
     case 'theme':
-    case 'inspector-theme':
       return theme.value === 'dark' ? 'theme-dark' : 'theme-light'
     case 'ribbon-size':
-    case 'inspector-size':
       return `size-${ribbonSize.value}`
     case 'grid-snap':
-    case 'inspector-grid-snap':
       return gridSnap.value
     default:
       return undefined
@@ -541,6 +487,83 @@ function translateRecordStrings(value?: Record<string, unknown>): Record<string,
   return Object.fromEntries(
     Object.entries(value).map(([key, entry]) => [key, typeof entry === 'string' ? translate(entry) : entry]),
   )
+}
+
+const cadColorOptions = computed<MlDemoCadDropdownOption[]>(() => [
+  { value: 'bylayer', label: translate('ByLayer') ?? 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
+  { value: 'red', label: translate('Red') ?? 'Red', swatch: '#d64541', command: 'entity-color-red' },
+  { value: 'yellow', label: translate('Yellow') ?? 'Yellow', swatch: '#f2c94c', command: 'entity-color-yellow' },
+  { value: 'green', label: translate('Green') ?? 'Green', swatch: '#27ae60', command: 'entity-color-green' },
+  { value: 'cyan', label: translate('Cyan') ?? 'Cyan', swatch: '#00acc1', command: 'entity-color-cyan' },
+  { value: 'blue', label: translate('Blue') ?? 'Blue', swatch: '#2f80ed', command: 'entity-color-blue' },
+  { value: 'magenta', label: translate('Magenta') ?? 'Magenta', swatch: '#bb6bd9', command: 'entity-color-magenta' },
+])
+
+const cadLineTypeOptions = computed<MlDemoCadDropdownOption[]>(() => [
+  {
+    value: 'bylayer',
+    label: translate('ByLayer') ?? 'ByLayer',
+    pattern: 'solid',
+    command: 'entity-line-type-bylayer',
+  },
+  {
+    value: 'continuous',
+    label: translate('Continuous') ?? 'Continuous',
+    pattern: 'solid',
+    command: 'entity-line-type-continuous',
+  },
+  {
+    value: 'dashed',
+    label: translate('Dashed') ?? 'Dashed',
+    pattern: 'dashed',
+    command: 'entity-line-type-dashed',
+  },
+  {
+    value: 'hidden',
+    label: translate('Hidden') ?? 'Hidden',
+    pattern: 'hidden',
+    command: 'entity-line-type-hidden',
+  },
+  {
+    value: 'center',
+    label: translate('Center') ?? 'Center',
+    pattern: 'center',
+    command: 'entity-line-type-center',
+  },
+])
+
+const cadLineWeightOptions = computed<MlDemoCadDropdownOption[]>(() => [
+  { value: 'default', label: translate('Default') ?? 'Default', weight: 2, command: 'entity-line-weight-default' },
+  { value: '0.13', label: '0.13 mm', weight: 1, command: 'entity-line-weight-0.13' },
+  { value: '0.25', label: '0.25 mm', weight: 2, command: 'entity-line-weight-0.25' },
+  { value: '0.35', label: '0.35 mm', weight: 3, command: 'entity-line-weight-0.35' },
+  { value: '0.50', label: '0.50 mm', weight: 4, command: 'entity-line-weight-0.50' },
+  { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
+])
+
+function resolveCustomComponentProps(itemId: string): Record<string, unknown> | undefined {
+  switch (itemId) {
+    case 'entity-color':
+      return {
+        title: translate('Color') ?? 'Color',
+        modelValue: entityColor.value,
+        options: cadColorOptions.value,
+      }
+    case 'entity-line-type':
+      return {
+        title: translate('Line Type') ?? 'Line Type',
+        modelValue: entityLineType.value,
+        options: cadLineTypeOptions.value,
+      }
+    case 'entity-line-weight':
+      return {
+        title: translate('Line Weight') ?? 'Line Weight',
+        modelValue: entityLineWeight.value,
+        options: cadLineWeightOptions.value,
+      }
+    default:
+      return undefined
+  }
 }
 
 const tabs = computed<RibbonTabModel[]>(() =>
@@ -562,13 +585,10 @@ const tabs = computed<RibbonTabModel[]>(() =>
                 return optionLabel ? { ...optionRecord, label: optionLabel } : optionRecord
               })
             : item.props?.options
-          const componentProps =
-            item.id === 'selection-panel'
-              ? {
-                  ...(translateRecordStrings((item.props?.componentProps as Record<string, unknown> | undefined) ?? {}) ?? {}),
-                  status: translate(`${theme.value === 'dark' ? 'Dark' : 'Light'} / ${gridSnap.value ? 'Snap On' : 'Snap Off'}`),
-                }
-              : translateRecordStrings(item.props?.componentProps as Record<string, unknown> | undefined)
+          const componentProps = {
+            ...(translateRecordStrings(item.props?.componentProps as Record<string, unknown> | undefined) ?? {}),
+            ...(resolveCustomComponentProps(item.id) ?? {}),
+          }
           const modelValue = resolveAppearanceModelValue(item.id)
           const nextProps = item.props
             ? { ...item.props, options, componentProps }
@@ -578,6 +598,7 @@ const tabs = computed<RibbonTabModel[]>(() =>
           return {
             ...item,
             label: typeof item.label === 'string' ? translate(item.label) : item.label,
+            tooltip: typeof item.tooltip === 'string' ? translate(item.tooltip) : item.tooltip,
             props: modelValue === undefined ? nextProps : { ...(nextProps ?? {}), modelValue },
           }
         }),
@@ -585,6 +606,7 @@ const tabs = computed<RibbonTabModel[]>(() =>
       footerMenuItems: group.footerMenuItems?.map((item) => ({
         ...item,
         label: typeof item.label === 'string' ? translate(item.label) : item.label,
+        tooltip: typeof item.tooltip === 'string' ? translate(item.tooltip) : item.tooltip,
       })),
     })),
   })),
@@ -664,36 +686,82 @@ watch(
  * @param payload Ribbon click payload.
  */
 function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: string }) {
-  if (payload.groupId === 'appearance') {
-    switch (payload.itemId) {
-      case 'theme-light':
-        theme.value = 'light'
-        break
-      case 'theme-dark':
-        theme.value = 'dark'
-        break
-      case 'size-large':
-        ribbonSize.value = 'large'
-        break
-      case 'size-default':
-        ribbonSize.value = 'default'
-        break
-      case 'size-small':
-        ribbonSize.value = 'small'
-        break
-      case 'grid-snap-on':
-        gridSnap.value = true
-        break
-      case 'grid-snap-off':
-        gridSnap.value = false
-        break
-      case 'selection-panel-primary':
-        gridSnap.value = !gridSnap.value
-        break
-      case 'selection-panel-secondary':
-        theme.value = theme.value === 'dark' ? 'light' : 'dark'
-        break
-    }
+  switch (payload.itemId) {
+    case 'theme-light':
+      theme.value = 'light'
+      break
+    case 'theme-dark':
+      theme.value = 'dark'
+      break
+    case 'size-large':
+      ribbonSize.value = 'large'
+      break
+    case 'size-default':
+      ribbonSize.value = 'default'
+      break
+    case 'size-small':
+      ribbonSize.value = 'small'
+      break
+    case 'grid-snap-on':
+      gridSnap.value = true
+      break
+    case 'grid-snap-off':
+      gridSnap.value = false
+      break
+    case 'entity-color-bylayer':
+      entityColor.value = 'bylayer'
+      break
+    case 'entity-color-red':
+      entityColor.value = 'red'
+      break
+    case 'entity-color-yellow':
+      entityColor.value = 'yellow'
+      break
+    case 'entity-color-green':
+      entityColor.value = 'green'
+      break
+    case 'entity-color-cyan':
+      entityColor.value = 'cyan'
+      break
+    case 'entity-color-blue':
+      entityColor.value = 'blue'
+      break
+    case 'entity-color-magenta':
+      entityColor.value = 'magenta'
+      break
+    case 'entity-line-type-bylayer':
+      entityLineType.value = 'bylayer'
+      break
+    case 'entity-line-type-continuous':
+      entityLineType.value = 'continuous'
+      break
+    case 'entity-line-type-dashed':
+      entityLineType.value = 'dashed'
+      break
+    case 'entity-line-type-hidden':
+      entityLineType.value = 'hidden'
+      break
+    case 'entity-line-type-center':
+      entityLineType.value = 'center'
+      break
+    case 'entity-line-weight-default':
+      entityLineWeight.value = 'default'
+      break
+    case 'entity-line-weight-0.13':
+      entityLineWeight.value = '0.13'
+      break
+    case 'entity-line-weight-0.25':
+      entityLineWeight.value = '0.25'
+      break
+    case 'entity-line-weight-0.35':
+      entityLineWeight.value = '0.35'
+      break
+    case 'entity-line-weight-0.50':
+      entityLineWeight.value = '0.50'
+      break
+    case 'entity-line-weight-0.70':
+      entityLineWeight.value = '0.70'
+      break
   }
 
   lastCommand.value = `${payload.tabId}/${payload.groupId}/${payload.itemId}`
@@ -739,6 +807,8 @@ function setRibbonDisabled(value: boolean) {
       :tabs="tabs"
       :file-menu-items="fileMenuItems"
       :texts="ribbonTexts"
+      :tooltip-show-after="1000"
+      :tooltip-hide-after="0"
       @item-click="onRibbonItemClick"
     >
       <template #tabs-extra="{ disabled }">
@@ -813,6 +883,15 @@ function setRibbonDisabled(value: boolean) {
 
 .ml-demo-language-switch__select {
   width: 110px;
+}
+
+:deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content) {
+  width: 100%;
+}
+
+:deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-collection--column) {
+  width: 100%;
+  grid-auto-columns: minmax(0, 1fr);
 }
 
 .ml-demo-backstage {

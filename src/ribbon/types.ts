@@ -52,10 +52,16 @@ export interface RibbonLocaleTexts {
   galleryPreviewFallback?: string
 }
 
+export interface RibbonTooltipSettings {
+  showAfter?: number
+  hideAfter?: number
+}
+
 export interface RibbonItemModel {
   id: string
   type: RibbonItemType
   label?: string
+  tooltip?: string
   hideLabel?: boolean
   icon?: string | Component
   disabled?: boolean
@@ -86,6 +92,7 @@ export interface RibbonGroupModel {
   orientation?: RibbonGroupOrientation
   enableGroupOverflow?: boolean
   autoWidth?: boolean
+  width?: number
   priority?: number
   visible?: boolean
   launcher?: boolean
@@ -159,6 +166,8 @@ export interface RibbonContextValue {
   keyTipsOpen: import('vue').Ref<boolean>
   keyTips: import('vue').Ref<KeyTipModel[]>
   keyTipsSequence: import('vue').Ref<string>
+  tooltipShowAfter: import('vue').Ref<number>
+  tooltipHideAfter: import('vue').Ref<number>
   /** Registers a key tip for the current ribbon scope. */
   registerKeyTip: (tip: KeyTipModel) => void
   /** Unregisters a key tip by id. */
