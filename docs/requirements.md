@@ -63,6 +63,7 @@ Events:
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
+- `RibbonItemModel.tooltip?: string` for per-item tooltip text; falls back to `label` when omitted
 - `RibbonItemModel.props.modelValue?: string | number | boolean` for controlled segmented selection
 - `RibbonItemModel.props.modelValue?: boolean` for toggle default state / controlled sync
 - `RibbonItemModel.props.activeIcon` / `inactiveIcon` for toggle-state icon switching

@@ -12,6 +12,7 @@ import {
   ElIcon,
   ElOption,
   ElSelect,
+  ElTooltip,
   useGlobalConfig,
 } from 'element-plus'
 import type { Component } from 'vue'
@@ -85,7 +86,8 @@ const baseIconClass = computed<string | null>(() => {
 })
 // Hide label only when the schema explicitly sets hideLabel to true.
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
-const buttonAriaLabel = computed(() => props.item.label || props.item.id)
+const resolvedTooltip = computed(() => itemText(props.item.tooltip) ?? itemText(props.item.label))
+const buttonAriaLabel = computed(() => resolvedTooltip.value ?? props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
 const shouldSyncDropdownLabel = computed(() => props.item.props?.syncLabelWithSelection === true)
 const isDropdownOpen = ref(false)
@@ -296,169 +298,187 @@ function optionLabel(option: unknown): string | undefined {
   const label = (option as { label?: unknown }).label
   return typeof label === 'string' ? label : undefined
 }
+
+/**
+ * Normalizes optional item text values so blank strings do not render as UI copy.
+ * @param value Candidate label/tooltip string.
+ * @returns Trimmed string when present; otherwise `undefined`.
+ */
+function itemText(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
 </script>
 
 <template>
-  <div
-    class="ml-ribbon-item-host"
-    :class="[`is-${item.size ?? 'medium'}`, `type-${item.type}`, { 'is-label-hidden': item.hideLabel === true }]"
-    :data-item-id="id"
-    role="group"
+  <ElTooltip
+    :content="resolvedTooltip"
+    :disabled="!resolvedTooltip"
+    placement="top"
+    effect="dark"
   >
-    <span v-if="shouldShowKeyTip" class="ml-ribbon-item-host__keytip">{{ keyTipText }}</span>
-
-    <MlRibbonButtonGroup
-      v-if="item.type === 'buttonGroup'"
-      :id="item.id"
-      :label="item.label ?? ''"
-      :options="(item.props?.options as any[]) ?? []"
-      :disabled="isDisabled"
-      @change="handleButtonGroupChange"
-    />
-
-    <MlRibbonSegmented
-      v-else-if="item.type === 'segmented'"
-      :id="item.id"
-      :label="item.label ?? item.id"
-      :options="(item.props?.options as any[]) ?? []"
-      :model-value="item.props?.modelValue as any"
-      :direction="(item.props?.direction as any) ?? 'horizontal'"
-      :block="item.props?.block === true"
-      :disabled="isDisabled"
-      :hide-label="item.hideLabel === true"
-      @change="handleSegmentedChange"
-    />
-
-    <MlRibbonToggleButton
-      v-else-if="item.type === 'toggle'"
-      :id="item.id"
-      :label="item.label ?? item.id"
-      :model-value="toggleModelValue"
-      :active-icon="((item.props?.activeIcon ?? item.props?.icon) as any) ?? item.icon"
-      :inactive-icon="((item.props?.inactiveIcon ?? item.props?.icon) as any) ?? item.icon"
-      :active-label="toggleActiveLabel"
-      :inactive-label="toggleInactiveLabel"
-      :disabled="isDisabled"
-      :hide-label="item.hideLabel === true"
-      @change="handleToggleChange"
-    />
-
-    <MlRibbonGallery
-      v-else-if="item.type === 'gallery'"
-      :id="item.id"
-      :label="item.label ?? ''"
-      :categories="(item.props?.categories as any[]) ?? []"
-      :preview-fallback="props.galleryPreviewFallback"
-      :disabled="isDisabled"
-      @select="handleClick"
-    />
-
-    <MlRibbonTemplateItem
-      v-else-if="item.type === 'custom' || item.type === 'template'"
-      :id="item.id"
-      :item="item"
-      :disabled="isDisabled"
+    <div
+      class="ml-ribbon-item-host"
+      :class="[`is-${item.size ?? 'medium'}`, `type-${item.type}`, { 'is-label-hidden': item.hideLabel === true }]"
+      :data-item-id="id"
+      role="group"
     >
-      <component
-        :is="customItemComponent"
-        v-if="customItemComponent"
-        v-bind="customItemComponentProps"
-        :item="item"
-        :group-id="groupId"
+      <span v-if="shouldShowKeyTip" class="ml-ribbon-item-host__keytip">{{ keyTipText }}</span>
+
+      <MlRibbonButtonGroup
+        v-if="item.type === 'buttonGroup'"
+        :id="item.id"
+        :label="item.label ?? ''"
+        :options="(item.props?.options as any[]) ?? []"
         :disabled="isDisabled"
-        :emit-item-click="emitCustomItemClick"
+        @change="handleButtonGroupChange"
       />
-      <slot v-else name="template" :item="item" :disabled="isDisabled" />
-    </MlRibbonTemplateItem>
 
-    <ElDropdown
-      v-else-if="item.type === 'dropdown'"
-      trigger="click"
-      :disabled="isDisabled"
-      :popper-class="dropdownPopperClass"
-      @visible-change="setDropdownOpen"
-      @command="handleDropdownCommand"
-    >
-      <ElButton type="default" :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
-        <span class="ml-ribbon-item-host__content">
-          <span
-            v-if="dropdownIconComponent"
-            class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--dropdown-primary"
-            @click.stop="handleDropdownPrimaryClick"
-          >
-            <ElIcon>
-              <component :is="dropdownIconComponent" />
-            </ElIcon>
-          </span>
-          <span
-            v-else-if="dropdownIconClass"
-            class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class ml-ribbon-item-host__icon--dropdown-primary"
-            @click.stop="handleDropdownPrimaryClick"
-          >
-            <i :class="dropdownIconClass" aria-hidden="true" />
-          </span>
-          <span class="ml-ribbon-item-host__text-row">
-            <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ dropdownLabel }}</span>
-            <ElIcon class="ml-ribbon-item-host__dropdown-arrow" :class="{ 'is-open': isDropdownOpen }">
-              <component :is="isDropdownOpen ? ArrowUp : ArrowDown" />
-            </ElIcon>
-          </span>
-        </span>
-      </ElButton>
-      <template #dropdown>
-        <ElDropdownMenu>
-          <ElDropdownItem
-            v-for="opt in options"
-            :key="String((opt as any).value)"
-            :command="(opt as any).value"
-          >
-            <span class="ml-ribbon-dropdown-item__content">
-              <ElIcon v-if="optionIconAsComponent(opt)" class="ml-ribbon-dropdown-item__icon">
-                <component :is="optionIconAsComponent(opt)" />
+      <MlRibbonSegmented
+        v-else-if="item.type === 'segmented'"
+        :id="item.id"
+        :label="item.label ?? item.id"
+        :options="(item.props?.options as any[]) ?? []"
+        :model-value="item.props?.modelValue as any"
+        :direction="(item.props?.direction as any) ?? 'horizontal'"
+        :block="item.props?.block === true"
+        :disabled="isDisabled"
+        :hide-label="item.hideLabel === true"
+        @change="handleSegmentedChange"
+      />
+
+      <MlRibbonToggleButton
+        v-else-if="item.type === 'toggle'"
+        :id="item.id"
+        :label="item.label ?? item.id"
+        :model-value="toggleModelValue"
+        :active-icon="((item.props?.activeIcon ?? item.props?.icon) as any) ?? item.icon"
+        :inactive-icon="((item.props?.inactiveIcon ?? item.props?.icon) as any) ?? item.icon"
+        :active-label="toggleActiveLabel"
+        :inactive-label="toggleInactiveLabel"
+        :disabled="isDisabled"
+        :hide-label="item.hideLabel === true"
+        @change="handleToggleChange"
+      />
+
+      <MlRibbonGallery
+        v-else-if="item.type === 'gallery'"
+        :id="item.id"
+        :label="item.label ?? ''"
+        :categories="(item.props?.categories as any[]) ?? []"
+        :preview-fallback="props.galleryPreviewFallback"
+        :disabled="isDisabled"
+        @select="handleClick"
+      />
+
+      <MlRibbonTemplateItem
+        v-else-if="item.type === 'custom' || item.type === 'template'"
+        :id="item.id"
+        :item="item"
+        :disabled="isDisabled"
+      >
+        <component
+          :is="customItemComponent"
+          v-if="customItemComponent"
+          v-bind="customItemComponentProps"
+          :item="item"
+          :group-id="groupId"
+          :disabled="isDisabled"
+          :emit-item-click="emitCustomItemClick"
+        />
+        <slot v-else name="template" :item="item" :disabled="isDisabled" />
+      </MlRibbonTemplateItem>
+
+      <ElDropdown
+        v-else-if="item.type === 'dropdown'"
+        trigger="click"
+        :disabled="isDisabled"
+        :popper-class="dropdownPopperClass"
+        @visible-change="setDropdownOpen"
+        @command="handleDropdownCommand"
+      >
+        <ElButton type="default" :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
+          <span class="ml-ribbon-item-host__content">
+            <span
+              v-if="dropdownIconComponent"
+              class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--dropdown-primary"
+              @click.stop="handleDropdownPrimaryClick"
+            >
+              <ElIcon>
+                <component :is="dropdownIconComponent" />
               </ElIcon>
-              <i
-                v-else-if="optionIconAsClass(opt)"
-                class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
-                :class="optionIconAsClass(opt)"
-                aria-hidden="true"
-              />
-              <span class="ml-ribbon-dropdown-item__label">{{ (opt as any).label }}</span>
             </span>
-          </ElDropdownItem>
-        </ElDropdownMenu>
-      </template>
-    </ElDropdown>
+            <span
+              v-else-if="dropdownIconClass"
+              class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class ml-ribbon-item-host__icon--dropdown-primary"
+              @click.stop="handleDropdownPrimaryClick"
+            >
+              <i :class="dropdownIconClass" aria-hidden="true" />
+            </span>
+            <span class="ml-ribbon-item-host__text-row">
+              <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ dropdownLabel }}</span>
+              <ElIcon class="ml-ribbon-item-host__dropdown-arrow" :class="{ 'is-open': isDropdownOpen }">
+                <component :is="isDropdownOpen ? ArrowUp : ArrowDown" />
+              </ElIcon>
+            </span>
+          </span>
+        </ElButton>
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem
+              v-for="opt in options"
+              :key="String((opt as any).value)"
+              :command="(opt as any).value"
+            >
+              <span class="ml-ribbon-dropdown-item__content">
+                <ElIcon v-if="optionIconAsComponent(opt)" class="ml-ribbon-dropdown-item__icon">
+                  <component :is="optionIconAsComponent(opt)" />
+                </ElIcon>
+                <i
+                  v-else-if="optionIconAsClass(opt)"
+                  class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
+                  :class="optionIconAsClass(opt)"
+                  aria-hidden="true"
+                />
+                <span class="ml-ribbon-dropdown-item__label">{{ (opt as any).label }}</span>
+              </span>
+            </ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
 
-    <ElCheckbox v-else-if="item.type === 'checkbox'" :disabled="isDisabled" @change="handleClick">
-      {{ item.label }}
-    </ElCheckbox>
+      <ElCheckbox v-else-if="item.type === 'checkbox'" :disabled="isDisabled" @change="handleClick">
+        {{ item.label }}
+      </ElCheckbox>
 
-    <ElColorPicker v-else-if="item.type === 'colorPicker'" :disabled="isDisabled" @change="handleClick" />
+      <ElColorPicker v-else-if="item.type === 'colorPicker'" :disabled="isDisabled" @change="handleClick" />
 
-    <ElSelect
-      v-else-if="item.type === 'comboBox'"
-      :disabled="isDisabled"
-      :popper-class="selectPopperClass"
-      style="width: 92px"
-      @change="handleClick"
-    >
-      <ElOption
-        v-for="opt in options"
-        :key="String((opt as any).value)"
-        :label="String((opt as any).label)"
-        :value="(opt as any).value"
-      />
-    </ElSelect>
+      <ElSelect
+        v-else-if="item.type === 'comboBox'"
+        :disabled="isDisabled"
+        :popper-class="selectPopperClass"
+        style="width: 92px"
+        @change="handleClick"
+      >
+        <ElOption
+          v-for="opt in options"
+          :key="String((opt as any).value)"
+          :label="String((opt as any).label)"
+          :value="(opt as any).value"
+        />
+      </ElSelect>
 
-    <ElButton v-else :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="handleClick">
-      <ElIcon v-if="baseIconComponent" class="ml-ribbon-item-host__icon"><component :is="baseIconComponent" /></ElIcon>
-      <i
-        v-else-if="baseIconClass"
-        class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class"
-        :class="baseIconClass"
-        aria-hidden="true"
-      />
-      <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ item.label ?? item.id }}</span>
-    </ElButton>
-  </div>
+      <ElButton v-else :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="handleClick">
+        <ElIcon v-if="baseIconComponent" class="ml-ribbon-item-host__icon"><component :is="baseIconComponent" /></ElIcon>
+        <i
+          v-else-if="baseIconClass"
+          class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class"
+          :class="baseIconClass"
+          aria-hidden="true"
+        />
+        <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ item.label ?? item.id }}</span>
+      </ElButton>
+    </div>
+  </ElTooltip>
 </template>

@@ -26,8 +26,15 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 
-const emit = defineEmits<{ (e: 'select', id: string): void }>()
+const emit = defineEmits<{ (e: 'select', payload: { id: string; triggerEl: HTMLElement | null }): void }>()
 const visibleTabs = computed(() => props.tabs.filter((x) => x.visible !== false))
+
+function onTabClick(id: string, event: MouseEvent) {
+  emit('select', {
+    id,
+    triggerEl: event.currentTarget instanceof HTMLElement ? event.currentTarget : null,
+  })
+}
 </script>
 
 <template>
@@ -41,10 +48,9 @@ const visibleTabs = computed(() => props.tabs.filter((x) => x.visible !== false)
       role="tab"
       :aria-selected="activeTab === tab.id"
       :disabled="props.disabled"
-      @click="emit('select', tab.id)"
+      @click="onTabClick(tab.id, $event)"
     >
       {{ tab.title }}
     </button>
   </div>
 </template>
-

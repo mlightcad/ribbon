@@ -56,6 +56,7 @@ export interface RibbonItemModel {
   id: string
   type: RibbonItemType
   label?: string
+  tooltip?: string
   hideLabel?: boolean
   icon?: string | Component
   disabled?: boolean

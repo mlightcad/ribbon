@@ -23,6 +23,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Theme alignment with Element Plus light/dark mode (via `html.dark` class)
 - Internationalization-ready UI text model via `MlRibbon` `texts` prop (no built-in hard-coded visible strings in Ribbon components)
 - Icon-only command rendering via `RibbonItemModel.hideLabel`
+- Per-item tooltip support via `RibbonItemModel.tooltip`; when omitted, the item `label` is used as the tooltip fallback
 - Grouped command buttons via `buttonGroup` items; each button remains a stateless command and emits its own option value
 - Two-state toggle commands via `toggle` items with `props.modelValue`, `activeIcon`, and `inactiveIcon`
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
@@ -89,7 +90,7 @@ const tabs = ref<RibbonTabModel[]>([
             id: 'clipboard-actions',
             items: [
               { id: 'paste', type: 'button', label: 'Paste', size: 'large' },
-              { id: 'copy', type: 'button', label: 'Copy', size: 'small' },
+              { id: 'copy', type: 'button', label: 'Copy', tooltip: 'Copy selection', size: 'small' },
               {
                 id: 'grid-snap',
                 type: 'toggle',

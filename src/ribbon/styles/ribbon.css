@@ -94,6 +94,12 @@ html.dark {
   background: linear-gradient(180deg, var(--ml-rb-header-start) 0%, var(--ml-rb-header-end) 100%);
 }
 
+.ml-ribbon__minimized-anchor {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
 .ml-ribbon__head-left,
 .ml-ribbon__head-right {
   display: flex;
@@ -998,6 +1004,47 @@ html.dark {
   --ml-rb-select-padding-x: 6px;
   --ml-rb-select-font-size: calc(13px * var(--ml-rb-scale));
   padding: 8px !important;
+}
+
+.ml-ribbon-tab-panel-popover {
+  --ml-rb-scale: 1;
+  --ml-rb-font-xs: calc(var(--el-font-size-extra-small) * var(--ml-rb-scale));
+  --ml-rb-font-sm: calc(var(--el-font-size-small) * var(--ml-rb-scale));
+  --ml-rb-font-base: calc(var(--el-font-size-base) * var(--ml-rb-scale));
+  --ml-rb-control-height: calc(var(--el-component-size-default) * var(--ml-rb-scale));
+  --ml-rb-compact-height: calc(var(--el-component-size-small) * var(--ml-rb-scale));
+  --ml-rb-content-rows: 3;
+  --ml-rb-content-row-gap: 2px;
+  --ml-rb-footer-line-height: calc(11px * var(--ml-rb-scale));
+  --ml-rb-footer-pad-top: calc(4px * var(--ml-rb-scale));
+  --ml-rb-footer-pad-bottom: calc(2px * var(--ml-rb-scale));
+  --ml-rb-footer-height: calc(
+    var(--ml-rb-footer-line-height) + var(--ml-rb-footer-pad-top) + var(--ml-rb-footer-pad-bottom)
+  );
+  --ml-rb-panel-content-height: calc(
+    (var(--ml-rb-compact-height) * var(--ml-rb-content-rows)) +
+      (var(--ml-rb-content-row-gap) * (var(--ml-rb-content-rows) - 1))
+  );
+  --ml-rb-panel-height: calc(var(--ml-rb-panel-content-height) + var(--ml-rb-footer-height));
+  --ml-rb-select-padding-x: 6px;
+  --ml-rb-select-font-size: calc(13px * var(--ml-rb-scale));
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.ml-ribbon-tab-panel-popover.ml-ribbon-tab-panel-popover--size-small {
+  --ml-rb-scale: 0.92;
+  --ml-rb-select-padding-x: 4px;
+}
+
+.ml-ribbon-tab-panel-popover.ml-ribbon-tab-panel-popover--size-large {
+  --ml-rb-scale: 1.08;
+  --ml-rb-select-padding-x: 7px;
+}
+
+.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating {
+  width: 100%;
+  min-width: 0;
 }
 
 .ml-ribbon-group-popover.ml-ribbon-group-popover--size-small {

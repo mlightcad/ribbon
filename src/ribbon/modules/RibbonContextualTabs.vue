@@ -37,7 +37,7 @@ const props = defineProps<{
   defaultContextualTitle?: string
 }>()
 
-const emit = defineEmits<{ (e: 'select', id: string): void }>()
+const emit = defineEmits<{ (e: 'select', payload: { id: string; triggerEl: HTMLElement | null }): void }>()
 </script>
 
 <template>
@@ -63,4 +63,3 @@ const emit = defineEmits<{ (e: 'select', id: string): void }>()
     </div>
   </div>
 </template>
-
