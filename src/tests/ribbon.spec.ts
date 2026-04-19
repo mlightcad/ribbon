@@ -114,6 +114,8 @@ describe('MlDemoColorDropdown', () => {
       expect(dropdown.classes()).toContain('ml-demo-cad-dropdown--size-small')
       expect(wrapper.find('.ml-demo-cad-dropdown__title').exists()).toBe(false)
       expect(wrapper.find('.ml-demo-cad-dropdown__leading-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-demo-cad-dropdown > .ml-demo-cad-dropdown__leading-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__leading-icon').exists()).toBe(false)
       expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__swatch').exists()).toBe(true)
 
       await wrapper.setProps({ size: 'large' })
@@ -307,9 +309,14 @@ describe('App demo', () => {
   it('configures entity property dropdowns as a single column collection with three rows', () => {
     const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
 
+    expect(appSource).toContain("id: 'entity-properties'")
+    expect(appSource).toContain('width: 220')
     expect(appSource).toContain("id: 'entity-properties-main'")
     expect(appSource).toContain("layout: 'column'")
     expect(appSource).toContain('rows: 3')
+    expect(appSource).toContain(":deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content)")
+    expect(appSource).toContain(":deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-collection--column)")
+    expect(appSource).toContain('grid-auto-columns: minmax(0, 1fr);')
     expect(appSource).toContain("id: 'entity-color'")
     expect(appSource).toContain("id: 'entity-line-type'")
     expect(appSource).toContain("id: 'entity-line-weight'")
@@ -320,6 +327,32 @@ describe('App demo', () => {
 })
 
 describe('MlRibbon', () => {
+  it('applies fixed group width from schema', () => {
+    const fixedWidthTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'properties',
+            title: 'Properties',
+            width: 220,
+            collections: [{ id: 'properties-main', items: [{ id: 'inspect', type: 'button', label: 'Inspect' }] }],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, { props: { tabs: fixedWidthTabs } })
+    const group = wrapper.find('.ml-ribbon-group[data-group-id="properties"]')
+
+    expect(group.exists()).toBe(true)
+    expect(group.attributes('style')).toContain('width: 220px')
+    expect(group.attributes('style')).toContain('min-width: 220px')
+    expect(group.attributes('style')).toContain('max-width: 220px')
+    expect(group.attributes('style')).toContain('flex: 0 0 220px')
+  })
+
   it('uses fixed classic panel height derived from content and footer css variables', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
 
@@ -342,6 +375,13 @@ describe('MlRibbon', () => {
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.el-color-picker\s+\.el-color-picker__empty,\s*[\s\S]*font-size:\s*calc\(12px\s*\*\s*var\(--ml-rb-scale\)\);/,
     )
+  })
+
+  it('keeps CAD demo dropdowns stretched to the parent item width', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/MlDemoCadDropdown.vue'), 'utf-8')
+
+    expect(source).toMatch(/\.ml-demo-cad-dropdown\s*\{[\s\S]*width:\s*100%;/)
+    expect(source).toMatch(/\.ml-demo-cad-dropdown\s*\{[\s\S]*max-width:\s*100%;/)
   })
 
   it('keeps segmented controls aligned to ribbon compact height instead of raw element-plus size presets', () => {
@@ -486,6 +526,48 @@ describe('MlRibbon', () => {
   it('supports size prop', () => {
     const wrapper = mount(MlRibbon, { props: { tabs, size: 'small' } })
     expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--size-small')
+  })
+
+  it('passes global tooltip delays to ribbon controls and item hosts', () => {
+    const wrapper = mount(MlRibbon, {
+      props: {
+        tabs,
+        tooltipShowAfter: 750,
+        tooltipHideAfter: 0,
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled', 'showAfter', 'hideAfter'],
+            template: `
+              <div
+                class="ml-test-tooltip"
+                :data-content="content"
+                :data-disabled="String(disabled)"
+                :data-show-after="String(showAfter)"
+                :data-hide-after="String(hideAfter)"
+              >
+                <slot />
+              </div>
+            `,
+          },
+        },
+      },
+    })
+
+    try {
+      const itemTooltip = wrapper.find('.ml-test-tooltip[data-content="Run"]')
+      expect(itemTooltip.exists()).toBe(true)
+      expect(itemTooltip.attributes('data-show-after')).toBe('750')
+      expect(itemTooltip.attributes('data-hide-after')).toBe('0')
+
+      const minimizeTooltip = wrapper.find('.ml-test-tooltip[data-content="Minimize ribbon"]')
+      expect(minimizeTooltip.exists()).toBe(true)
+      expect(minimizeTooltip.attributes('data-show-after')).toBe('750')
+      expect(minimizeTooltip.attributes('data-hide-after')).toBe('0')
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('disables the full ribbon surface when disabled is true', async () => {
@@ -1637,9 +1719,9 @@ describe('MlRibbon', () => {
       global: {
         stubs: {
           ElTooltip: {
-            props: ['content', 'disabled'],
+            props: ['content', 'disabled', 'showAfter', 'hideAfter'],
             template:
-              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)" :data-show-after="String(showAfter)" :data-hide-after="String(hideAfter)"><slot /></div>',
           },
         },
       },
@@ -1649,6 +1731,8 @@ describe('MlRibbon', () => {
       const tooltip = wrapper.find('.ml-test-tooltip')
       expect(tooltip.attributes('data-content')).toBe('Copy selection')
       expect(tooltip.attributes('data-disabled')).toBe('false')
+      expect(tooltip.attributes('data-show-after')).toBe('1000')
+      expect(tooltip.attributes('data-hide-after')).toBe('0')
       expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Copy selection')
     } finally {
       wrapper.unmount()
@@ -1669,6 +1753,40 @@ describe('MlRibbon', () => {
       global: {
         stubs: {
           ElTooltip: {
+            props: ['content', 'disabled', 'showAfter', 'hideAfter'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)" :data-show-after="String(showAfter)" :data-hide-after="String(hideAfter)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltip = wrapper.find('.ml-test-tooltip')
+      expect(tooltip.attributes('data-content')).toBe('直线')
+      expect(tooltip.attributes('data-disabled')).toBe('false')
+      expect(tooltip.attributes('data-show-after')).toBe('1000')
+      expect(tooltip.attributes('data-hide-after')).toBe('0')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('直线')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('falls back to a humanized item id for icon-only commands without label or tooltip', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'draw-ellipse',
+        groupId: 'draw',
+        item: {
+          id: 'draw-ellipse',
+          type: 'button',
+          hideLabel: true,
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
             props: ['content', 'disabled'],
             template:
               '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
@@ -1679,9 +1797,45 @@ describe('MlRibbon', () => {
 
     try {
       const tooltip = wrapper.find('.ml-test-tooltip')
-      expect(tooltip.attributes('data-content')).toBe('直线')
+      expect(tooltip.attributes('data-content')).toBe('Draw Ellipse')
       expect(tooltip.attributes('data-disabled')).toBe('false')
-      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('直线')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Draw Ellipse')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('derives tooltip content from button group option labels when the group has no label', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'find-replace',
+        groupId: 'editing',
+        item: {
+          id: 'find-replace',
+          type: 'buttonGroup',
+          props: {
+            options: [
+              { label: 'Find', value: 'find' },
+              { label: 'Replace', value: 'replace' },
+            ],
+          },
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltip = wrapper.find('.ml-test-tooltip')
+      expect(tooltip.attributes('data-content')).toBe('Find / Replace')
+      expect(tooltip.attributes('data-disabled')).toBe('false')
     } finally {
       wrapper.unmount()
     }

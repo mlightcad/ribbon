@@ -64,11 +64,14 @@ Events:
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
 - `RibbonItemModel.tooltip?: string` for per-item tooltip text; falls back to `label` when omitted
+- `MlRibbon.tooltipShowAfter?: number` for global tooltip show delay in milliseconds
+- `MlRibbon.tooltipHideAfter?: number` for global tooltip hide delay in milliseconds
 - `RibbonItemModel.props.modelValue?: string | number | boolean` for controlled segmented selection
 - `RibbonItemModel.props.modelValue?: boolean` for toggle default state / controlled sync
 - `RibbonItemModel.props.activeIcon` / `inactiveIcon` for toggle-state icon switching
 - `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
+- `RibbonGroupModel.width?: number` for fixed group width in pixels
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
 - Custom item option: `RibbonItemModel.props.component?: Component` mounts a host-supplied Vue component
 - Custom item option: `RibbonItemModel.props.componentProps?: Record<string, unknown>` forwards extra props into that mounted component
@@ -83,6 +86,8 @@ Controlled props:
 - `hideLayoutSwitcher?: boolean` (default `false`)
 - `hideMinimizeButton?: boolean` (default `false`)
 - `hideKeyTipsToggle?: boolean` (default `false`)
+- `tooltipShowAfter?: number` (default `1000`)
+- `tooltipHideAfter?: number` (default `0`)
 
 Slots:
 - `tabs-extra`: host-provided custom content rendered at the right side of ribbon tab area

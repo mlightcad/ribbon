@@ -1,5 +1,8 @@
 import { defineComponent, h } from 'vue'
 
+/**
+ * Shared SVG attributes for the lightweight CAD demo icons.
+ */
 const baseSvgProps = {
   viewBox: '0 0 16 16',
   fill: 'none',
@@ -7,6 +10,9 @@ const baseSvgProps = {
   'aria-hidden': 'true',
 }
 
+/**
+ * Leading icon used by the color dropdown demo.
+ */
 export const MlDemoCadColorIcon = defineComponent({
   name: 'MlDemoCadColorIcon',
   render() {
@@ -37,6 +43,9 @@ export const MlDemoCadColorIcon = defineComponent({
   },
 })
 
+/**
+ * Leading icon used by the line type dropdown demo.
+ */
 export const MlDemoCadLineTypeIcon = defineComponent({
   name: 'MlDemoCadLineTypeIcon',
   render() {
@@ -62,6 +71,9 @@ export const MlDemoCadLineTypeIcon = defineComponent({
   },
 })
 
+/**
+ * Leading icon used by the line weight dropdown demo.
+ */
 export const MlDemoCadLineWeightIcon = defineComponent({
   name: 'MlDemoCadLineWeightIcon',
   render() {

@@ -4,6 +4,36 @@ import { MlDemoCadLineWeightIcon } from './demoCadIcons'
 import type { RibbonCustomItemBindings } from '../ribbon'
 import type { MlDemoCadDropdownOption } from './demoCadDropdown'
 
+defineOptions({
+  name: 'MlDemoLineWeightDropdown',
+})
+
+/**
+ * Props accepted by {@link MlDemoLineWeightDropdown}.
+ *
+ * This wrapper configures the shared CAD dropdown for line-weight previews and
+ * provides convenient override points for consumers that need custom values.
+ */
+interface MlDemoLineWeightDropdownProps extends RibbonCustomItemBindings {
+  /**
+   * Optional title exposed to assistive technologies and documentation tooling.
+   */
+  title?: string
+
+  /**
+   * Currently selected line-weight value.
+   */
+  modelValue?: string
+
+  /**
+   * Optional line-weight options. Uses a default engineering-style scale when omitted.
+   */
+  options?: MlDemoCadDropdownOption[]
+}
+
+/**
+ * Default line-weight presets shown when the host ribbon item does not provide its own list.
+ */
 const fallbackOptions: MlDemoCadDropdownOption[] = [
   { value: 'default', label: 'Default', weight: 2, command: 'entity-line-weight-default' },
   { value: '0.13', label: '0.13 mm', weight: 1, command: 'entity-line-weight-0.13' },
@@ -13,13 +43,7 @@ const fallbackOptions: MlDemoCadDropdownOption[] = [
   { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
 ]
 
-defineProps<
-  RibbonCustomItemBindings & {
-    title?: string
-    modelValue?: string
-    options?: MlDemoCadDropdownOption[]
-  }
->()
+defineProps<MlDemoLineWeightDropdownProps>()
 </script>
 
 <template>

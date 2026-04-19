@@ -123,6 +123,7 @@ const baseTabs: RibbonTabModel[] = [
               {
                 id: 'draw-rectangle',
                 type: 'dropdown',
+                tooltip: 'Rectangle',
                 hideLabel: true,
                 size: 'small',
                 props: {
@@ -134,8 +135,8 @@ const baseTabs: RibbonTabModel[] = [
                   ],
                 },
               },
-              { id: 'draw-ellipse', type: 'button', hideLabel: true, size: 'small', props: { icon: Aim } },
-              { id: 'draw-hatch', type: 'button', hideLabel: true, size: 'small', props: { icon: MagicStick } },
+              { id: 'draw-ellipse', type: 'button', tooltip: 'Ellipse', hideLabel: true, size: 'small', props: { icon: Aim } },
+              { id: 'draw-hatch', type: 'button', tooltip: 'Hatch', hideLabel: true, size: 'small', props: { icon: MagicStick } },
             ],
           },
         ],
@@ -231,6 +232,7 @@ const baseTabs: RibbonTabModel[] = [
               {
                 id: 'find-replace',
                 type: 'buttonGroup',
+                tooltip: 'Find / Replace',
                 keyTip: 'FD',
                 props: {
                   options: [
@@ -336,7 +338,7 @@ const baseTabs: RibbonTabModel[] = [
         id: 'entity-properties',
         title: 'Entity Properties',
         orientation: 'row',
-        autoWidth: true,
+        width: 220,
         priority: 20,
         collections: [
           {
@@ -805,6 +807,8 @@ function setRibbonDisabled(value: boolean) {
       :tabs="tabs"
       :file-menu-items="fileMenuItems"
       :texts="ribbonTexts"
+      :tooltip-show-after="1000"
+      :tooltip-hide-after="0"
       @item-click="onRibbonItemClick"
     >
       <template #tabs-extra="{ disabled }">
@@ -879,6 +883,15 @@ function setRibbonDisabled(value: boolean) {
 
 .ml-demo-language-switch__select {
   width: 110px;
+}
+
+:deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content) {
+  width: 100%;
+}
+
+:deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-collection--column) {
+  width: 100%;
+  grid-auto-columns: minmax(0, 1fr);
 }
 
 .ml-demo-backstage {

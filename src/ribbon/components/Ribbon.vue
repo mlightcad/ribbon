@@ -42,6 +42,8 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop showOpenBackstage - Controls whether "Open backstage" entry is shown in File menu.
  * @prop fileMenuItems - File menu command list.
  * @prop texts - Localized UI text bundle for labels/tooltips.
+ * @prop tooltipShowAfter - Global tooltip show delay in milliseconds.
+ * @prop tooltipHideAfter - Global tooltip hide delay in milliseconds.
  *
  * @slot tabs-extra - Custom content rendered on the right side of the tab area.
  * Slot props: `{ activeTab, layout, minimized, disabled }`.
@@ -162,6 +164,17 @@ function cloneTabs(value: RibbonTabModel[]): RibbonTabModel[] {
   }))
 }
 
+/**
+ * Normalizes tooltip delay props so Element Plus always receives a safe number.
+ * @param value Candidate tooltip delay in milliseconds.
+ * @param fallback Default delay used when value is invalid.
+ * @returns Non-negative integer delay.
+ */
+function normalizeTooltipDelay(value: unknown, fallback: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) return fallback
+  return Math.max(0, Math.round(value))
+}
+
 const defaultRibbonTexts: Required<RibbonLocaleTexts> = {
   layoutSwitcherTooltip: 'Switch ribbon layout',
   minimizeTooltip: 'Minimize ribbon',
@@ -196,6 +209,8 @@ const props = withDefaults(
     showOpenBackstage?: boolean
     fileMenuItems?: { id: string; label: string; disabled?: boolean }[]
     texts?: RibbonLocaleTexts
+    tooltipShowAfter?: number
+    tooltipHideAfter?: number
   }>(),
   {
     id: 'ml-ribbon-root',
@@ -212,6 +227,8 @@ const props = withDefaults(
     showOpenBackstage: true,
     fileMenuItems: () => [],
     texts: () => ({}),
+    tooltipShowAfter: 1000,
+    tooltipHideAfter: 0,
   },
 )
 
@@ -240,6 +257,8 @@ const { context, visibleTabs } = useRibbonState(
     : props.layout,
   props.minimized,
   props.activeTab || props.tabs[0]?.id || '',
+  normalizeTooltipDelay(props.tooltipShowAfter, 1000),
+  normalizeTooltipDelay(props.tooltipHideAfter, 0),
 )
 
 provide(ribbonKey, context)
@@ -272,6 +291,14 @@ watch(() => props.disabled, (value) => {
 })
 watch(() => props.activeTab, (value) => {
   if (value && value !== context.activeTab.value) context.activeTab.value = value
+})
+watch(() => props.tooltipShowAfter, (value) => {
+  const normalized = normalizeTooltipDelay(value, 1000)
+  if (normalized !== context.tooltipShowAfter.value) context.tooltipShowAfter.value = normalized
+})
+watch(() => props.tooltipHideAfter, (value) => {
+  const normalized = normalizeTooltipDelay(value, 0)
+  if (normalized !== context.tooltipHideAfter.value) context.tooltipHideAfter.value = normalized
 })
 
 watch(context.activeTab, (value) => {
@@ -341,6 +368,8 @@ const ribbonTexts = computed<RibbonLocaleTexts>(() => ({
   contextualTabDefaultTitle: props.texts.contextualTabDefaultTitle || defaultRibbonTexts.contextualTabDefaultTitle,
   galleryPreviewFallback: props.texts.galleryPreviewFallback || defaultRibbonTexts.galleryPreviewFallback,
 }))
+const resolvedTooltipShowAfter = computed(() => normalizeTooltipDelay(props.tooltipShowAfter, 1000))
+const resolvedTooltipHideAfter = computed(() => normalizeTooltipDelay(props.tooltipHideAfter, 0))
 const minimizeButtonIcon = computed(() => (context.minimized.value ? ArrowUpBold : ArrowDownBold))
 
 const classicInlineGroups = computed(() =>
@@ -403,6 +432,9 @@ function getGroupPriority(group: RibbonGroupModel): number {
  * @returns Estimated width in pixels.
  */
 function estimateGroupWidth(group: RibbonGroupModel): number {
+  if (typeof group.width === 'number' && Number.isFinite(group.width) && group.width > 0) {
+    return group.width
+  }
   if (group.autoWidth !== false) return 140
   return 190
 }
@@ -431,8 +463,8 @@ function collectRenderedGroupWidths(panel: HTMLElement): Record<string, number> 
 function estimateClassicPanelWidth(): number {
   const totalWidth = visibleGroups.value.reduce((sum, group) => {
     const measured = measuredGroupWidths.value[group.id]
-    const estimated = group.autoWidth === true ? measured ?? estimateGroupWidth(group) : measured ?? 190
-    return sum + Math.max(estimated, group.autoWidth === true ? 140 : 190)
+    const estimated = measured ?? estimateGroupWidth(group)
+    return sum + Math.max(estimated, estimateGroupWidth(group))
   }, 0)
 
   return Math.max(220, totalWidth)
@@ -908,7 +940,12 @@ defineExpose<RibbonDynamicApi>(context.api)
             :default-contextual-title="ribbonTexts.contextualTabDefaultTitle"
             @select="onTabClick"
           />
-          <ElTooltip v-if="!props.hideMinimizeButton" :content="ribbonTexts.minimizeTooltip">
+          <ElTooltip
+            v-if="!props.hideMinimizeButton"
+            :content="ribbonTexts.minimizeTooltip"
+            :show-after="resolvedTooltipShowAfter"
+            :hide-after="resolvedTooltipHideAfter"
+          >
             <ElButton
               :class="[
                 'ml-ribbon__control',
@@ -922,7 +959,12 @@ defineExpose<RibbonDynamicApi>(context.api)
           </ElTooltip>
         </div>
         <div class="ml-ribbon__head-right">
-          <ElTooltip v-if="!props.hideLayoutSwitcher" :content="ribbonTexts.layoutSwitcherTooltip">
+          <ElTooltip
+            v-if="!props.hideLayoutSwitcher"
+            :content="ribbonTexts.layoutSwitcherTooltip"
+            :show-after="resolvedTooltipShowAfter"
+            :hide-after="resolvedTooltipHideAfter"
+          >
             <ElButton
               circle
               class="ml-ribbon__control ml-ribbon__control--layout"
@@ -987,6 +1029,7 @@ defineExpose<RibbonDynamicApi>(context.api)
               :group-icon-css="group.groupIconCss"
               :orientation="group.orientation"
               :auto-width="group.autoWidth"
+              :width="group.width"
               :priority="group.priority ?? 100"
               :launcher="group.launcher"
               :show-launcher-icon="group.showLauncherIcon"
@@ -1091,6 +1134,7 @@ defineExpose<RibbonDynamicApi>(context.api)
           :group-icon-css="group.groupIconCss"
           :orientation="group.orientation"
           :auto-width="group.autoWidth"
+          :width="group.width"
           :priority="group.priority ?? 100"
           :launcher="group.launcher"
           :show-launcher-icon="group.showLauncherIcon"

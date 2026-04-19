@@ -6,18 +6,59 @@ import type { Component } from 'vue'
 import type { RibbonCustomItemBindings } from '../ribbon'
 import type { MlDemoCadDropdownOption, MlDemoCadDropdownVariant } from './demoCadDropdown'
 
+defineOptions({
+  name: 'MlDemoCadDropdown',
+})
+
+/**
+ * Props accepted by {@link MlDemoCadDropdown}.
+ *
+ * The component adapts ribbon custom-item bindings into a reusable CAD-style
+ * dropdown trigger with either color, line-type, or line-weight previews.
+ */
+interface MlDemoCadDropdownProps extends RibbonCustomItemBindings {
+  /**
+   * Optional display title used for accessibility and integrations that need a
+   * stable human-readable label.
+   */
+  title?: string
+
+  /**
+   * Currently selected option value.
+   *
+   * If the value is missing or does not match an available option, the first
+   * option in {@link options} is used as the visual fallback.
+   */
+  modelValue?: string
+
+  /**
+   * Ordered list of selectable options rendered inside the popover.
+   */
+  options?: MlDemoCadDropdownOption[]
+
+  /**
+   * Selects the preview style used in both the trigger and the dropdown list.
+   */
+  variant?: MlDemoCadDropdownVariant
+
+  /**
+   * Label shown when no option can be resolved from {@link modelValue}.
+   */
+  placeholder?: string
+
+  /**
+   * Explicit Element Plus popover width, in pixels.
+   */
+  popoverWidth?: number
+
+  /**
+   * Optional icon rendered before the current preview value.
+   */
+  leadingIcon?: Component
+}
+
 const props = withDefaults(
-  defineProps<
-    RibbonCustomItemBindings & {
-      title?: string
-      modelValue?: string
-      options?: MlDemoCadDropdownOption[]
-      variant?: MlDemoCadDropdownVariant
-      placeholder?: string
-      popoverWidth?: number
-      leadingIcon?: Component
-    }
-  >(),
+  defineProps<MlDemoCadDropdownProps>(),
   {
     title: '',
     modelValue: '',
@@ -51,6 +92,9 @@ function handleOptionClick(option: MlDemoCadDropdownOption) {
   popoverVisible.value = false
 }
 
+/**
+ * Builds the CSS background used to preview line-based dropdown options.
+ */
 function resolveLineBackground(option: MlDemoCadDropdownOption) {
   const color = option.swatch ?? '#4f5b67'
   switch (option.pattern) {
@@ -65,6 +109,9 @@ function resolveLineBackground(option: MlDemoCadDropdownOption) {
   }
 }
 
+/**
+ * Maps the resolved option into CSS custom properties consumed by the preview UI.
+ */
 function previewStyle(option: MlDemoCadDropdownOption | null) {
   if (!option) return {}
   if (props.variant === 'color') {
@@ -89,70 +136,73 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
     ]"
     :aria-disabled="disabled"
   >
-    <ElPopover
-      v-model:visible="popoverVisible"
-      trigger="click"
-      placement="bottom-start"
-      :width="popoverWidth"
-      :disabled="disabled"
-      :popper-class="popoverClass"
-      :offset="6"
-      persistent
-    >
-      <template #reference>
-        <button
-          type="button"
-          class="ml-demo-cad-dropdown__trigger"
-          :disabled="disabled"
-          :aria-label="accessibleLabel"
-        >
-          <span v-if="leadingIcon" class="ml-demo-cad-dropdown__leading-icon" aria-hidden="true">
-            <ElIcon>
-              <component :is="leadingIcon" />
-            </ElIcon>
-          </span>
-          <span class="ml-demo-cad-dropdown__preview" :class="`is-${variant}`">
-            <span
-              v-if="variant === 'color'"
-              class="ml-demo-cad-dropdown__swatch"
-              :style="previewStyle(selectedOption)"
-              aria-hidden="true"
-            />
-            <span v-else class="ml-demo-cad-dropdown__line" :style="previewStyle(selectedOption)" aria-hidden="true" />
-            <span class="ml-demo-cad-dropdown__value">{{ displayLabel }}</span>
-          </span>
-          <ElIcon class="ml-demo-cad-dropdown__arrow" :class="{ 'is-open': popoverVisible }">
-            <ArrowDown />
-          </ElIcon>
-        </button>
-      </template>
+    <span v-if="leadingIcon" class="ml-demo-cad-dropdown__leading-icon" aria-hidden="true">
+      <ElIcon>
+        <component :is="leadingIcon" />
+      </ElIcon>
+    </span>
 
-      <div class="ml-demo-cad-dropdown__menu">
-        <button
-          v-for="option in options"
-          :key="option.value"
-          type="button"
-          class="ml-demo-cad-dropdown__option"
-          :class="{ 'is-selected': option.value === selectedOption?.value }"
-          :disabled="disabled"
-          @click="handleOptionClick(option)"
-        >
-          <span class="ml-demo-cad-dropdown__option-preview" :class="`is-${variant}`">
-            <span
-              v-if="variant === 'color'"
-              class="ml-demo-cad-dropdown__swatch"
-              :style="previewStyle(option)"
-              aria-hidden="true"
-            />
-            <span v-else class="ml-demo-cad-dropdown__line" :style="previewStyle(option)" aria-hidden="true" />
-            <span class="ml-demo-cad-dropdown__value">{{ option.label }}</span>
-          </span>
-          <span v-if="option.value === selectedOption?.value" class="ml-demo-cad-dropdown__selected-mark" aria-hidden="true">
-            ✓
-          </span>
-        </button>
-      </div>
-    </ElPopover>
+    <div class="ml-demo-cad-dropdown__field">
+      <ElPopover
+        v-model:visible="popoverVisible"
+        trigger="click"
+        placement="bottom-start"
+        :width="popoverWidth"
+        :disabled="disabled"
+        :popper-class="popoverClass"
+        :offset="6"
+        persistent
+      >
+        <template #reference>
+          <button
+            type="button"
+            class="ml-demo-cad-dropdown__trigger"
+            :disabled="disabled"
+            :aria-label="accessibleLabel"
+          >
+            <span class="ml-demo-cad-dropdown__preview" :class="`is-${variant}`">
+              <span
+                v-if="variant === 'color'"
+                class="ml-demo-cad-dropdown__swatch"
+                :style="previewStyle(selectedOption)"
+                aria-hidden="true"
+              />
+              <span v-else class="ml-demo-cad-dropdown__line" :style="previewStyle(selectedOption)" aria-hidden="true" />
+              <span class="ml-demo-cad-dropdown__value">{{ displayLabel }}</span>
+            </span>
+            <ElIcon class="ml-demo-cad-dropdown__arrow" :class="{ 'is-open': popoverVisible }">
+              <ArrowDown />
+            </ElIcon>
+          </button>
+        </template>
+
+        <div class="ml-demo-cad-dropdown__menu">
+          <button
+            v-for="option in options"
+            :key="option.value"
+            type="button"
+            class="ml-demo-cad-dropdown__option"
+            :class="{ 'is-selected': option.value === selectedOption?.value }"
+            :disabled="disabled"
+            @click="handleOptionClick(option)"
+          >
+            <span class="ml-demo-cad-dropdown__option-preview" :class="`is-${variant}`">
+              <span
+                v-if="variant === 'color'"
+                class="ml-demo-cad-dropdown__swatch"
+                :style="previewStyle(option)"
+                aria-hidden="true"
+              />
+              <span v-else class="ml-demo-cad-dropdown__line" :style="previewStyle(option)" aria-hidden="true" />
+              <span class="ml-demo-cad-dropdown__value">{{ option.label }}</span>
+            </span>
+            <span v-if="option.value === selectedOption?.value" class="ml-demo-cad-dropdown__selected-mark" aria-hidden="true">
+              ✓
+            </span>
+          </button>
+        </div>
+      </ElPopover>
+    </div>
   </section>
 </template>
 
@@ -177,6 +227,9 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
   --ml-demo-cad-min-width: calc(150px * var(--ml-demo-cad-scale));
   display: inline-flex;
   align-items: center;
+  gap: calc(6px * var(--ml-demo-cad-scale));
+  width: 100%;
+  max-width: 100%;
   min-width: var(--ml-demo-cad-min-width);
   height: 100%;
 }
@@ -212,6 +265,11 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
     background-color 0.15s ease,
     border-color 0.15s ease,
     color 0.15s ease;
+}
+
+.ml-demo-cad-dropdown__field {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .ml-demo-cad-dropdown__trigger:hover {

@@ -64,6 +64,8 @@ const options = computed(() => (Array.isArray(props.item.props?.options) ? props
 // Read Element Plus global size so popup menus inherit the same visual scale as ribbon controls.
 const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
+const resolvedTooltipShowAfter = computed(() => normalizeTooltipDelay(ribbon?.tooltipShowAfter.value, 1000))
+const resolvedTooltipHideAfter = computed(() => normalizeTooltipDelay(ribbon?.tooltipHideAfter.value, 0))
 // Shared popper class names keep dropdown/select overlays on the same ribbon size theme.
 const dropdownPopperClass = computed(
   () => `ml-ribbon-dropdown-menu ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
@@ -86,7 +88,13 @@ const baseIconClass = computed<string | null>(() => {
 })
 // Hide label only when the schema explicitly sets hideLabel to true.
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
-const resolvedTooltip = computed(() => itemText(props.item.tooltip) ?? itemText(props.item.label))
+const resolvedTooltip = computed(
+  () =>
+    itemText(props.item.tooltip) ??
+    itemText(props.item.label) ??
+    optionTooltipText(props.item) ??
+    humanizeItemId(props.item.id),
+)
 const buttonAriaLabel = computed(() => resolvedTooltip.value ?? props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
 const shouldSyncDropdownLabel = computed(() => props.item.props?.syncLabelWithSelection === true)
@@ -309,12 +317,51 @@ function itemText(value: unknown): string | undefined {
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
 }
+
+/**
+ * Normalizes tooltip delay props so Element Plus always receives a safe number.
+ * @param value Candidate tooltip delay in milliseconds.
+ * @param fallback Default delay used when value is invalid.
+ * @returns Non-negative integer delay.
+ */
+function normalizeTooltipDelay(value: unknown, fallback: number): number {
+  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) return fallback
+  return Math.max(0, Math.round(value))
+}
+
+/**
+ * Derives tooltip text from option labels for grouped/selectable items.
+ * @param item Ribbon item candidate.
+ * @returns Tooltip text inferred from option labels when available.
+ */
+function optionTooltipText(item: RibbonItemModel): string | undefined {
+  const optionLabels = options.value.map((option) => optionLabel(option)).filter((label): label is string => Boolean(label))
+  if (!optionLabels.length) return undefined
+  if (item.type === 'buttonGroup') return optionLabels.join(' / ')
+  return optionLabels[0]
+}
+
+/**
+ * Converts schema ids like `draw-ellipse` into a readable fallback tooltip.
+ * @param value Item id.
+ * @returns Human-readable fallback text.
+ */
+function humanizeItemId(value: string): string {
+  const normalized = value
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .trim()
+  if (!normalized) return value
+  return normalized.replace(/\b\w/g, (char) => char.toUpperCase())
+}
 </script>
 
 <template>
   <ElTooltip
     :content="resolvedTooltip"
     :disabled="!resolvedTooltip"
+    :show-after="resolvedTooltipShowAfter"
+    :hide-after="resolvedTooltipHideAfter"
     placement="top"
     effect="dark"
   >
