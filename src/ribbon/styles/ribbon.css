@@ -472,6 +472,14 @@ html.dark {
   margin-right: 0;
 }
 
+.ml-ribbon-item-host.type-buttonGroup .ml-ribbon-item-host__icon--with-label {
+  margin-right: 4px;
+}
+
+.ml-ribbon-item-host.type-buttonGroup .ml-ribbon-item-host__icon--icon-only {
+  margin-right: 0;
+}
+
 .ml-ribbon-item-host.is-label-hidden .el-button {
   justify-content: center;
   min-width: var(--ml-rb-compact-height);
@@ -665,6 +673,7 @@ html.dark {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  width: 100%;
   max-width: 100%;
 }
 
@@ -672,6 +681,38 @@ html.dark {
   display: flex;
   flex-wrap: wrap;
   max-width: 100%;
+}
+
+.ml-ribbon-button-group.ml-ribbon-button-group--nowrap .el-button-group {
+  flex-wrap: nowrap;
+}
+
+.ml-ribbon-button-group.ml-ribbon-button-group--nowrap .el-button-group .el-button {
+  flex: 0 0 auto;
+  min-width: var(--ml-rb-compact-height);
+}
+
+.ml-ribbon-button-group.ml-ribbon-button-group--nowrap .el-button-group .el-button > span {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ml-ribbon-button-group.ml-ribbon-button-group--equal-width .el-button-group {
+  width: 100%;
+}
+
+.ml-ribbon-button-group.ml-ribbon-button-group--equal-width .el-button-group .el-button {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ml-ribbon-button-group.ml-ribbon-button-group--equal-width .el-button-group .el-button > span {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ml-ribbon-button-group__label {

@@ -324,6 +324,26 @@ describe('App demo', () => {
     expect(appSource).toMatch(/id:\s*'entity-line-type'[\s\S]*?size:\s*'small'/)
     expect(appSource).toMatch(/id:\s*'entity-line-weight'[\s\S]*?size:\s*'small'/)
   })
+
+  it('configures the home layer group as a schema-driven three-row layout', () => {
+    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+
+    expect(appSource).toContain("id: 'layer'")
+    expect(appSource).toContain("title: 'Layer'")
+    expect(appSource).toContain("id: 'layer-main'")
+    expect(appSource).toContain("layout: 'column'")
+    expect(appSource).toContain('rows: 3')
+    expect(appSource).toContain("id: 'layer-select'")
+    expect(appSource).toContain("type: 'comboBox'")
+    expect(appSource).toContain("width: 'full'")
+    expect(appSource).toContain("emitValueOnChange: true")
+    expect(appSource).toContain("id: 'layer-actions-primary'")
+    expect(appSource).toContain("id: 'layer-actions-secondary'")
+    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?hideLabel:\s*true/)
+    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?wrap:\s*false/)
+    expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?hideLabel:\s*true/)
+    expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?wrap:\s*false/)
+  })
 })
 
 describe('MlRibbon', () => {
@@ -2139,6 +2159,160 @@ describe('MlRibbon', () => {
       const emissions = wrapper.emitted('item-click') ?? []
       expect(emissions).toHaveLength(1)
       expect(emissions[0]?.[0]).toBe('replace')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports compact buttonGroup rows via schema props', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-actions-primary',
+        groupId: 'layer',
+        item: {
+          id: 'layer-actions-primary',
+          type: 'buttonGroup',
+          hideLabel: true,
+          props: {
+            wrap: false,
+            buttonSize: 'small',
+            options: [
+              { label: 'Layer Off', value: 'layer-off' },
+              { label: 'Isolate', value: 'layer-isolate' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="layer-actions-primary"]')
+      const group = host.find('.ml-ribbon-button-group')
+      const buttons = host.findAll('.ml-ribbon-button-group .el-button')
+
+      expect(group.classes()).toContain('ml-ribbon-button-group--nowrap')
+      expect(group.classes()).not.toContain('ml-ribbon-button-group--equal-width')
+      expect(host.find('.ml-ribbon-button-group__label').exists()).toBe(false)
+      expect(buttons).toHaveLength(2)
+      expect(buttons[0]?.classes()).toContain('el-button--small')
+
+      await buttons[0]!.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('layer-off')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports equal-width buttonGroup rows via schema props', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layout-actions',
+        groupId: 'layout',
+        item: {
+          id: 'layout-actions',
+          type: 'buttonGroup',
+          hideLabel: true,
+          props: {
+            wrap: false,
+            equalWidth: true,
+            buttonSize: 'small',
+            options: [
+              { label: 'A', value: 'layout-a' },
+              { label: 'Long Label', value: 'layout-b' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const group = wrapper.find('.ml-ribbon-button-group')
+
+      expect(group.classes()).toContain('ml-ribbon-button-group--nowrap')
+      expect(group.classes()).toContain('ml-ribbon-button-group--equal-width')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('applies icon spacing classes based on per-option label visibility in buttonGroup', async () => {
+    const TestIcon = defineComponent({
+      name: 'RibbonButtonGroupTestIcon',
+      template: '<svg class="ml-test-icon" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-actions-spacing',
+        groupId: 'layer',
+        item: {
+          id: 'layer-actions-spacing',
+          type: 'buttonGroup',
+          hideLabel: true,
+          props: {
+            wrap: false,
+            options: [
+              { label: '', value: 'icon-only', icon: TestIcon },
+              { label: 'Set Current', value: 'with-label', icon: TestIcon },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const icons = wrapper.findAll('.ml-ribbon-button-group .ml-ribbon-item-host__icon')
+
+      expect(icons).toHaveLength(2)
+      expect(icons[0]?.classes()).toContain('ml-ribbon-item-host__icon--icon-only')
+      expect(icons[1]?.classes()).toContain('ml-ribbon-item-host__icon--with-label')
+      expect(wrapper.findAll('.ml-ribbon-button-group__text')).toHaveLength(1)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports comboBox width and emits option value when configured', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-select',
+        groupId: 'layer',
+        item: {
+          id: 'layer-select',
+          type: 'comboBox',
+          props: {
+            width: 'full',
+            modelValue: 'layer-0',
+            emitValueOnChange: true,
+            options: [
+              { label: '0', value: 'layer-0' },
+              { label: 'Walls', value: 'layer-walls' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="layer-select"]')
+      const select = host.find('.el-select')
+      expect(select.attributes('style')).toContain('width: 100%')
+
+      const selectComponent = host.findComponent({ name: 'ElSelect' })
+      selectComponent.vm.$emit('change', 'layer-walls')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('layer-walls')
     } finally {
       wrapper.unmount()
     }

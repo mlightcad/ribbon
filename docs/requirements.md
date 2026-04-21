@@ -70,6 +70,8 @@ Events:
 - `RibbonItemModel.props.modelValue?: boolean` for toggle default state / controlled sync
 - `RibbonItemModel.props.activeIcon` / `inactiveIcon` for toggle-state icon switching
 - `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
+- Button-group options: `RibbonItemModel.hideLabel?: boolean`, `RibbonItemModel.props.wrap?: boolean`, `RibbonItemModel.props.buttonSize?: 'large' | 'default' | 'small'`, and `RibbonItemModel.props.equalWidth?: boolean`; default width follows button content unless `equalWidth` is enabled
+- Combo-box options: `RibbonItemModel.props.width?: number | string` / `comboWidth?: number | string` (supports `'full'`) and `emitValueOnChange?: boolean` for emitting selected option values
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - `RibbonGroupModel.width?: number` for fixed group width in pixels
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)

@@ -145,6 +145,15 @@ const customItemComponentProps = computed<Record<string, unknown>>(() => {
   if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return {}
   return candidate as Record<string, unknown>
 })
+const buttonGroupWrap = computed(() => props.item.props?.wrap !== false)
+const buttonGroupEqualWidth = computed(() => props.item.props?.equalWidth === true)
+const buttonGroupSize = computed<'large' | 'default' | 'small' | undefined>(() => {
+  const value = props.item.props?.buttonSize
+  if (value === 'large' || value === 'default' || value === 'small') return value
+  return undefined
+})
+const comboBoxWidth = computed(() => normalizeCssSize(props.item.props?.width ?? props.item.props?.comboWidth, '92px'))
+const comboBoxModelValue = computed(() => props.item.props?.modelValue)
 
 /**
  * Emits a normalized click payload so parent components only care about item id.
@@ -250,6 +259,21 @@ function handleButtonGroupChange(value: unknown) {
 }
 
 /**
+ * Emits combobox selection payload when configured, otherwise keeps item-id behavior.
+ * @param value Selected combobox value.
+ */
+function handleComboBoxChange(value: unknown) {
+  if (isDisabled.value) return
+  if (props.item.props?.emitValueOnChange === true) {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      emit('item-click', String(value))
+      return
+    }
+  }
+  handleClick()
+}
+
+/**
  * Lets custom item components emit normalized ribbon commands back to the host.
  * @param payload Optional command id override.
  */
@@ -330,6 +354,23 @@ function normalizeTooltipDelay(value: unknown, fallback: number): number {
 }
 
 /**
+ * Converts schema width values to a valid CSS length.
+ * @param value Width value from schema props.
+ * @param fallback Default width used when value is absent/invalid.
+ * @returns CSS width string.
+ */
+function normalizeCssSize(value: unknown, fallback: string): string {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value === 'string') {
+    const normalized = value.trim()
+    if (!normalized) return fallback
+    if (normalized.toLowerCase() === 'full') return '100%'
+    return normalized
+  }
+  return fallback
+}
+
+/**
  * Derives tooltip text from option labels for grouped/selectable items.
  * @param item Ribbon item candidate.
  * @returns Tooltip text inferred from option labels when available.
@@ -378,6 +419,10 @@ function humanizeItemId(value: string): string {
         :id="item.id"
         :label="item.label ?? ''"
         :options="(item.props?.options as any[]) ?? []"
+        :hide-label="item.hideLabel === true"
+        :wrap="buttonGroupWrap"
+        :equal-width="buttonGroupEqualWidth"
+        :button-size="buttonGroupSize"
         :disabled="isDisabled"
         @change="handleButtonGroupChange"
       />
@@ -503,10 +548,11 @@ function humanizeItemId(value: string): string {
 
       <ElSelect
         v-else-if="item.type === 'comboBox'"
+        :model-value="comboBoxModelValue as any"
         :disabled="isDisabled"
         :popper-class="selectPopperClass"
-        style="width: 92px"
-        @change="handleClick"
+        :style="{ width: comboBoxWidth }"
+        @change="handleComboBoxChange"
       >
         <ElOption
           v-for="opt in options"

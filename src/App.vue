@@ -258,71 +258,67 @@ const baseTabs: RibbonTabModel[] = [
         ],
       },
       {
-        id: 'appearance',
-        title: 'Appearance',
-        orientation: 'row',
-        enableGroupOverflow: true,
-        priority: 85,
-        collections: [
-          {
-            id: 'appearance-controls',
-            layout: 'column',
-            rows: 3,
-            items: [
-              {
-                id: 'theme',
-                type: 'segmented',
-                label: 'Theme',
-                hideLabel: true,
-                props: {
-                  options: [
-                    { label: 'Light', value: 'theme-light', icon: Sunny },
-                    { label: 'Dark', value: 'theme-dark', icon: Moon },
-                  ],
-                },
-              },
-              {
-                id: 'ribbon-size',
-                type: 'segmented',
-                label: 'Ribbon Size',
-                hideLabel: true,
-                props: {
-                  options: [
-                    { label: 'Large', value: 'size-large' },
-                    { label: 'Default', value: 'size-default' },
-                    { label: 'Small', value: 'size-small' },
-                  ],
-                },
-              },
-              {
-                id: 'grid-snap',
-                type: 'toggle',
-                label: 'Grid Snap',
-                props: {
-                  activeValue: 'grid-snap-on',
-                  inactiveValue: 'grid-snap-off',
-                  activeIcon: Aim,
-                  inactiveIcon: Pointer,
-                },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'editor',
-        title: 'Editor',
+        id: 'layer',
+        title: 'Layer',
         enableGroupOverflow: true,
         priority: 90,
         collections: [
           {
-            id: 'editor-main',
+            id: 'layer-main',
+            layout: 'column',
+            rows: 3,
             items: [
               {
-                id: 'editor-launch',
-                type: 'button',
-                label: 'Editor',
-                props: { icon: Crop },
+                id: 'layer-select',
+                type: 'comboBox',
+                size: 'small',
+                tooltip: 'Layer List',
+                props: {
+                  width: 'full',
+                  emitValueOnChange: true,
+                  modelValue: 'layer-0',
+                  options: [
+                    { label: '0', value: 'layer-0' },
+                    { label: 'Defpoints', value: 'layer-defpoints' },
+                    { label: 'Walls', value: 'layer-walls' },
+                    { label: 'Doors', value: 'layer-doors' },
+                    { label: 'Dimensions', value: 'layer-dimensions' },
+                  ],
+                },
+              },
+              {
+                id: 'layer-actions-primary',
+                type: 'buttonGroup',
+                hideLabel: true,
+                size: 'small',
+                props: {
+                  wrap: false,
+                  buttonSize: 'small',
+                  options: [
+                    { label: '', value: 'layer-off', icon: Moon },
+                    { label: '', value: 'layer-isolate', icon: Aim },
+                    { label: '', value: 'layer-freeze', icon: Crop },
+                    { label: '', value: 'layer-lock', icon: Scissor },
+                    { label: 'Set Current', value: 'layer-set-current', icon: Position },
+                  ],
+                },
+              },
+              {
+                id: 'layer-actions-secondary',
+                type: 'buttonGroup',
+                hideLabel: true,
+                size: 'small',
+                props: {
+                  wrap: false,
+                  buttonSize: 'small',
+                  options: [
+                    { label: '', value: 'layer-on', icon: Sunny },
+                    { label: '', value: 'layer-unisolate', icon: Pointer },
+                    { label: '', value: 'layer-thaw', icon: MagicStick },
+                    { label: '', value: 'layer-unlock', icon: EditPen },
+                    { label: 'Layer Restore', value: 'layer-restore', icon: DataLine },
+                  ],
+                },
               },
             ],
           },
@@ -332,7 +328,7 @@ const baseTabs: RibbonTabModel[] = [
   },
   {
     id: 'custom',
-    title: 'Properties',
+    title: 'Custom',
     groups: [
       {
         id: 'entity-properties',
@@ -390,11 +386,70 @@ const baseTabs: RibbonTabModel[] = [
       },
     ],
   },
+  {
+    id: 'settings',
+    title: 'Settings',
+    groups: [
+      {
+        id: 'appearance',
+        title: 'Appearance',
+        orientation: 'row',
+        enableGroupOverflow: true,
+        priority: 85,
+        collections: [
+          {
+            id: 'appearance-controls',
+            layout: 'column',
+            rows: 3,
+            items: [
+              {
+                id: 'theme',
+                type: 'segmented',
+                label: 'Theme',
+                hideLabel: true,
+                props: {
+                  options: [
+                    { label: 'Light', value: 'theme-light', icon: Sunny },
+                    { label: 'Dark', value: 'theme-dark', icon: Moon },
+                  ],
+                },
+              },
+              {
+                id: 'ribbon-size',
+                type: 'segmented',
+                label: 'Ribbon Size',
+                hideLabel: true,
+                props: {
+                  options: [
+                    { label: 'Large', value: 'size-large' },
+                    { label: 'Default', value: 'size-default' },
+                    { label: 'Small', value: 'size-small' },
+                  ],
+                },
+              },
+              {
+                id: 'grid-snap',
+                type: 'toggle',
+                label: 'Grid Snap',
+                props: {
+                  activeValue: 'grid-snap-on',
+                  inactiveValue: 'grid-snap-off',
+                  activeIcon: Aim,
+                  inactiveIcon: Pointer,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ]
 
 const zhCNMap: Record<string, string> = {
   Home: '开始',
-  Properties: '属性',
+  Custom: '自定义',
+  Settings: '设置',
   'Chart Design': '图表设计',
   'Chart Tools': '图表工具',
   Draw: '绘图',
@@ -402,7 +457,18 @@ const zhCNMap: Record<string, string> = {
   Font: '字体',
   Editing: '编辑',
   Appearance: '外观',
-  Editor: '编辑器',
+  Layer: '图层',
+  'Layer List': '图层下拉列表框',
+  'Layer Off': '关闭图层',
+  Isolate: '隔离',
+  'Freeze Layer': '冻结图层',
+  'Lock Layer': '锁定图层',
+  'Set Current': '置为当前',
+  'Layer On': '图层全开',
+  Unisolate: '取消隔离',
+  'Thaw Layer': '解冻图层',
+  'Unlock Layer': '解锁图层',
+  'Layer Restore': '图层恢复',
   'Entity Properties': '对象属性',
   'Chart Style': '图表样式',
   Color: '颜色',
