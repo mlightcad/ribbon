@@ -47,7 +47,7 @@ html.dark {
   --ml-rb-compact-height: calc(var(--el-component-size-small) * var(--ml-rb-scale));
   --ml-rb-content-rows: 3;
   --ml-rb-content-row-gap: 2px;
-  --ml-rb-footer-line-height: calc(11px * var(--ml-rb-scale));
+  --ml-rb-footer-line-height: calc(14px * var(--ml-rb-scale));
   --ml-rb-footer-pad-top: calc(4px * var(--ml-rb-scale));
   --ml-rb-footer-pad-bottom: calc(2px * var(--ml-rb-scale));
   --ml-rb-footer-height: calc(
@@ -439,7 +439,7 @@ html.dark {
 
 .ml-ribbon-item-host__icon {
   margin-right: 4px;
-  font-size: var(--ml-rb-font-base);
+  font-size: calc(var(--ml-rb-font-base) + 2px);
 }
 
 .ml-ribbon-item-host__icon--class {
@@ -523,11 +523,31 @@ html.dark {
 .ml-ribbon-item-host.is-large .ml-ribbon-item-host__icon {
   margin-right: 0;
   margin-bottom: 2px;
-  font-size: calc(var(--ml-rb-font-base) * 1.7);
+  font-size: calc((var(--ml-rb-font-base) * 1.7) + 2px);
 }
 
 .ml-ribbon-item-host.is-large .ml-ribbon-item-host__label {
   font-size: var(--ml-rb-font-sm);
+}
+
+.ml-ribbon-item-host.is-large.type-button.is-label-wrap .el-button {
+  width: var(--ml-rb-item-label-wrap-width, 74px);
+  max-width: 100%;
+}
+
+.ml-ribbon-item-host.is-large.type-button.is-label-wrap .el-button > span {
+  width: 100%;
+}
+
+.ml-ribbon-item-host.is-large.type-button.is-label-wrap .ml-ribbon-item-host__label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--ml-rb-item-label-max-lines, 2);
+  overflow: hidden;
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .ml-ribbon-item-host.is-large.type-dropdown .ml-ribbon-item-host__content {
@@ -578,8 +598,8 @@ html.dark {
   width: 100%;
 }
 
-.ml-ribbon-collection--column .ml-ribbon-item-host .el-button,
-.ml-ribbon-collection--column .ml-ribbon-item-host .el-select {
+.ml-ribbon-collection--column .ml-ribbon-item-host > .el-button,
+.ml-ribbon-collection--column .ml-ribbon-item-host > .el-select {
   width: 100%;
 }
 
@@ -594,8 +614,8 @@ html.dark {
 }
 
 .ml-ribbon-group--auto-width .ml-ribbon-collection--column .ml-ribbon-item-host,
-.ml-ribbon-group--auto-width .ml-ribbon-collection--column .ml-ribbon-item-host .el-button,
-.ml-ribbon-group--auto-width .ml-ribbon-collection--column .ml-ribbon-item-host .el-select {
+.ml-ribbon-group--auto-width .ml-ribbon-collection--column .ml-ribbon-item-host > .el-button,
+.ml-ribbon-group--auto-width .ml-ribbon-collection--column .ml-ribbon-item-host > .el-select {
   width: auto;
 }
 
@@ -1002,8 +1022,8 @@ html.dark {
 }
 
 .ml-ribbon-group__overflow-content .ml-ribbon-collection--column .ml-ribbon-item-host,
-.ml-ribbon-group__overflow-content .ml-ribbon-collection--column .ml-ribbon-item-host .el-button,
-.ml-ribbon-group__overflow-content .ml-ribbon-collection--column .ml-ribbon-item-host .el-select {
+.ml-ribbon-group__overflow-content .ml-ribbon-collection--column .ml-ribbon-item-host > .el-button,
+.ml-ribbon-group__overflow-content .ml-ribbon-collection--column .ml-ribbon-item-host > .el-select {
   width: auto;
 }
 
@@ -1056,7 +1076,7 @@ html.dark {
   --ml-rb-compact-height: calc(var(--el-component-size-small) * var(--ml-rb-scale));
   --ml-rb-content-rows: 3;
   --ml-rb-content-row-gap: 2px;
-  --ml-rb-footer-line-height: calc(11px * var(--ml-rb-scale));
+  --ml-rb-footer-line-height: calc(14px * var(--ml-rb-scale));
   --ml-rb-footer-pad-top: calc(4px * var(--ml-rb-scale));
   --ml-rb-footer-pad-bottom: calc(2px * var(--ml-rb-scale));
   --ml-rb-footer-height: calc(
@@ -1292,3 +1312,4 @@ html.dark {
     grid-template-columns: 1fr;
   }
 }
+

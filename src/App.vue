@@ -232,12 +232,11 @@ const baseTabs: RibbonTabModel[] = [
               {
                 id: 'find-replace',
                 type: 'buttonGroup',
-                tooltip: 'Find / Replace',
                 keyTip: 'FD',
                 props: {
                   options: [
-                    { label: 'Find', value: 'find', icon: Search },
-                    { label: 'Replace', value: 'replace', icon: EditPen },
+                    { label: 'Find', value: 'find', icon: Search, tooltip: 'Find' },
+                    { label: 'Replace', value: 'replace', icon: EditPen, tooltip: 'Replace' },
                   ],
                 },
               },
@@ -263,6 +262,23 @@ const baseTabs: RibbonTabModel[] = [
         enableGroupOverflow: true,
         priority: 90,
         collections: [
+          {
+            id: 'layer-left',
+            layout: 'row',
+            items: [
+              {
+                id: 'layer-properties',
+                type: 'button',
+                label: 'Layer Properties',
+                size: 'large',
+                props: {
+                  icon: Brush,
+                  labelWrapLines: 2,
+                  labelWrapWidth: 90,
+                },
+              },
+            ],
+          },
           {
             id: 'layer-main',
             layout: 'column',
@@ -295,11 +311,11 @@ const baseTabs: RibbonTabModel[] = [
                   wrap: false,
                   buttonSize: 'small',
                   options: [
-                    { label: '', value: 'layer-off', icon: Moon },
-                    { label: '', value: 'layer-isolate', icon: Aim },
-                    { label: '', value: 'layer-freeze', icon: Crop },
-                    { label: '', value: 'layer-lock', icon: Scissor },
-                    { label: 'Set Current', value: 'layer-set-current', icon: Position },
+                    { label: '', value: 'layer-off', icon: Moon, tooltip: 'Layer Off' },
+                    { label: '', value: 'layer-isolate', icon: Aim, tooltip: 'Isolate' },
+                    { label: '', value: 'layer-freeze', icon: Crop, tooltip: 'Freeze Layer' },
+                    { label: '', value: 'layer-lock', icon: Scissor, tooltip: 'Lock Layer' },
+                    { label: 'Set Current', value: 'layer-set-current', icon: Position, tooltip: 'Set Current' },
                   ],
                 },
               },
@@ -312,11 +328,11 @@ const baseTabs: RibbonTabModel[] = [
                   wrap: false,
                   buttonSize: 'small',
                   options: [
-                    { label: '', value: 'layer-on', icon: Sunny },
-                    { label: '', value: 'layer-unisolate', icon: Pointer },
-                    { label: '', value: 'layer-thaw', icon: MagicStick },
-                    { label: '', value: 'layer-unlock', icon: EditPen },
-                    { label: 'Layer Restore', value: 'layer-restore', icon: DataLine },
+                    { label: '', value: 'layer-on', icon: Sunny, tooltip: 'Layer On' },
+                    { label: '', value: 'layer-unisolate', icon: Pointer, tooltip: 'Unisolate' },
+                    { label: '', value: 'layer-thaw', icon: MagicStick, tooltip: 'Thaw Layer' },
+                    { label: '', value: 'layer-unlock', icon: EditPen, tooltip: 'Unlock Layer' },
+                    { label: 'Layer Restore', value: 'layer-restore', icon: DataLine, tooltip: 'Layer Restore' },
                   ],
                 },
               },
@@ -469,6 +485,7 @@ const zhCNMap: Record<string, string> = {
   'Thaw Layer': '解冻图层',
   'Unlock Layer': '解锁图层',
   'Layer Restore': '图层恢复',
+  'Layer Properties': '图层特性',
   'Entity Properties': '对象属性',
   'Chart Style': '图表样式',
   Color: '颜色',
@@ -488,13 +505,26 @@ const zhCNMap: Record<string, string> = {
   Line: '直线',
   Polyline: '多段线',
   Circle: '圆',
+  'Center, Radius': '圆心，半径',
+  'Center, Diameter': '圆心，直径',
+  '2-Point': '两点',
+  '3-Point': '三点',
+  'Tangent, Tangent, Radius': '相切、相切、半径',
+  'Tangent, Tangent, Tangent': '相切、相切、相切',
   Rectangle: '矩形',
+  '2-Point Rectangle': '两点矩形',
+  Polygon: '多边形',
   Ellipse: '椭圆',
+  Hatch: '填充',
   Paste: '粘贴',
   Cut: '剪切',
   Copy: '复制',
   'Format Painter': '格式刷',
+  Find: '查找',
+  Replace: '替换',
   Select: '选择',
+  'Select All': '全选',
+  'Select Objects': '选择对象',
   'Font Family': '字体',
   'Font Size': '字号',
   'Font Color': '字体颜色',
@@ -527,6 +557,13 @@ const zhCNMap: Record<string, string> = {
   'Document info': '文档信息',
   'Print settings': '打印设置',
   'Sharing options': '共享选项',
+  English: '英文',
+  中文: '中文',
+  Defpoints: '定义点',
+  Walls: '墙体',
+  Doors: '门',
+  Dimensions: '标注',
+  'This whole area is rendered from the `#backstage` slot.': '整个区域由 `#backstage` 插槽渲染。',
 }
 
 const translate = (value?: string) => {
@@ -648,7 +685,13 @@ const tabs = computed<RibbonTabModel[]>(() =>
                 if (!option || typeof option !== 'object') return option
                 const optionRecord = option as Record<string, unknown>
                 const optionLabel = typeof optionRecord.label === 'string' ? translate(optionRecord.label) : undefined
-                return optionLabel ? { ...optionRecord, label: optionLabel } : optionRecord
+                const optionTooltip =
+                  typeof optionRecord.tooltip === 'string' ? translate(optionRecord.tooltip) : undefined
+                return {
+                  ...optionRecord,
+                  ...(optionLabel ? { label: optionLabel } : {}),
+                  ...(optionTooltip ? { tooltip: optionTooltip } : {}),
+                }
               })
             : item.props?.options
           const componentProps = {
@@ -717,10 +760,10 @@ const ribbonTexts = computed<RibbonLocaleTexts>(() => {
   return {}
 })
 
-const languageOptions = [
-  { value: 'en-US', label: 'English' },
-  { value: 'zh-CN', label: '中文' },
-] as const
+const languageOptions = computed(() => [
+  { value: 'en-US', label: translate('English') ?? 'English' },
+  { value: 'zh-CN', label: translate('中文') ?? '中文' },
+])
 
 const uiTexts = computed(() => ({
   keyTipHint: translate('Press Alt to show Key Tips.') ?? 'Press Alt to show Key Tips.',
@@ -733,6 +776,9 @@ const uiTexts = computed(() => ({
   disableRibbon: translate('Disable Ribbon') ?? 'Disable Ribbon',
   enableRibbon: translate('Enable Ribbon') ?? 'Enable Ribbon',
   commandLabel: translate('Command') ?? 'Command',
+  backstageMeta:
+    translate('This whole area is rendered from the `#backstage` slot.') ??
+    'This whole area is rendered from the `#backstage` slot.',
 }))
 
 
@@ -905,7 +951,7 @@ function setRibbonDisabled(value: boolean) {
           <section class="ml-demo-backstage__content">
             <h2>{{ ribbonTexts.backstageTitle ?? 'Backstage' }}</h2>
             <p>{{ ribbonTexts.backstageDescription ?? 'Manage your document and settings here.' }}</p>
-            <p class="ml-demo-backstage__meta">This whole area is rendered from the `#backstage` slot.</p>
+            <p class="ml-demo-backstage__meta">{{ uiTexts.backstageMeta }}</p>
           </section>
         </section>
       </template>

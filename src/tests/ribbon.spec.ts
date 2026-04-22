@@ -325,11 +325,16 @@ describe('App demo', () => {
     expect(appSource).toMatch(/id:\s*'entity-line-weight'[\s\S]*?size:\s*'small'/)
   })
 
-  it('configures the home layer group as a schema-driven three-row layout', () => {
+  it('configures the home layer group as left large action with right three-row controls', () => {
     const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
 
     expect(appSource).toContain("id: 'layer'")
     expect(appSource).toContain("title: 'Layer'")
+    expect(appSource).toContain("id: 'layer-left'")
+    expect(appSource).toContain("id: 'layer-properties'")
+    expect(appSource).toMatch(/id:\s*'layer-properties'[\s\S]*?size:\s*'large'/)
+    expect(appSource).toMatch(/id:\s*'layer-properties'[\s\S]*?labelWrapLines:\s*2/)
+    expect(appSource).toMatch(/id:\s*'layer-properties'[\s\S]*?labelWrapWidth:\s*90/)
     expect(appSource).toContain("id: 'layer-main'")
     expect(appSource).toContain("layout: 'column'")
     expect(appSource).toContain('rows: 3')
@@ -341,8 +346,27 @@ describe('App demo', () => {
     expect(appSource).toContain("id: 'layer-actions-secondary'")
     expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?hideLabel:\s*true/)
     expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?wrap:\s*false/)
+    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?value:\s*'layer-off'[\s\S]*?tooltip:\s*'Layer Off'/)
+    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?value:\s*'layer-freeze'[\s\S]*?tooltip:\s*'Freeze Layer'/)
     expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?hideLabel:\s*true/)
     expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?wrap:\s*false/)
+    expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?value:\s*'layer-on'[\s\S]*?tooltip:\s*'Layer On'/)
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-secondary'[\s\S]*?value:\s*'layer-unlock'[\s\S]*?tooltip:\s*'Unlock Layer'/,
+    )
+
+    const leftCollectionIndex = appSource.indexOf("id: 'layer-left'")
+    const mainCollectionIndex = appSource.indexOf("id: 'layer-main'")
+    expect(leftCollectionIndex).toBeGreaterThan(-1)
+    expect(mainCollectionIndex).toBeGreaterThan(leftCollectionIndex)
+  })
+
+  it('configures editing buttonGroup options with independent tooltips', () => {
+    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+
+    expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?type:\s*'buttonGroup'/)
+    expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?value:\s*'find'[\s\S]*?tooltip:\s*'Find'/)
+    expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?value:\s*'replace'[\s\S]*?tooltip:\s*'Replace'/)
   })
 })
 
@@ -397,6 +421,17 @@ describe('MlRibbon', () => {
     )
   })
 
+  it('increases ribbon button icon size by 2px for base and large item layouts', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host__icon\s*\{[\s\S]*font-size:\s*calc\(var\(--ml-rb-font-base\)\s*\+\s*2px\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\.is-large\s+\.ml-ribbon-item-host__icon\s*\{[\s\S]*font-size:\s*calc\(\(var\(--ml-rb-font-base\)\s*\*\s*1\.7\)\s*\+\s*2px\);/,
+    )
+  })
+
   it('keeps CAD demo dropdowns stretched to the parent item width', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/components/MlDemoCadDropdown.vue'), 'utf-8')
 
@@ -421,6 +456,17 @@ describe('MlRibbon', () => {
     )
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.ml-ribbon-toggle\s*\{[\s\S]*height:\s*var\(--ml-rb-compact-height\);/,
+    )
+  })
+
+  it('supports wrapped large button labels through dedicated host css rules', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.el-button\s*\{[\s\S]*width:\s*var\(--ml-rb-item-label-wrap-width,\s*74px\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.ml-ribbon-item-host__label\s*\{[\s\S]*-webkit-line-clamp:\s*var\(--ml-rb-item-label-max-lines,\s*2\);/,
     )
   })
 
@@ -1759,6 +1805,37 @@ describe('MlRibbon', () => {
     }
   })
 
+  it('supports wrapped labels for large button items via schema props', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-properties',
+        groupId: 'layer',
+        item: {
+          id: 'layer-properties',
+          type: 'button',
+          label: 'Layer Properties',
+          size: 'large',
+          props: {
+            labelWrapLines: 2,
+            labelWrapWidth: 74,
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="layer-properties"]')
+      const style = host.attributes('style') ?? ''
+
+      expect(host.classes()).toContain('is-label-wrap')
+      expect(style).toContain('--ml-rb-item-label-max-lines: 2')
+      expect(style).toContain('--ml-rb-item-label-wrap-width: 74px')
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Layer Properties')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('falls back to the localized label for tooltip content when tooltip is omitted', () => {
     const wrapper = mount(MlRibbonItemHost, {
       props: {
@@ -1825,7 +1902,7 @@ describe('MlRibbon', () => {
     }
   })
 
-  it('derives tooltip content from button group option labels when the group has no label', () => {
+  it('uses per-button tooltips for buttonGroup items and disables host-level tooltip', () => {
     const wrapper = mount(MlRibbonItemHost, {
       props: {
         id: 'find-replace',
@@ -1835,8 +1912,8 @@ describe('MlRibbon', () => {
           type: 'buttonGroup',
           props: {
             options: [
-              { label: 'Find', value: 'find' },
-              { label: 'Replace', value: 'replace' },
+              { label: 'Find', value: 'find', tooltip: 'Find command' },
+              { label: 'Replace', value: 'replace', tooltip: 'Replace command' },
             ],
           },
         },
@@ -1853,9 +1930,98 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const tooltip = wrapper.find('.ml-test-tooltip')
-      expect(tooltip.attributes('data-content')).toBe('Find / Replace')
-      expect(tooltip.attributes('data-disabled')).toBe('false')
+      const tooltips = wrapper.findAll('.ml-test-tooltip')
+      expect(tooltips).toHaveLength(3)
+      expect(tooltips[0]?.attributes('data-disabled')).toBe('true')
+      expect(tooltips[1]?.attributes('data-content')).toBe('Find command')
+      expect(tooltips[1]?.attributes('data-disabled')).toBe('false')
+      expect(tooltips[2]?.attributes('data-content')).toBe('Replace command')
+      expect(tooltips[2]?.attributes('data-disabled')).toBe('false')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders per-option tooltips for dropdown menu items', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'draw-circle',
+        groupId: 'draw',
+        item: {
+          id: 'draw-circle',
+          type: 'dropdown',
+          label: 'Circle',
+          props: {
+            options: [
+              { label: 'Center, Radius', value: 'circle-center-radius', tooltip: 'Center and radius' },
+              { label: '2-Point', value: 'circle-two-point', tooltip: 'Two points' },
+            ],
+          },
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled'],
+            template:
+              '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
+          },
+          ElDropdown: {
+            template: '<div class="ml-test-dropdown"><slot /><slot name="dropdown" /></div>',
+          },
+          ElDropdownMenu: {
+            template: '<div class="ml-test-dropdown-menu"><slot /></div>',
+          },
+          ElDropdownItem: {
+            template: '<div class="ml-test-dropdown-item"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tooltips = wrapper.findAll('.ml-test-tooltip')
+      expect(tooltips).toHaveLength(3)
+      expect(tooltips[0]?.attributes('data-content')).toBe('Circle')
+      expect(tooltips[1]?.attributes('data-content')).toBe('Center and radius')
+      expect(tooltips[2]?.attributes('data-content')).toBe('Two points')
+      expect(tooltips[1]?.attributes('data-disabled')).toBe('false')
+      expect(tooltips[2]?.attributes('data-disabled')).toBe('false')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('updates dropdown trigger tooltip after selection changes the current command', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'draw-rectangle',
+        groupId: 'draw',
+        item: {
+          id: 'draw-rectangle',
+          type: 'dropdown',
+          label: 'Rectangle',
+          tooltip: 'Rectangle',
+          props: {
+            options: [
+              { label: 'Rectangle', value: 'rectangle', tooltip: 'Rectangle' },
+              { label: 'Polygon', value: 'polygon', tooltip: 'Polygon command' },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      const triggerButton = wrapper.find('.el-button')
+      expect(triggerButton.attributes('aria-label')).toBe('Rectangle')
+
+      const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
+      dropdown.vm.$emit('command', 'polygon')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Polygon command')
     } finally {
       wrapper.unmount()
     }
@@ -2274,6 +2440,81 @@ describe('MlRibbon', () => {
       expect(icons[0]?.classes()).toContain('ml-ribbon-item-host__icon--icon-only')
       expect(icons[1]?.classes()).toContain('ml-ribbon-item-host__icon--with-label')
       expect(wrapper.findAll('.ml-ribbon-button-group__text')).toHaveLength(1)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports schema-driven buttonGroup iconSize prop', async () => {
+    const TestIcon = defineComponent({
+      name: 'RibbonButtonGroupIconSizeTestIcon',
+      template: '<svg class="ml-test-icon-size" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-actions-icon-size',
+        groupId: 'layer',
+        item: {
+          id: 'layer-actions-icon-size',
+          type: 'buttonGroup',
+          hideLabel: true,
+          props: {
+            wrap: false,
+            iconSize: '14px',
+            options: [
+              { label: '', value: 'icon-only', icon: TestIcon },
+              { label: 'Set Current', value: 'with-label', icon: TestIcon },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const icons = wrapper.findAll('.ml-ribbon-button-group .ml-ribbon-item-host__icon')
+
+      expect(icons).toHaveLength(2)
+      expect(icons[0]?.attributes('style')).toContain('font-size: 14px')
+      expect(icons[1]?.attributes('style')).toContain('font-size: 14px')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('falls back to CSS default button icon size when no iconSize prop is provided', async () => {
+    const TestIcon = defineComponent({
+      name: 'RibbonButtonGroupDefaultIconSizeTestIcon',
+      template: '<svg class="ml-test-default-icon-size" />',
+    })
+
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-actions-default-icon-size',
+        groupId: 'layer',
+        item: {
+          id: 'layer-actions-default-icon-size',
+          type: 'buttonGroup',
+          hideLabel: true,
+          props: {
+            wrap: false,
+            options: [
+              { label: '', value: 'icon-only', icon: TestIcon },
+              { label: 'Set Current', value: 'with-label', icon: TestIcon },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const icons = wrapper.findAll('.ml-ribbon-button-group .ml-ribbon-item-host__icon')
+
+      expect(icons).toHaveLength(2)
+      expect(icons[0]?.attributes('style')).toBeUndefined()
+      expect(icons[1]?.attributes('style')).toBeUndefined()
     } finally {
       wrapper.unmount()
     }
