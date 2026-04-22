@@ -26,7 +26,9 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Per-item tooltip support via `RibbonItemModel.tooltip`; when omitted, the item `label` is used as the tooltip fallback
 - Global tooltip timing control via `MlRibbon` `tooltip-show-after` and `tooltip-hide-after`
 - Grouped command buttons via `buttonGroup` items; each button remains a stateless command and emits its own option value
+- Dense command-row configuration for `buttonGroup`: set `hideLabel: true`, `props.wrap: false`, and optional `props.buttonSize`; by default button width follows content, set `props.equalWidth: true` to force equal widths
 - Two-state toggle commands via `toggle` items with `props.modelValue`, `activeIcon`, and `inactiveIcon`
+- `comboBox` width configuration via `props.width`/`props.comboWidth` (supports `'full'`), plus optional `props.emitValueOnChange` payload mode
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Fixed group width via `RibbonGroupModel.width` (pixels)
