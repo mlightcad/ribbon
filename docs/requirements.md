@@ -70,8 +70,9 @@ Events:
 - `RibbonItemModel.props.modelValue?: boolean` for toggle default state / controlled sync
 - `RibbonItemModel.props.activeIcon` / `inactiveIcon` for toggle-state icon switching
 - `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
-- Button-group options: `RibbonItemModel.hideLabel?: boolean`, `RibbonItemModel.props.wrap?: boolean`, `RibbonItemModel.props.buttonSize?: 'large' | 'default' | 'small'`, and `RibbonItemModel.props.equalWidth?: boolean`; default width follows button content unless `equalWidth` is enabled
+- Button-group options: `RibbonItemModel.hideLabel?: boolean`, `RibbonItemModel.props.wrap?: boolean`, `RibbonItemModel.props.buttonSize?: 'large' | 'default' | 'small'`, `RibbonItemModel.props.equalWidth?: boolean`, and per-button `option.tooltip?: string`; default width follows button content unless `equalWidth` is enabled
 - Combo-box options: `RibbonItemModel.props.width?: number | string` / `comboWidth?: number | string` (supports `'full'`) and `emitValueOnChange?: boolean` for emitting selected option values
+- Large button label-wrap options: `RibbonItemModel.props.labelWrapLines?: number` enables multi-line labels for `size: 'large'` button items, and `RibbonItemModel.props.labelWrapWidth?: number | string` controls wrap width
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - `RibbonGroupModel.width?: number` for fixed group width in pixels
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)

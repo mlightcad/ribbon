@@ -88,13 +88,20 @@ const baseIconClass = computed<string | null>(() => {
 })
 // Hide label only when the schema explicitly sets hideLabel to true.
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
-const resolvedTooltip = computed(
-  () =>
-    itemText(props.item.tooltip) ??
-    itemText(props.item.label) ??
-    optionTooltipText(props.item) ??
-    humanizeItemId(props.item.id),
-)
+const resolvedTooltip = computed(() => {
+  if (props.item.type === 'dropdown') {
+    return (
+      optionTooltip(selectedDropdownOption.value) ??
+      itemText(props.item.tooltip) ??
+      itemText(dropdownLabel.value) ??
+      itemText(props.item.label) ??
+      humanizeItemId(props.item.id)
+    )
+  }
+  return itemText(props.item.tooltip) ?? itemText(props.item.label) ?? optionTooltipText(props.item) ?? humanizeItemId(props.item.id)
+})
+const shouldUseHostTooltip = computed(() => props.item.type !== 'buttonGroup')
+const shouldDisableHostTooltip = computed(() => !shouldUseHostTooltip.value || !resolvedTooltip.value)
 const buttonAriaLabel = computed(() => resolvedTooltip.value ?? props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
 const shouldSyncDropdownLabel = computed(() => props.item.props?.syncLabelWithSelection === true)
@@ -152,8 +159,28 @@ const buttonGroupSize = computed<'large' | 'default' | 'small' | undefined>(() =
   if (value === 'large' || value === 'default' || value === 'small') return value
   return undefined
 })
+const buttonGroupIconSize = computed(() => normalizeOptionalFontSize(props.item.props?.iconSize))
 const comboBoxWidth = computed(() => normalizeCssSize(props.item.props?.width ?? props.item.props?.comboWidth, '92px'))
 const comboBoxModelValue = computed(() => props.item.props?.modelValue)
+const labelWrapLines = computed(() => normalizeLabelWrapLines(props.item.props?.labelWrapLines))
+const labelWrapWidth = computed(() => normalizeOptionalCssSize(props.item.props?.labelWrapWidth))
+const shouldWrapLargeButtonLabel = computed(
+  () =>
+    props.item.type === 'button' &&
+    props.item.size === 'large' &&
+    shouldShowLabel.value &&
+    (labelWrapLines.value ?? 0) > 1,
+)
+const labelWrapInlineStyle = computed<Record<string, string>>(() => {
+  if (!shouldWrapLargeButtonLabel.value) return {}
+  const style: Record<string, string> = {
+    '--ml-rb-item-label-max-lines': String(labelWrapLines.value ?? 2),
+  }
+  if (labelWrapWidth.value) {
+    style['--ml-rb-item-label-wrap-width'] = labelWrapWidth.value
+  }
+  return style
+})
 
 /**
  * Emits a normalized click payload so parent components only care about item id.
@@ -332,6 +359,28 @@ function optionLabel(option: unknown): string | undefined {
 }
 
 /**
+ * Converts dropdown option values like `circle-two-point` into readable fallback text.
+ * @param value Dropdown option value.
+ * @returns Human-readable fallback tooltip text when possible.
+ */
+function humanizeOptionValue(value: unknown): string | undefined {
+  if (typeof value === 'string') return humanizeItemId(value)
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return undefined
+}
+
+/**
+ * Resolves option tooltip content with explicit tooltip, label, and value fallbacks.
+ * @param option Dropdown option candidate.
+ * @returns Tooltip text for a dropdown option.
+ */
+function optionTooltip(option: unknown): string | undefined {
+  if (!option || typeof option !== 'object') return undefined
+  const explicitTooltip = itemText((option as { tooltip?: unknown }).tooltip)
+  return explicitTooltip ?? optionLabel(option) ?? humanizeOptionValue(optionValue(option))
+}
+
+/**
  * Normalizes optional item text values so blank strings do not render as UI copy.
  * @param value Candidate label/tooltip string.
  * @returns Trimmed string when present; otherwise `undefined`.
@@ -371,6 +420,44 @@ function normalizeCssSize(value: unknown, fallback: string): string {
 }
 
 /**
+ * Normalizes an optional CSS size without forcing a fallback value.
+ * @param value Width value from schema props.
+ * @returns CSS width string when valid; otherwise `undefined`.
+ */
+function normalizeOptionalCssSize(value: unknown): string | undefined {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value === 'string') {
+    const normalized = value.trim()
+    if (!normalized) return undefined
+    if (normalized.toLowerCase() === 'full') return '100%'
+    return normalized
+  }
+  return undefined
+}
+
+/**
+ * Normalizes optional icon font-size props for schema-driven icon sizing.
+ * @param value Candidate icon size from schema props.
+ * @returns CSS size string when valid; otherwise `undefined`.
+ */
+function normalizeOptionalFontSize(value: unknown): string | undefined {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+/**
+ * Normalizes optional large-button label wrap lines to a safe integer.
+ * @param value Candidate line count from schema props.
+ * @returns Rounded line count when valid; otherwise `undefined`.
+ */
+function normalizeLabelWrapLines(value: unknown): number | undefined {
+  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) return undefined
+  return Math.max(1, Math.round(value))
+}
+
+/**
  * Derives tooltip text from option labels for grouped/selectable items.
  * @param item Ribbon item candidate.
  * @returns Tooltip text inferred from option labels when available.
@@ -400,7 +487,7 @@ function humanizeItemId(value: string): string {
 <template>
   <ElTooltip
     :content="resolvedTooltip"
-    :disabled="!resolvedTooltip"
+    :disabled="shouldDisableHostTooltip"
     :show-after="resolvedTooltipShowAfter"
     :hide-after="resolvedTooltipHideAfter"
     placement="top"
@@ -408,7 +495,15 @@ function humanizeItemId(value: string): string {
   >
     <div
       class="ml-ribbon-item-host"
-      :class="[`is-${item.size ?? 'medium'}`, `type-${item.type}`, { 'is-label-hidden': item.hideLabel === true }]"
+      :class="[
+        `is-${item.size ?? 'medium'}`,
+        `type-${item.type}`,
+        {
+          'is-label-hidden': item.hideLabel === true,
+          'is-label-wrap': shouldWrapLargeButtonLabel,
+        },
+      ]"
+      :style="labelWrapInlineStyle"
       :data-item-id="id"
       role="group"
     >
@@ -423,6 +518,9 @@ function humanizeItemId(value: string): string {
         :wrap="buttonGroupWrap"
         :equal-width="buttonGroupEqualWidth"
         :button-size="buttonGroupSize"
+        :icon-size="buttonGroupIconSize"
+        :tooltip-show-after="resolvedTooltipShowAfter"
+        :tooltip-hide-after="resolvedTooltipHideAfter"
         :disabled="isDisabled"
         @change="handleButtonGroupChange"
       />
@@ -523,18 +621,27 @@ function humanizeItemId(value: string): string {
               :key="String((opt as any).value)"
               :command="(opt as any).value"
             >
-              <span class="ml-ribbon-dropdown-item__content">
-                <ElIcon v-if="optionIconAsComponent(opt)" class="ml-ribbon-dropdown-item__icon">
-                  <component :is="optionIconAsComponent(opt)" />
-                </ElIcon>
-                <i
-                  v-else-if="optionIconAsClass(opt)"
-                  class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
-                  :class="optionIconAsClass(opt)"
-                  aria-hidden="true"
-                />
-                <span class="ml-ribbon-dropdown-item__label">{{ (opt as any).label }}</span>
-              </span>
+              <ElTooltip
+                :content="optionTooltip(opt)"
+                :disabled="!optionTooltip(opt)"
+                :show-after="resolvedTooltipShowAfter"
+                :hide-after="resolvedTooltipHideAfter"
+                placement="top"
+                effect="dark"
+              >
+                <span class="ml-ribbon-dropdown-item__content">
+                  <ElIcon v-if="optionIconAsComponent(opt)" class="ml-ribbon-dropdown-item__icon">
+                    <component :is="optionIconAsComponent(opt)" />
+                  </ElIcon>
+                  <i
+                    v-else-if="optionIconAsClass(opt)"
+                    class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
+                    :class="optionIconAsClass(opt)"
+                    aria-hidden="true"
+                  />
+                  <span class="ml-ribbon-dropdown-item__label">{{ (opt as any).label }}</span>
+                </span>
+              </ElTooltip>
             </ElDropdownItem>
           </ElDropdownMenu>
         </template>
