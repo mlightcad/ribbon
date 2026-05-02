@@ -28,7 +28,9 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonItemHost`: unified host for item size mode, disabled status, key tip, and overflow mounting.
 
 ### 2.2 Advanced Items
+- `MlRibbonButton`: shared command button renderer for built-in button items and custom ribbon controls that need consistent icon/label/size behavior.
 - `MlRibbonButtonGroup`: grouped command buttons with no persistent selected item state.
+- `MlRibbonDropdown`: shared dropdown command renderer for built-in dropdown items and custom ribbon controls that need consistent trigger/menu styling.
 - `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`.
 - `MlRibbonToggleButton`: two-state toggle command with optional active/inactive icon mapping.
 - `MlRibbonGallery`: categorized gallery with preview and select behavior.
@@ -79,6 +81,8 @@ Events:
 - Custom item option: `RibbonItemModel.props.component?: Component` mounts a host-supplied Vue component
 - Custom item option: `RibbonItemModel.props.componentProps?: Record<string, unknown>` forwards extra props into that mounted component
 - Custom item bindings: mounted components receive `item`, `groupId`, `disabled`, and `emitItemClick(payload?)`
+- `MlRibbonButton` is exported for custom item implementations that need to match built-in ribbon button styling without duplicating theme and size logic.
+- `MlRibbonDropdown` is exported for custom item implementations that need to match built-in ribbon dropdown styling without duplicating theme, size, trigger, and option menu logic.
 
 Controlled props:
 - `v-model:activeTab`

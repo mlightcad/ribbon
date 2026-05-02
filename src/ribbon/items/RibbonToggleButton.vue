@@ -1,17 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { ElButton, ElIcon } from 'element-plus'
 import type { Component } from 'vue'
-
-function iconAsComponent(icon: string | Component | undefined): Component | null {
-  if (!icon || typeof icon === 'string') return null
-  return icon
-}
-
-function iconAsClass(icon: string | Component | undefined): string | null {
-  if (typeof icon !== 'string' || icon.trim().length === 0) return null
-  return icon
-}
+import MlRibbonButton from './RibbonButton.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -51,8 +41,6 @@ watch(
 
 const isActive = computed(() => localValue.value)
 const currentIcon = computed(() => (isActive.value ? props.activeIcon ?? props.inactiveIcon : props.inactiveIcon ?? props.activeIcon))
-const currentIconComponent = computed(() => iconAsComponent(currentIcon.value))
-const currentIconClass = computed(() => (currentIconComponent.value ? null : iconAsClass(currentIcon.value)))
 const resolvedLabel = computed(() => {
   const stateLabel = isActive.value ? props.activeLabel?.trim() : props.inactiveLabel?.trim()
   return stateLabel || props.label?.trim() || props.id
@@ -68,24 +56,16 @@ function handleClick() {
 </script>
 
 <template>
-  <ElButton
+  <MlRibbonButton
+    :id="id"
     class="ml-ribbon-toggle"
     :class="{ 'is-active': isActive }"
-    type="default"
+    :icon="currentIcon"
+    :label="resolvedLabel"
     :disabled="disabled"
+    :hide-label="!shouldShowLabel"
     :aria-label="resolvedLabel"
     :aria-pressed="String(isActive)"
     @click="handleClick"
-  >
-    <ElIcon v-if="currentIconComponent" class="ml-ribbon-item-host__icon">
-      <component :is="currentIconComponent" />
-    </ElIcon>
-    <i
-      v-else-if="currentIconClass"
-      class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class"
-      :class="currentIconClass"
-      aria-hidden="true"
-    />
-    <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ resolvedLabel }}</span>
-  </ElButton>
+  />
 </template>
