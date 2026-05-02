@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ElButton, ElButtonGroup, ElIcon, ElTooltip } from 'element-plus'
+import { ElButtonGroup, ElTooltip } from 'element-plus'
 import type { Component } from 'vue'
+import MlRibbonButton from './RibbonButton.vue'
 
 /**
  * @component MlRibbonButtonGroup
@@ -107,33 +108,6 @@ function resolveOptionTooltip(option: { label?: string; value: string | number |
   return optionText(option.tooltip) ?? optionText(option.label) ?? humanizeOptionValue(option.value)
 }
 
-/**
- * Resolves per-button icon as a Vue component icon.
- * @param option Group button option.
- */
-function optionIconAsComponent(option: { icon?: string | Component }): Component | null {
-  if (!option.icon || typeof option.icon === 'string') return null
-  return option.icon as Component
-}
-
-/**
- * Resolves per-button icon as a CSS class icon.
- * @param option Group button option.
- */
-function optionIconAsClass(option: { icon?: string | Component }): string | null {
-  if (typeof option.icon !== 'string' || option.icon.trim().length === 0) return null
-  return option.icon
-}
-
-/**
- * Applies optional schema-driven icon sizing.
- * When omitted, icons use the same CSS default size as regular ribbon buttons.
- */
-function resolveIconStyle() {
-  const fontSize = props.iconSize
-  if (!fontSize) return undefined
-  return { fontSize }
-}
 </script>
 
 <template>
@@ -157,33 +131,22 @@ function resolveIconStyle() {
         placement="top"
         effect="dark"
       >
-        <ElButton
+        <MlRibbonButton
+          :id="String(option.value)"
+          class="ml-ribbon-button-group__button"
+          :label="option.label"
+          :icon="option.icon"
+          :icon-size="iconSize"
           :size="buttonSize"
           :disabled="disabled"
-          type="default"
+          :hide-label="!hasTextLabel(option.label)"
           :aria-label="resolveOptionTooltip(option) ?? String(option.value)"
           @click="trigger(option.value)"
         >
-          <ElIcon
-            v-if="optionIconAsComponent(option)"
-            class="ml-ribbon-item-host__icon"
-            :class="hasTextLabel(option.label) ? 'ml-ribbon-item-host__icon--with-label' : 'ml-ribbon-item-host__icon--icon-only'"
-            :style="resolveIconStyle()"
-          >
-            <component :is="optionIconAsComponent(option)" />
-          </ElIcon>
-          <i
-            v-else-if="optionIconAsClass(option)"
-            class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class"
-            :class="[
-              optionIconAsClass(option),
-              hasTextLabel(option.label) ? 'ml-ribbon-item-host__icon--with-label' : 'ml-ribbon-item-host__icon--icon-only',
-            ]"
-            :style="resolveIconStyle()"
-            aria-hidden="true"
-          />
-          <span v-if="hasTextLabel(option.label)" class="ml-ribbon-button-group__text">{{ option.label }}</span>
-        </ElButton>
+          <template v-if="hasTextLabel(option.label)" #label>
+            <span class="ml-ribbon-button-group__text">{{ option.label }}</span>
+          </template>
+        </MlRibbonButton>
       </ElTooltip>
     </ElButtonGroup>
   </div>

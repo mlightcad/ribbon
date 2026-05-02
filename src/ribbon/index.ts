@@ -41,10 +41,22 @@ export { default as MlRibbonCollection } from './components/RibbonCollection.vue
 export { default as MlRibbonItemHost } from './components/RibbonItemHost.vue'
 
 /**
+ * @component MlRibbonButton
+ * @description Shared ribbon command button renderer for built-in and custom items.
+ */
+export { default as MlRibbonButton } from './items/RibbonButton.vue'
+
+/**
  * @component MlRibbonButtonGroup
  * @description Ribbon button group item aligned with Element Plus naming.
  */
 export { default as MlRibbonButtonGroup } from './items/RibbonButtonGroup.vue'
+
+/**
+ * @component MlRibbonDropdown
+ * @description Shared ribbon dropdown renderer for built-in and custom items.
+ */
+export { default as MlRibbonDropdown } from './items/RibbonDropdown.vue'
 
 /**
  * @component MlRibbonSegmented
@@ -105,6 +117,7 @@ export type {
   RibbonGroupModel,
   RibbonCollectionModel,
   RibbonItemModel,
+  RibbonDropdownOption,
   RibbonDynamicApi,
   RibbonCustomItemBindings,
   KeyTipModel,

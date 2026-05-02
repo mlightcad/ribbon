@@ -6,9 +6,12 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import MlRibbon from '../ribbon/components/Ribbon.vue'
 import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
+import MlRibbonButton from '../ribbon/items/RibbonButton.vue'
+import MlRibbonDropdown from '../ribbon/items/RibbonDropdown.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
 import MlDemoColorDropdown from '../components/MlDemoColorDropdown.vue'
+import MlDemoHatchButton from '../components/MlDemoHatchButton.vue'
 import MlDemoLineTypeDropdown from '../components/MlDemoLineTypeDropdown.vue'
 import MlDemoLineWeightDropdown from '../components/MlDemoLineWeightDropdown.vue'
 import type { RibbonTabModel } from '../ribbon'
@@ -84,6 +87,38 @@ describe('MlRibbonBackstage', () => {
       expect(wrapper.find('.ml-test-custom-backstage').exists()).toBe(true)
       expect(wrapper.find('.ml-ribbon-backstage__nav').exists()).toBe(false)
       expect(wrapper.find('.ml-ribbon-backstage__content').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+})
+
+describe('MlRibbonDropdown', () => {
+  it('can be reused directly with ribbon sizing and command memory', async () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'line-type',
+        label: 'Line Type',
+        itemSize: 'small',
+        options: [
+          { label: 'Continuous', value: 'continuous', tooltip: 'Continuous line' },
+          { label: 'Dashed', value: 'dashed', tooltip: 'Dashed line' },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-dropdown').classes()).toContain('ml-ribbon-dropdown--item-small')
+      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe('Line Type')
+
+      const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
+      dropdown.vm.$emit('command', 'dashed')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('command')?.[0]?.[0]).toBe('dashed')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Dashed line')
+      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe('Line Type')
     } finally {
       wrapper.unmount()
     }
@@ -305,6 +340,98 @@ describe('MlDemoColorDropdown', () => {
   })
 })
 
+describe('MlRibbonButton', () => {
+  it('centralizes ribbon button icon and label rendering', async () => {
+    const wrapper = mount(MlRibbonButton, {
+      props: {
+        id: 'draw-line',
+        label: 'Line',
+        icon: 'ml-test-line-icon',
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-button').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-item-host__icon').classes()).toContain('ml-test-line-icon')
+      expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe('Line')
+
+      await wrapper.find('.ml-ribbon-button').trigger('click')
+      expect(wrapper.emitted('click')).toHaveLength(1)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('lets custom buttons reuse the ribbon icon slot without rendering an arrow', () => {
+    const wrapper = mount(MlDemoHatchButton, {
+      props: {
+        item: { id: 'hatch-pattern', type: 'custom' },
+        groupId: 'pattern',
+        disabled: false,
+        emitItemClick: vi.fn(),
+        title: 'Hatch Pattern',
+        modelValue: 'ansi31',
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-demo-hatch-button__trigger.ml-ribbon-button').exists()).toBe(true)
+      expect(wrapper.find('.ml-demo-hatch-button__icon-pattern').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe('Hatch Pattern')
+      expect(wrapper.find('.ml-demo-hatch-button__arrow').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits a hatch pattern command and updates the selected preview', async () => {
+    const emitItemClick = vi.fn()
+    const wrapper = mount(MlDemoHatchButton, {
+      props: {
+        item: { id: 'hatch-pattern', type: 'custom' },
+        groupId: 'pattern',
+        disabled: false,
+        emitItemClick,
+        modelValue: 'ansi31',
+        options: [
+          { value: 'ansi31', label: 'ANSI31', pattern: 'ansi31', command: 'hatch-pattern-ansi31' },
+          { value: 'grid', label: 'Grid', pattern: 'grid', command: 'hatch-pattern-grid' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const options = wrapper.findAll('.ml-demo-hatch-button__option')
+      expect(options).toHaveLength(2)
+
+      await options[1]!.trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(emitItemClick).toHaveBeenCalledWith('hatch-pattern-grid')
+      expect(options[1]!.classes()).toContain('is-selected')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+})
+
 describe('App demo', () => {
   it('configures entity property dropdowns as a single column collection with three rows', () => {
     const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
@@ -368,6 +495,17 @@ describe('App demo', () => {
     expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?value:\s*'find'[\s\S]*?tooltip:\s*'Find'/)
     expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?value:\s*'replace'[\s\S]*?tooltip:\s*'Replace'/)
   })
+
+  it('configures custom tab hatch pattern group with a large custom button', () => {
+    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+
+    expect(appSource).toContain("id: 'pattern'")
+    expect(appSource).toContain("title: 'Pattern'")
+    expect(appSource).toContain("id: 'hatch-pattern'")
+    expect(appSource).toContain('component: MlDemoHatchButton')
+    expect(appSource).toMatch(/id:\s*'hatch-pattern'[\s\S]*?size:\s*'large'/)
+    expect(appSource).toContain("case 'hatch-pattern-grid':")
+  })
 })
 
 describe('MlRibbon', () => {
@@ -429,6 +567,14 @@ describe('MlRibbon', () => {
     )
     expect(css).toMatch(
       /\.ml-ribbon-item-host\.is-large\s+\.ml-ribbon-item-host__icon\s*\{[\s\S]*font-size:\s*calc\(\(var\(--ml-rb-font-base\)\s*\*\s*1\.7\)\s*\+\s*2px\);/,
+    )
+  })
+
+  it('removes Element Plus icon label offset from large ribbon buttons', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\.is-large\.type-button\s+\.ml-ribbon-button__icon\s*\+\s*\.ml-ribbon-button__label\s*\{[\s\S]*margin-left:\s*0;/,
     )
   })
 
@@ -2022,6 +2168,7 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
 
       expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Polygon command')
+      expect(wrapper.findComponent({ name: 'ElTooltip' }).props('content')).toBe('Polygon command')
     } finally {
       wrapper.unmount()
     }

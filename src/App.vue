@@ -26,6 +26,7 @@ import {
 import { MlRibbon } from './ribbon'
 import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabModel } from './ribbon'
 import MlDemoColorDropdown from './components/MlDemoColorDropdown.vue'
+import MlDemoHatchButton from './components/MlDemoHatchButton.vue'
 import MlDemoLineTypeDropdown from './components/MlDemoLineTypeDropdown.vue'
 import MlDemoLineWeightDropdown from './components/MlDemoLineWeightDropdown.vue'
 import type { MlDemoCadDropdownOption } from './components/demoCadDropdown'
@@ -67,6 +68,7 @@ const gridSnap = ref(true)
 const entityColor = ref('bylayer')
 const entityLineType = ref('continuous')
 const entityLineWeight = ref('0.25')
+const hatchPattern = ref('ansi31')
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
@@ -386,6 +388,30 @@ const baseTabs: RibbonTabModel[] = [
           },
         ],
       },
+      {
+        id: 'pattern',
+        title: 'Pattern',
+        orientation: 'row',
+        autoWidth: true,
+        priority: 25,
+        collections: [
+          {
+            id: 'pattern-main',
+            layout: 'row',
+            items: [
+              {
+                id: 'hatch-pattern',
+                type: 'custom',
+                label: 'Hatch Pattern',
+                size: 'large',
+                props: {
+                  component: MlDemoHatchButton,
+                },
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -491,6 +517,8 @@ const zhCNMap: Record<string, string> = {
   Color: '颜色',
   'Line Type': '线型',
   'Line Weight': '线宽',
+  Pattern: '图案',
+  'Hatch Pattern': '填充图案',
   ByLayer: '随层',
   Red: '红色',
   Yellow: '黄色',
@@ -502,6 +530,10 @@ const zhCNMap: Record<string, string> = {
   Dashed: '虚线',
   Hidden: '隐藏线',
   Center: '中心线',
+  Solid: '实体',
+  Grid: '网格',
+  Cross: '交叉',
+  Brick: '砖块',
   Line: '直线',
   Polyline: '多段线',
   Circle: '圆',
@@ -644,6 +676,15 @@ const cadLineWeightOptions = computed<MlDemoCadDropdownOption[]>(() => [
   { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
 ])
 
+const cadHatchOptions = computed(() => [
+  { value: 'solid', label: translate('Solid') ?? 'Solid', pattern: 'solid', command: 'hatch-pattern-solid' },
+  { value: 'ansi31', label: 'ANSI31', pattern: 'ansi31', command: 'hatch-pattern-ansi31' },
+  { value: 'ansi37', label: 'ANSI37', pattern: 'ansi37', command: 'hatch-pattern-ansi37' },
+  { value: 'grid', label: translate('Grid') ?? 'Grid', pattern: 'grid', command: 'hatch-pattern-grid' },
+  { value: 'cross', label: translate('Cross') ?? 'Cross', pattern: 'cross', command: 'hatch-pattern-cross' },
+  { value: 'brick', label: translate('Brick') ?? 'Brick', pattern: 'brick', command: 'hatch-pattern-brick' },
+])
+
 function resolveCustomComponentProps(itemId: string): Record<string, unknown> | undefined {
   switch (itemId) {
     case 'entity-color':
@@ -663,6 +704,12 @@ function resolveCustomComponentProps(itemId: string): Record<string, unknown> | 
         title: translate('Line Weight') ?? 'Line Weight',
         modelValue: entityLineWeight.value,
         options: cadLineWeightOptions.value,
+      }
+    case 'hatch-pattern':
+      return {
+        title: translate('Hatch Pattern') ?? 'Hatch Pattern',
+        modelValue: hatchPattern.value,
+        options: cadHatchOptions.value,
       }
     default:
       return undefined
@@ -873,6 +920,24 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
       break
     case 'entity-line-weight-0.70':
       entityLineWeight.value = '0.70'
+      break
+    case 'hatch-pattern-solid':
+      hatchPattern.value = 'solid'
+      break
+    case 'hatch-pattern-ansi31':
+      hatchPattern.value = 'ansi31'
+      break
+    case 'hatch-pattern-ansi37':
+      hatchPattern.value = 'ansi37'
+      break
+    case 'hatch-pattern-grid':
+      hatchPattern.value = 'grid'
+      break
+    case 'hatch-pattern-cross':
+      hatchPattern.value = 'cross'
+      break
+    case 'hatch-pattern-brick':
+      hatchPattern.value = 'brick'
       break
   }
 

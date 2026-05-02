@@ -10,7 +10,9 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Ribbon container/state orchestration (`MlRibbon`)
 - Tabs, groups, collections, and item host composition
 - Advanced Ribbon-only items:
+  - `MlRibbonButton`
   - `MlRibbonButtonGroup`
+  - `MlRibbonDropdown`
   - `MlRibbonSegmented`
   - `MlRibbonToggleButton`
   - `MlRibbonGallery`
@@ -36,6 +38,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
 - Custom Vue components can be mounted directly from the ribbon schema with `type: 'custom'`, `props.component`, and `props.componentProps`
+- Custom ribbon controls can reuse `MlRibbonButton` and `MlRibbonDropdown` for consistent icon, label, dropdown, theme, and size behavior.
 
 ## Naming Conventions
 - Component names use `Ml` prefix.

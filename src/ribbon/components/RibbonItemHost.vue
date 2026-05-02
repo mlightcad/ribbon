@@ -1,15 +1,8 @@
 <script setup lang="ts">
-import { ArrowDown } from '@element-plus/icons-vue'
-import { ArrowUp } from '@element-plus/icons-vue'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import {
-  ElButton,
   ElCheckbox,
   ElColorPicker,
-  ElDropdown,
-  ElDropdownItem,
-  ElDropdownMenu,
-  ElIcon,
   ElOption,
   ElSelect,
   ElTooltip,
@@ -18,8 +11,10 @@ import {
 import type { Component } from 'vue'
 import { ribbonKey } from '../context'
 import type { RibbonItemModel } from '../types'
-import MlRibbonGallery from '../items/RibbonGallery.vue'
+import MlRibbonButton from '../items/RibbonButton.vue'
 import MlRibbonButtonGroup from '../items/RibbonButtonGroup.vue'
+import MlRibbonDropdown from '../items/RibbonDropdown.vue'
+import MlRibbonGallery from '../items/RibbonGallery.vue'
 import MlRibbonSegmented from '../items/RibbonSegmented.vue'
 import MlRibbonToggleButton from '../items/RibbonToggleButton.vue'
 import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
@@ -66,70 +61,25 @@ const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
 const resolvedTooltipShowAfter = computed(() => normalizeTooltipDelay(ribbon?.tooltipShowAfter.value, 1000))
 const resolvedTooltipHideAfter = computed(() => normalizeTooltipDelay(ribbon?.tooltipHideAfter.value, 0))
-// Shared popper class names keep dropdown/select overlays on the same ribbon size theme.
-const dropdownPopperClass = computed(
-  () => `ml-ribbon-dropdown-menu ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
-)
 const selectPopperClass = computed(
   () => `ml-ribbon-select-dropdown ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
 )
-// Prefer icon declared in item props, then fallback to the top-level item icon.
-const baseIconComponent = computed<Component | null>(() => {
-  const byProps = props.item.props?.icon as Component | undefined
-  if (byProps) return byProps
-  if (typeof props.item.icon === 'string' || !props.item.icon) return null
-  return props.item.icon as Component
-})
-const baseIconClass = computed<string | null>(() => {
+const buttonIcon = computed<string | Component | undefined>(() => {
   const byProps = props.item.props?.icon
-  if (typeof byProps === 'string' && byProps.trim().length > 0) return byProps
-  if (typeof props.item.icon === 'string' && props.item.icon.trim().length > 0) return props.item.icon
-  return null
+  if (byProps) return byProps as string | Component
+  return props.item.icon
 })
 // Hide label only when the schema explicitly sets hideLabel to true.
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
+const dropdownTriggerTooltip = ref<string | undefined>(undefined)
 const resolvedTooltip = computed(() => {
-  if (props.item.type === 'dropdown') {
-    return (
-      optionTooltip(selectedDropdownOption.value) ??
-      itemText(props.item.tooltip) ??
-      itemText(dropdownLabel.value) ??
-      itemText(props.item.label) ??
-      humanizeItemId(props.item.id)
-    )
-  }
+  if (props.item.type === 'dropdown' && dropdownTriggerTooltip.value) return dropdownTriggerTooltip.value
   return itemText(props.item.tooltip) ?? itemText(props.item.label) ?? optionTooltipText(props.item) ?? humanizeItemId(props.item.id)
 })
 const shouldUseHostTooltip = computed(() => props.item.type !== 'buttonGroup')
 const shouldDisableHostTooltip = computed(() => !shouldUseHostTooltip.value || !resolvedTooltip.value)
 const buttonAriaLabel = computed(() => resolvedTooltip.value ?? props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
-const shouldSyncDropdownLabel = computed(() => props.item.props?.syncLabelWithSelection === true)
-const isDropdownOpen = ref(false)
-const selectedDropdownValue = ref<unknown>(undefined)
-const selectedDropdownOption = computed(() => options.value.find((opt) => optionValue(opt) === selectedDropdownValue.value) ?? null)
-const dropdownLabel = computed(() => {
-  const option = selectedDropdownOption.value
-  if (option && shouldSyncDropdownLabel.value) {
-    const label = optionLabel(option)
-    if (label) return label
-  }
-  return props.item.label ?? props.item.id
-})
-const dropdownIconComponent = computed<Component | null>(() => {
-  if (selectedDropdownOption.value) {
-    const fromOption = optionIconAsComponent(selectedDropdownOption.value)
-    if (fromOption) return fromOption
-  }
-  return baseIconComponent.value
-})
-const dropdownIconClass = computed<string | null>(() => {
-  if (selectedDropdownOption.value) {
-    const fromOption = optionIconAsClass(selectedDropdownOption.value)
-    if (fromOption) return fromOption
-  }
-  return dropdownIconComponent.value ? null : baseIconClass.value
-})
 const shouldShowKeyTip = computed(() => {
   if (!ribbon?.keyTipsOpen.value) return false
   if (ribbon?.disabled.value) return false
@@ -182,6 +132,13 @@ const labelWrapInlineStyle = computed<Record<string, string>>(() => {
   return style
 })
 
+watch(
+  () => props.item.id,
+  () => {
+    dropdownTriggerTooltip.value = undefined
+  },
+)
+
 /**
  * Emits a normalized click payload so parent components only care about item id.
  */
@@ -191,58 +148,19 @@ function handleClick() {
 }
 
 /**
- * Syncs dropdown open state from Element Plus visibility event.
- * @param value Whether dropdown menu is open.
- */
-function setDropdownOpen(value: boolean) {
-  if (isDisabled.value) {
-    isDropdownOpen.value = false
-    return
-  }
-  isDropdownOpen.value = value
-}
-
-/**
  * Handles dropdown option command and closes arrow state.
  */
 function handleDropdownCommand(command: unknown) {
   if (isDisabled.value) return
-  selectedDropdownValue.value = command
-  emitDropdownCommand(command)
-  isDropdownOpen.value = false
-}
-
-/**
- * Keeps trigger arrow state responsive while click-trigger menu is toggled.
- */
-function toggleDropdownOpen() {
-  if (isDisabled.value) return
-  isDropdownOpen.value = !isDropdownOpen.value
-}
-
-/**
- * Executes the current dropdown command when the icon area is clicked.
- */
-function handleDropdownPrimaryClick() {
-  if (isDisabled.value) return
-  const option = selectedDropdownOption.value
-  if (!option) {
-    handleClick()
-    return
-  }
-  emitDropdownCommand(optionValue(option))
-}
-
-/**
- * Emits dropdown command payload, normalizing non-primitive values to item id.
- * @param command Dropdown command id/value.
- */
-function emitDropdownCommand(command: unknown) {
   if (typeof command === 'string' || typeof command === 'number') {
     emit('item-click', String(command))
     return
   }
   handleClick()
+}
+
+function handleDropdownTooltipChange(tooltip: string | undefined) {
+  dropdownTriggerTooltip.value = tooltip
 }
 
 /**
@@ -314,40 +232,6 @@ function emitCustomItemClick(payload?: string | number | boolean) {
 }
 
 /**
- * Resolves an option icon as a Vue component instance.
- * @param option Dropdown option candidate.
- * @returns Component icon when present and non-string; otherwise `null`.
- */
-function optionIconAsComponent(option: unknown): Component | null {
-  if (!option || typeof option !== 'object') return null
-  const icon = (option as { icon?: unknown }).icon
-  if (!icon || typeof icon === 'string') return null
-  return icon as Component
-}
-
-/**
- * Resolves an option icon as a CSS class name.
- * @param option Dropdown option candidate.
- * @returns CSS class string when provided by schema; otherwise `null`.
- */
-function optionIconAsClass(option: unknown): string | null {
-  if (!option || typeof option !== 'object') return null
-  const icon = (option as { icon?: unknown }).icon
-  if (typeof icon !== 'string' || icon.trim().length === 0) return null
-  return icon
-}
-
-/**
- * Reads the command value from a dropdown option.
- * @param option Dropdown option candidate.
- * @returns Option value field or `undefined`.
- */
-function optionValue(option: unknown): unknown {
-  if (!option || typeof option !== 'object') return undefined
-  return (option as { value?: unknown }).value
-}
-
-/**
  * Reads the display label from a dropdown option.
  * @param option Dropdown option candidate.
  * @returns Option label string when available.
@@ -356,28 +240,6 @@ function optionLabel(option: unknown): string | undefined {
   if (!option || typeof option !== 'object') return undefined
   const label = (option as { label?: unknown }).label
   return typeof label === 'string' ? label : undefined
-}
-
-/**
- * Converts dropdown option values like `circle-two-point` into readable fallback text.
- * @param value Dropdown option value.
- * @returns Human-readable fallback tooltip text when possible.
- */
-function humanizeOptionValue(value: unknown): string | undefined {
-  if (typeof value === 'string') return humanizeItemId(value)
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
-  return undefined
-}
-
-/**
- * Resolves option tooltip content with explicit tooltip, label, and value fallbacks.
- * @param option Dropdown option candidate.
- * @returns Tooltip text for a dropdown option.
- */
-function optionTooltip(option: unknown): string | undefined {
-  if (!option || typeof option !== 'object') return undefined
-  const explicitTooltip = itemText((option as { tooltip?: unknown }).tooltip)
-  return explicitTooltip ?? optionLabel(option) ?? humanizeOptionValue(optionValue(option))
 }
 
 /**
@@ -580,72 +442,23 @@ function humanizeItemId(value: string): string {
         <slot v-else name="template" :item="item" :disabled="isDisabled" />
       </MlRibbonTemplateItem>
 
-      <ElDropdown
+      <MlRibbonDropdown
         v-else-if="item.type === 'dropdown'"
-        trigger="click"
+        :id="item.id"
+        :label="item.label ?? item.id"
+        :tooltip="item.tooltip"
+        :icon="buttonIcon"
+        :options="(item.props?.options as any[]) ?? []"
         :disabled="isDisabled"
-        :popper-class="dropdownPopperClass"
-        @visible-change="setDropdownOpen"
+        :hide-label="item.hideLabel === true"
+        :item-size="item.size ?? 'medium'"
+        :sync-label-with-selection="item.props?.syncLabelWithSelection === true"
+        :tooltip-show-after="resolvedTooltipShowAfter"
+        :tooltip-hide-after="resolvedTooltipHideAfter"
         @command="handleDropdownCommand"
-      >
-        <ElButton type="default" :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="toggleDropdownOpen">
-          <span class="ml-ribbon-item-host__content">
-            <span
-              v-if="dropdownIconComponent"
-              class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--dropdown-primary"
-              @click.stop="handleDropdownPrimaryClick"
-            >
-              <ElIcon>
-                <component :is="dropdownIconComponent" />
-              </ElIcon>
-            </span>
-            <span
-              v-else-if="dropdownIconClass"
-              class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class ml-ribbon-item-host__icon--dropdown-primary"
-              @click.stop="handleDropdownPrimaryClick"
-            >
-              <i :class="dropdownIconClass" aria-hidden="true" />
-            </span>
-            <span class="ml-ribbon-item-host__text-row">
-              <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ dropdownLabel }}</span>
-              <ElIcon class="ml-ribbon-item-host__dropdown-arrow" :class="{ 'is-open': isDropdownOpen }">
-                <component :is="isDropdownOpen ? ArrowUp : ArrowDown" />
-              </ElIcon>
-            </span>
-          </span>
-        </ElButton>
-        <template #dropdown>
-          <ElDropdownMenu>
-            <ElDropdownItem
-              v-for="opt in options"
-              :key="String((opt as any).value)"
-              :command="(opt as any).value"
-            >
-              <ElTooltip
-                :content="optionTooltip(opt)"
-                :disabled="!optionTooltip(opt)"
-                :show-after="resolvedTooltipShowAfter"
-                :hide-after="resolvedTooltipHideAfter"
-                placement="top"
-                effect="dark"
-              >
-                <span class="ml-ribbon-dropdown-item__content">
-                  <ElIcon v-if="optionIconAsComponent(opt)" class="ml-ribbon-dropdown-item__icon">
-                    <component :is="optionIconAsComponent(opt)" />
-                  </ElIcon>
-                  <i
-                    v-else-if="optionIconAsClass(opt)"
-                    class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
-                    :class="optionIconAsClass(opt)"
-                    aria-hidden="true"
-                  />
-                  <span class="ml-ribbon-dropdown-item__label">{{ (opt as any).label }}</span>
-                </span>
-              </ElTooltip>
-            </ElDropdownItem>
-          </ElDropdownMenu>
-        </template>
-      </ElDropdown>
+        @tooltip-change="handleDropdownTooltipChange"
+        @click="handleClick"
+      />
 
       <ElCheckbox v-else-if="item.type === 'checkbox'" :disabled="isDisabled" @change="handleClick">
         {{ item.label }}
@@ -669,16 +482,16 @@ function humanizeItemId(value: string): string {
         />
       </ElSelect>
 
-      <ElButton v-else :disabled="isDisabled" :aria-label="buttonAriaLabel" @click="handleClick">
-        <ElIcon v-if="baseIconComponent" class="ml-ribbon-item-host__icon"><component :is="baseIconComponent" /></ElIcon>
-        <i
-          v-else-if="baseIconClass"
-          class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--class"
-          :class="baseIconClass"
-          aria-hidden="true"
-        />
-        <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label">{{ item.label ?? item.id }}</span>
-      </ElButton>
+      <MlRibbonButton
+        v-else
+        :id="item.id"
+        :label="item.label ?? item.id"
+        :icon="buttonIcon"
+        :disabled="isDisabled"
+        :hide-label="!shouldShowLabel"
+        :aria-label="buttonAriaLabel"
+        @click="handleClick"
+      />
     </div>
   </ElTooltip>
 </template>

@@ -70,6 +70,14 @@ export interface RibbonItemModel {
   props?: Record<string, unknown>
 }
 
+export interface RibbonDropdownOption {
+  label?: string
+  value?: unknown
+  tooltip?: string
+  icon?: string | Component
+  disabled?: boolean
+}
+
 export interface RibbonCustomItemBindings {
   item: RibbonItemModel
   groupId: string
