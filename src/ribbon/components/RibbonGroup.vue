@@ -19,8 +19,7 @@ import MlRibbonGroupContent from './RibbonGroupContent.vue'
  * @prop icon - Optional Vue icon component for the group title area.
  * @prop groupIconCss - Optional CSS marker used by host logic to map string icons.
  * @prop orientation - Primary group layout direction.
- * @prop autoWidth - Whether group width is auto-sized.
- * @prop width - Fixed group width in pixels.
+ * @prop width - Fixed group width in pixels; omitted width auto-sizes the group.
  * @prop priority - Overflow priority hint (higher values overflow first).
  * @prop launcher - Enables launcher affordance.
  * @prop showLauncherIcon - Explicit launcher icon visibility override.
@@ -53,7 +52,6 @@ const props = defineProps<{
   icon?: string | Component
   groupIconCss?: string
   orientation?: 'row' | 'column'
-  autoWidth?: boolean
   width?: number
   priority?: number
   launcher?: boolean
@@ -61,12 +59,13 @@ const props = defineProps<{
   groupModel?: RibbonGroupModel
   overflowTriggerAriaLabel?: string
   galleryPreviewFallback?: string
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId: string }): void }>()
 const ribbon = inject(ribbonKey, null)
 
-const isAutoWidth = computed(() => props.width == null && props.autoWidth !== false)
+const isAutoWidth = computed(() => props.width == null)
 const fixedWidthStyle = computed(() => {
   if (typeof props.width !== 'number' || Number.isNaN(props.width) || props.width <= 0) return undefined
   const value = `${props.width}px`
@@ -77,7 +76,7 @@ const fixedWidthStyle = computed(() => {
     flex: `0 0 ${value}`,
   }
 })
-const isRibbonDisabled = computed(() => ribbon?.disabled.value === true)
+const isRibbonDisabled = computed(() => props.disabled === true || ribbon?.disabled.value === true)
 const groupSectionRef = ref<HTMLElement | null>(null)
 const overflowItemIds = ref<string[]>([])
 const overflowTriggerRef = ref<HTMLElement | null>(null)
@@ -353,6 +352,7 @@ onUnmounted(() => {
           <MlRibbonGroupContent
             :group="footerMenuGroupModel"
             :gallery-preview-fallback="galleryPreviewFallback"
+            :disabled="isRibbonDisabled"
             @item-click="emit('item-click', $event)"
           />
         </div>
@@ -385,6 +385,7 @@ onUnmounted(() => {
           <MlRibbonGroupContent
             :group="overflowGroupModel"
             :gallery-preview-fallback="galleryPreviewFallback"
+            :disabled="isRibbonDisabled"
             @item-click="emit('item-click', $event)"
           />
         </div>

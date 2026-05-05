@@ -322,6 +322,15 @@ watch(context.backdropOpen, (value) => {
 })
 
 const activeTabModel = computed(() => visibleTabs.value.find((x) => x.id === context.activeTab.value))
+const exclusiveContextualTabIds = computed(
+  () =>
+    new Set(
+      visibleTabs.value
+        .filter((tab) => tab.contextual && tab.contextualMode === 'exclusive')
+        .map((tab) => tab.id),
+    ),
+)
+const isActiveTabContentDisabled = computed(() => isTabContentDisabled(activeTabModel.value))
 const visibleGroups = computed(() => activeTabModel.value?.groups?.filter((x) => x.visible !== false) ?? [])
 const ribbonRootRef = ref<HTMLElement | null>(null)
 const ribbonHeaderRef = ref<HTMLElement | null>(null)
@@ -435,8 +444,7 @@ function estimateGroupWidth(group: RibbonGroupModel): number {
   if (typeof group.width === 'number' && Number.isFinite(group.width) && group.width > 0) {
     return group.width
   }
-  if (group.autoWidth !== false) return 140
-  return 190
+  return 140
 }
 
 /**
@@ -602,6 +610,17 @@ function closeMinimizedTabPanel() {
 }
 
 /**
+ * Resolves whether a tab panel should be locked by contextual exclusive mode.
+ * @param tab Current tab model.
+ * @returns Whether commands inside the tab should be disabled.
+ */
+function isTabContentDisabled(tab?: RibbonTabModel): boolean {
+  if (context.disabled.value) return true
+  if (!tab || exclusiveContextualTabIds.value.size === 0) return false
+  return !exclusiveContextualTabIds.value.has(tab.id)
+}
+
+/**
  * Selects active tab.
  * @param tabId Tab id to activate.
  */
@@ -670,7 +689,7 @@ function closeBackstage() {
  * @param itemId Source item id.
  */
 function onItemClick(groupId: string, itemId: string) {
-  if (context.disabled.value) return
+  if (isActiveTabContentDisabled.value) return
   emit('itemClick', { tabId: context.activeTab.value, groupId, itemId })
   if (context.minimized.value) closeMinimizedTabPanel()
 }
@@ -691,7 +710,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
  * Builds key-tip models for the active tab from visible, enabled items.
  */
 function syncActiveTabKeyTips() {
-  if (context.disabled.value) {
+  if (isActiveTabContentDisabled.value) {
     context.keyTips.value = []
     return
   }
@@ -1028,7 +1047,6 @@ defineExpose<RibbonDynamicApi>(context.api)
               :icon="group.icon"
               :group-icon-css="group.groupIconCss"
               :orientation="group.orientation"
-              :auto-width="group.autoWidth"
               :width="group.width"
               :priority="group.priority ?? 100"
               :launcher="group.launcher"
@@ -1036,11 +1054,13 @@ defineExpose<RibbonDynamicApi>(context.api)
               :group-model="group"
               :overflow-trigger-aria-label="ribbonTexts.groupOverflowTriggerAriaLabel"
               :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+              :disabled="isActiveTabContentDisabled"
               @item-click="onItemClick($event.groupId, $event.itemId)"
             >
               <MlRibbonGroupContent
                 :group="group"
                 :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                :disabled="isActiveTabContentDisabled"
                 @item-click="onItemClick($event.groupId, $event.itemId)"
               />
             </MlRibbonGroup>
@@ -1051,7 +1071,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                   trigger="click"
                   placement="bottom-end"
                   :width="classicOverflowPopoverWidth"
-                  :disabled="context.disabled.value"
+                  :disabled="isActiveTabContentDisabled"
                   :show-arrow="false"
                   :popper-class="classicOverflowPopoverClass"
                   @show="context.overflowOpen.value = true"
@@ -1062,7 +1082,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                       type="button"
                       class="ml-ribbon-overflow-trigger"
                       :aria-label="ribbonTexts.overflowTriggerAriaLabel"
-                      :disabled="context.disabled.value"
+                      :disabled="isActiveTabContentDisabled"
                     >
                       <span class="ml-ribbon-overflow-trigger__dots">...</span>
                     </button>
@@ -1073,6 +1093,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                       <MlRibbonGroupContent
                         :group="group"
                         :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                        :disabled="isActiveTabContentDisabled"
                         @item-click="onItemClick($event.groupId, $event.itemId)"
                       />
                     </section>
@@ -1094,12 +1115,12 @@ defineExpose<RibbonDynamicApi>(context.api)
               trigger="click"
               placement="bottom-start"
               :width="340"
-              :disabled="context.disabled.value"
+              :disabled="isActiveTabContentDisabled"
               :show-arrow="false"
               :popper-class="simplifiedGroupPopoverClass"
             >
               <template #reference>
-                <button class="ml-ribbon-simplified-group" type="button" :disabled="context.disabled.value">
+                <button class="ml-ribbon-simplified-group" type="button" :disabled="isActiveTabContentDisabled">
                   <ElIcon v-if="resolveGroupIcon(group)" class="ml-ribbon-simplified-group__icon">
                     <component :is="resolveGroupIcon(group)" />
                   </ElIcon>
@@ -1110,6 +1131,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                 <MlRibbonGroupContent
                   :group="toSimplifiedPanelGroup(group)"
                   :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                  :disabled="isActiveTabContentDisabled"
                   @item-click="onItemClick($event.groupId, $event.itemId)"
                 />
               </div>
@@ -1133,7 +1155,6 @@ defineExpose<RibbonDynamicApi>(context.api)
           :icon="group.icon"
           :group-icon-css="group.groupIconCss"
           :orientation="group.orientation"
-          :auto-width="group.autoWidth"
           :width="group.width"
           :priority="group.priority ?? 100"
           :launcher="group.launcher"
@@ -1141,11 +1162,13 @@ defineExpose<RibbonDynamicApi>(context.api)
           :group-model="group"
           :overflow-trigger-aria-label="ribbonTexts.groupOverflowTriggerAriaLabel"
           :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+          :disabled="isActiveTabContentDisabled"
           @item-click="onItemClick($event.groupId, $event.itemId)"
         >
           <MlRibbonGroupContent
             :group="group"
             :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+            :disabled="isActiveTabContentDisabled"
             @item-click="onItemClick($event.groupId, $event.itemId)"
           />
         </MlRibbonGroup>
@@ -1156,7 +1179,7 @@ defineExpose<RibbonDynamicApi>(context.api)
               trigger="click"
               placement="bottom-end"
               :width="classicOverflowPopoverWidth"
-              :disabled="context.disabled.value"
+              :disabled="isActiveTabContentDisabled"
               :popper-class="classicOverflowPopoverClass"
               @show="context.overflowOpen.value = true"
               @hide="context.overflowOpen.value = false"
@@ -1166,7 +1189,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                   type="button"
                   class="ml-ribbon-overflow-trigger"
                   :aria-label="ribbonTexts.overflowTriggerAriaLabel"
-                  :disabled="context.disabled.value"
+                  :disabled="isActiveTabContentDisabled"
                 >
                   <span class="ml-ribbon-overflow-trigger__dots">...</span>
                 </button>
@@ -1177,6 +1200,7 @@ defineExpose<RibbonDynamicApi>(context.api)
                   <MlRibbonGroupContent
                     :group="group"
                     :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+                    :disabled="isActiveTabContentDisabled"
                     @item-click="onItemClick($event.groupId, $event.itemId)"
                   />
                 </section>
@@ -1198,11 +1222,11 @@ defineExpose<RibbonDynamicApi>(context.api)
           trigger="click"
           placement="bottom-start"
           :width="340"
-          :disabled="context.disabled.value"
+          :disabled="isActiveTabContentDisabled"
           :popper-class="simplifiedGroupPopoverClass"
         >
           <template #reference>
-            <button class="ml-ribbon-simplified-group" type="button" :disabled="context.disabled.value">
+            <button class="ml-ribbon-simplified-group" type="button" :disabled="isActiveTabContentDisabled">
               <ElIcon v-if="resolveGroupIcon(group)" class="ml-ribbon-simplified-group__icon">
                 <component :is="resolveGroupIcon(group)" />
               </ElIcon>
@@ -1213,6 +1237,7 @@ defineExpose<RibbonDynamicApi>(context.api)
             <MlRibbonGroupContent
               :group="toSimplifiedPanelGroup(group)"
               :gallery-preview-fallback="ribbonTexts.galleryPreviewFallback"
+              :disabled="isActiveTabContentDisabled"
               @item-click="onItemClick($event.groupId, $event.itemId)"
             />
           </div>

@@ -417,6 +417,19 @@ html.dark {
   line-height: 1.1;
 }
 
+.ml-ribbon-item-host.is-large.type-toggle .ml-ribbon-toggle {
+  min-width: 62px;
+}
+
+.ml-ribbon-item-host.is-large.type-toggle .ml-ribbon-toggle > span {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.1;
+}
+
 .ml-ribbon-item-host.is-small .el-button {
   min-height: var(--ml-rb-compact-height);
   height: var(--ml-rb-compact-height);

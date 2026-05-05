@@ -6,6 +6,7 @@ export type RibbonItemSize = 'large' | 'medium' | 'small'
 export type RibbonCollectionLayout = 'row' | 'column'
 export type RibbonGroupOrientation = 'row' | 'column'
 export type RibbonComponentSize = ComponentSize
+export type RibbonContextualMode = 'exclusive' | 'selection'
 
 export type RibbonItemType =
   | 'button'
@@ -99,7 +100,6 @@ export interface RibbonGroupModel {
   groupIconCss?: string
   orientation?: RibbonGroupOrientation
   enableGroupOverflow?: boolean
-  autoWidth?: boolean
   width?: number
   priority?: number
   visible?: boolean
@@ -114,6 +114,7 @@ export interface RibbonTabModel {
   title: string
   visible?: boolean
   contextual?: boolean
+  contextualMode?: RibbonContextualMode
   contextualColor?: string
   contextualTitle?: string
   groups?: RibbonGroupModel[]

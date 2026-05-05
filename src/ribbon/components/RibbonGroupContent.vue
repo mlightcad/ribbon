@@ -28,6 +28,7 @@ const props = withDefaults(
   defineProps<{
     group: RibbonGroupModel
     galleryPreviewFallback?: string
+    disabled?: boolean
   }>(),
   {},
 )
@@ -54,6 +55,7 @@ const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId:
         :item="item"
         :group-id="props.group.id"
         :gallery-preview-fallback="props.galleryPreviewFallback"
+        :disabled="props.disabled"
         @item-click="emit('item-click', { groupId: props.group.id, itemId: $event })"
       />
     </MlRibbonCollection>
