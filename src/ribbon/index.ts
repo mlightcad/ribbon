@@ -108,6 +108,7 @@ export { default as MlRibbonContextualTabs } from './modules/RibbonContextualTab
 
 export type {
   RibbonLayout,
+  RibbonContextualMode,
   RibbonItemSize,
   RibbonItemType,
   RibbonCollectionLayout,

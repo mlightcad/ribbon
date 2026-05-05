@@ -6,6 +6,7 @@ import {
   Aim,
   Brush,
   CirclePlus,
+  Close,
   Connection,
   CopyDocument,
   Crop,
@@ -72,6 +73,8 @@ const hatchPattern = ref('ansi31')
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
+const createContextOpen = ref(false)
+const selectionContextOpen = ref(true)
 
 // Sample ribbon schema that demonstrates common item types, priorities and overflow rules.
 const baseTabs: RibbonTabModel[] = [
@@ -83,7 +86,6 @@ const baseTabs: RibbonTabModel[] = [
         id: 'draw',
         title: 'Draw',
         orientation: 'row',
-        autoWidth: true,
         enableGroupOverflow: false,
         priority: 1,
         footerMenuItems: [
@@ -392,7 +394,6 @@ const baseTabs: RibbonTabModel[] = [
         id: 'pattern',
         title: 'Pattern',
         orientation: 'row',
-        autoWidth: true,
         priority: 25,
         collections: [
           {
@@ -415,9 +416,56 @@ const baseTabs: RibbonTabModel[] = [
     ],
   },
   {
+    id: 'create-tools',
+    title: 'Create Object',
+    visible: false,
+    contextual: true,
+    contextualMode: 'exclusive',
+    contextualTitle: 'Creation Tools',
+    contextualColor: '#5bb8a9',
+    groups: [
+      {
+        id: 'create-options',
+        title: 'Create Options',
+        enableGroupOverflow: false,
+        collections: [
+          {
+            id: 'create-options-main',
+            layout: 'row',
+            items: [
+              {
+                id: 'create-orthogonal',
+                type: 'toggle',
+                label: 'Ortho',
+                size: 'large',
+                props: { activeIcon: Aim, inactiveIcon: Pointer },
+              },
+              { id: 'create-confirm', type: 'button', label: 'Confirm', size: 'large', props: { icon: Position } },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'create-close',
+        title: 'Close',
+        priority: 1,
+        enableGroupOverflow: false,
+        collections: [
+          {
+            id: 'create-close-main',
+            layout: 'row',
+            items: [{ id: 'close-contextual', type: 'button', label: 'Close', size: 'large', props: { icon: Close } }],
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'chart-tools',
     title: 'Chart Design',
+    visible: true,
     contextual: true,
+    contextualMode: 'selection',
     contextualTitle: 'Chart Tools',
     contextualColor: '#eebe77',
     groups: [
@@ -425,6 +473,19 @@ const baseTabs: RibbonTabModel[] = [
         id: 'chart-style',
         title: 'Chart Style',
         collections: [{ id: 'chart-c1', items: [{ id: 'color-scheme', type: 'colorPicker', label: 'Colors' }] }],
+      },
+      {
+        id: 'chart-close',
+        title: 'Close',
+        priority: 1,
+        enableGroupOverflow: false,
+        collections: [
+          {
+            id: 'chart-close-main',
+            layout: 'row',
+            items: [{ id: 'close-contextual', type: 'button', label: 'Close', size: 'large', props: { icon: Close } }],
+          },
+        ],
       },
     ],
   },
@@ -493,6 +554,8 @@ const zhCNMap: Record<string, string> = {
   Custom: '自定义',
   Settings: '设置',
   'Chart Design': '图表设计',
+  'Create Object': '创建对象',
+  'Creation Tools': '创建工具',
   'Chart Tools': '图表工具',
   Draw: '绘图',
   Clipboard: '剪贴板',
@@ -514,6 +577,10 @@ const zhCNMap: Record<string, string> = {
   'Layer Properties': '图层特性',
   'Entity Properties': '对象属性',
   'Chart Style': '图表样式',
+  'Create Options': '创建选项',
+  Close: '关闭',
+  Ortho: '正交',
+  Confirm: '确认',
   Color: '颜色',
   'Line Type': '线型',
   'Line Weight': '线宽',
@@ -579,6 +646,8 @@ const zhCNMap: Record<string, string> = {
   Disabled: '已禁用',
   'Disable Ribbon': '禁用 Ribbon',
   'Enable Ribbon': '启用 Ribbon',
+  'Show Create Context': '显示创建上下文',
+  'Show Selection Context': '显示选择上下文',
   Command: '命令',
   New: '新建',
   Open: '打开',
@@ -719,6 +788,12 @@ function resolveCustomComponentProps(itemId: string): Record<string, unknown> | 
 const tabs = computed<RibbonTabModel[]>(() =>
   baseTabs.map((tab) => ({
     ...tab,
+    visible:
+      tab.id === 'create-tools'
+        ? createContextOpen.value
+        : tab.id === 'chart-tools'
+          ? selectionContextOpen.value
+          : tab.visible,
     title: translate(tab.title) ?? tab.title,
     contextualTitle: translate(tab.contextualTitle),
     groups: tab.groups?.map((group) => ({
@@ -822,6 +897,8 @@ const uiTexts = computed(() => ({
   disabled: translate('Disabled') ?? 'Disabled',
   disableRibbon: translate('Disable Ribbon') ?? 'Disable Ribbon',
   enableRibbon: translate('Enable Ribbon') ?? 'Enable Ribbon',
+  showCreateContext: translate('Show Create Context') ?? 'Show Create Context',
+  showSelectionContext: translate('Show Selection Context') ?? 'Show Selection Context',
   commandLabel: translate('Command') ?? 'Command',
   backstageMeta:
     translate('This whole area is rendered from the `#backstage` slot.') ??
@@ -846,6 +923,9 @@ watch(
  */
 function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: string }) {
   switch (payload.itemId) {
+    case 'close-contextual':
+      closeContextualTab(payload.tabId)
+      break
     case 'theme-light':
       theme.value = 'light'
       break
@@ -953,6 +1033,22 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
 function setRibbonDisabled(value: boolean) {
   ribbonDisabled.value = value
 }
+
+function showCreateContext() {
+  createContextOpen.value = true
+  activeTab.value = 'create-tools'
+}
+
+function showSelectionContext() {
+  selectionContextOpen.value = true
+  activeTab.value = 'chart-tools'
+}
+
+function closeContextualTab(tabId = activeTab.value) {
+  if (tabId === 'create-tools') createContextOpen.value = false
+  if (tabId === 'chart-tools') selectionContextOpen.value = false
+  if (activeTab.value === tabId) activeTab.value = 'home'
+}
 </script>
 
 <template>
@@ -963,6 +1059,12 @@ function setRibbonDisabled(value: boolean) {
       </ElButton>
       <ElButton size="small" :disabled="!ribbonDisabled" @click="setRibbonDisabled(false)">
         {{ uiTexts.enableRibbon }}
+      </ElButton>
+      <ElButton size="small" :disabled="ribbonDisabled || createContextOpen" @click="showCreateContext">
+        {{ uiTexts.showCreateContext }}
+      </ElButton>
+      <ElButton size="small" :disabled="ribbonDisabled || selectionContextOpen" @click="showSelectionContext">
+        {{ uiTexts.showSelectionContext }}
       </ElButton>
     </div>
     <div class="ml-demo-status">

@@ -34,7 +34,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Large button multi-line label support via `props.labelWrapLines` and optional `props.labelWrapWidth`
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
-- Fixed group width via `RibbonGroupModel.width` (pixels)
+- Group width is auto-sized when `RibbonGroupModel.width` is omitted; provide `width` for a fixed pixel width
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
 - Custom Vue components can be mounted directly from the ribbon schema with `type: 'custom'`, `props.component`, and `props.componentProps`
@@ -172,6 +172,10 @@ Slot props include `activeTab`, `layout`, `minimized`, and `disabled`.
   </template>
 </MlRibbon>
 ```
+
+Contextual tabs support two interaction modes through `RibbonTabModel.contextualMode`:
+- `selection` keeps regular tabs and their commands interactive while selection-specific UI is visible.
+- `exclusive` keeps tab headers selectable but disables command content in all non-exclusive contextual tabs, which is useful while creating or editing a modal object.
 
 ### 4.2 Custom Backstage Slot (Recommended)
 Use `#backstage` to fully customize backstage content.

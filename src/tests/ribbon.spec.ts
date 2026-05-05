@@ -509,6 +509,15 @@ describe('App demo', () => {
 })
 
 describe('MlRibbon', () => {
+  it('auto-sizes groups when schema width is omitted', () => {
+    const wrapper = mount(MlRibbon, { props: { tabs } })
+    const group = wrapper.find('.ml-ribbon-group[data-group-id="grp"]')
+
+    expect(group.exists()).toBe(true)
+    expect(group.classes()).toContain('ml-ribbon-group--auto-width')
+    expect(group.attributes('style')).toBeUndefined()
+  })
+
   it('applies fixed group width from schema', () => {
     const fixedWidthTabs: RibbonTabModel[] = [
       {
@@ -529,6 +538,7 @@ describe('MlRibbon', () => {
     const group = wrapper.find('.ml-ribbon-group[data-group-id="properties"]')
 
     expect(group.exists()).toBe(true)
+    expect(group.classes()).not.toContain('ml-ribbon-group--auto-width')
     expect(group.attributes('style')).toContain('width: 220px')
     expect(group.attributes('style')).toContain('min-width: 220px')
     expect(group.attributes('style')).toContain('max-width: 220px')
@@ -832,6 +842,80 @@ describe('MlRibbon', () => {
 
     expect(wrapper.emitted('itemClick')).toBeUndefined()
     expect(wrapper.emitted('tabChange')).toBeUndefined()
+  })
+
+  it('keeps tabs selectable but disables non-contextual tab content during exclusive contextual mode', async () => {
+    const contextualTabs: RibbonTabModel[] = [
+      ...tabs,
+      {
+        id: 'insert',
+        title: 'Insert',
+        groups: [
+          {
+            id: 'insert-group',
+            title: 'Insert Group',
+            collections: [{ id: 'insert-collection', items: [{ id: 'insert-btn', type: 'button', label: 'Insert' }] }],
+          },
+        ],
+      },
+      {
+        id: 'create-tools',
+        title: 'Create',
+        contextual: true,
+        contextualMode: 'exclusive',
+        groups: [
+          {
+            id: 'create-group',
+            title: 'Create Group',
+            enableGroupOverflow: false,
+            collections: [{ id: 'create-collection', items: [{ id: 'create-btn', type: 'button', label: 'Create' }] }],
+          },
+        ],
+      },
+    ]
+    const wrapper = mount(MlRibbon, { props: { tabs: contextualTabs, activeTab: 'home' } })
+
+    const homeItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
+    const createTabButton = wrapper.findAll('.ml-ribbon-tab').find((node) => node.text() === 'Create')
+
+    expect(homeItemButton.attributes('disabled')).toBeDefined()
+    expect(createTabButton?.attributes('disabled')).toBeUndefined()
+
+    await createTabButton?.trigger('click')
+    expect(wrapper.emitted('tabChange')?.at(-1)).toEqual(['create-tools'])
+    await wrapper.setProps({ activeTab: 'create-tools' })
+    await waitForRibbonLayout(wrapper)
+
+    const createItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="create-btn"] .el-button')
+    expect(createItemButton.exists()).toBe(true)
+    expect(createItemButton.attributes('disabled')).toBeUndefined()
+  })
+
+  it('leaves regular tab content interactive during selection contextual mode', async () => {
+    const contextualTabs: RibbonTabModel[] = [
+      ...tabs,
+      {
+        id: 'chart-tools',
+        title: 'Chart',
+        contextual: true,
+        contextualMode: 'selection',
+        groups: [
+          {
+            id: 'chart-group',
+            title: 'Chart Group',
+            collections: [{ id: 'chart-collection', items: [{ id: 'chart-btn', type: 'button', label: 'Chart' }] }],
+          },
+        ],
+      },
+    ]
+    const wrapper = mount(MlRibbon, { props: { tabs: contextualTabs, activeTab: 'home' } })
+
+    const homeItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
+    await homeItemButton.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(homeItemButton.attributes('disabled')).toBeUndefined()
+    expect(wrapper.emitted('itemClick')?.[0]?.[0]).toEqual({ tabId: 'home', groupId: 'grp', itemId: 'btn1' })
   })
 
   it('hides open backstage menu command when showOpenBackstage is false', async () => {

@@ -76,7 +76,7 @@ Events:
 - Combo-box options: `RibbonItemModel.props.width?: number | string` / `comboWidth?: number | string` (supports `'full'`) and `emitValueOnChange?: boolean` for emitting selected option values
 - Large button label-wrap options: `RibbonItemModel.props.labelWrapLines?: number` enables multi-line labels for `size: 'large'` button items, and `RibbonItemModel.props.labelWrapWidth?: number | string` controls wrap width
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
-- `RibbonGroupModel.width?: number` for fixed group width in pixels
+- `RibbonGroupModel.width?: number` for fixed group width in pixels; omitted width means the group auto-sizes to its content
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
 - Custom item option: `RibbonItemModel.props.component?: Component` mounts a host-supplied Vue component
 - Custom item option: `RibbonItemModel.props.componentProps?: Record<string, unknown>` forwards extra props into that mounted component
@@ -116,6 +116,7 @@ Slots:
 - Keyboard interaction remains consistent between main ribbon and overflow.
 - KeyTips support Alt activation, sequence input, and Escape handling.
 - Contextual tabs can be dynamically shown/hidden.
+- Contextual tabs support `contextualMode: 'selection' | 'exclusive'`; selection mode leaves regular commands available, while exclusive mode keeps tab headers selectable and disables command content outside the exclusive contextual tab.
 - File menu/backstage must have correct open/close and focus behavior.
 - Runtime API mutations keep internal state and UI consistent.
 

@@ -50,6 +50,7 @@ const props = defineProps<{
   item: RibbonItemModel
   groupId: string
   galleryPreviewFallback?: string
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{ (e: 'item-click', payload: string): void }>()
@@ -83,12 +84,13 @@ const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
 const shouldShowKeyTip = computed(() => {
   if (!ribbon?.keyTipsOpen.value) return false
   if (ribbon?.disabled.value) return false
+  if (props.disabled === true) return false
   if (!keyTipText.value) return false
   const sequence = ribbon.keyTipsSequence.value.toLowerCase()
   if (!sequence) return true
   return keyTipText.value.toLowerCase().startsWith(sequence)
 })
-const isDisabled = computed(() => props.item.disabled === true || ribbon?.disabled.value === true)
+const isDisabled = computed(() => props.disabled === true || props.item.disabled === true || ribbon?.disabled.value === true)
 const toggleModelValue = computed(() => props.item.props?.modelValue as boolean | undefined)
 const toggleActiveLabel = computed(() => props.item.props?.activeLabel as string | undefined)
 const toggleInactiveLabel = computed(() => props.item.props?.inactiveLabel as string | undefined)
