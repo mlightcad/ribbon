@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, markRaw, ref, toRaw, watch } from 'vue'
 import {
   ElCheckbox,
   ElColorPicker,
+  ElInputNumber,
   ElOption,
   ElSelect,
   ElTooltip,
@@ -97,7 +98,7 @@ const toggleInactiveLabel = computed(() => props.item.props?.inactiveLabel as st
 const customItemComponent = computed<Component | null>(() => {
   const candidate = props.item.props?.component
   if (!candidate || typeof candidate === 'string') return null
-  return candidate as Component
+  return markRaw(toRaw(candidate as Component))
 })
 const customItemComponentProps = computed<Record<string, unknown>>(() => {
   const candidate = props.item.props?.componentProps
@@ -114,6 +115,21 @@ const buttonGroupSize = computed<'large' | 'default' | 'small' | undefined>(() =
 const buttonGroupIconSize = computed(() => normalizeOptionalFontSize(props.item.props?.iconSize))
 const comboBoxWidth = computed(() => normalizeCssSize(props.item.props?.width ?? props.item.props?.comboWidth, '92px'))
 const comboBoxModelValue = computed(() => props.item.props?.modelValue)
+const inputNumberWidth = computed(() =>
+  normalizeCssSize(props.item.props?.width ?? props.item.props?.inputNumberWidth, '96px'),
+)
+const inputNumberModelValue = computed(() => props.item.props?.modelValue as number | undefined)
+const inputNumberControlProps = computed<Record<string, unknown>>(() => {
+  const controlProps = { ...(props.item.props ?? {}) }
+  delete controlProps.modelValue
+  delete controlProps.width
+  delete controlProps.inputNumberWidth
+  delete controlProps.emitValueOnChange
+  delete controlProps.options
+  delete controlProps.component
+  delete controlProps.componentProps
+  return controlProps
+})
 const labelWrapLines = computed(() => normalizeLabelWrapLines(props.item.props?.labelWrapLines))
 const labelWrapWidth = computed(() => normalizeOptionalCssSize(props.item.props?.labelWrapWidth))
 const shouldWrapLargeButtonLabel = computed(
@@ -206,6 +222,15 @@ function handleButtonGroupChange(value: unknown) {
 }
 
 /**
+ * Emits the selected gallery item id instead of the parent gallery item id.
+ * @param value Selected gallery option id.
+ */
+function handleGallerySelect(value: string) {
+  if (isDisabled.value) return
+  emit('item-click', value)
+}
+
+/**
  * Emits combobox selection payload when configured, otherwise keeps item-id behavior.
  * @param value Selected combobox value.
  */
@@ -216,6 +241,19 @@ function handleComboBoxChange(value: unknown) {
       emit('item-click', String(value))
       return
     }
+  }
+  handleClick()
+}
+
+/**
+ * Emits input-number values when configured, otherwise preserves item-id command behavior.
+ * @param value Current numeric value after interaction.
+ */
+function handleInputNumberChange(value: number | undefined) {
+  if (isDisabled.value) return
+  if (props.item.props?.emitValueOnChange === true && typeof value === 'number' && Number.isFinite(value)) {
+    emit('item-click', String(value))
+    return
   }
   handleClick()
 }
@@ -423,7 +461,7 @@ function humanizeItemId(value: string): string {
         :categories="(item.props?.categories as any[]) ?? []"
         :preview-fallback="props.galleryPreviewFallback"
         :disabled="isDisabled"
-        @select="handleClick"
+        @select="handleGallerySelect"
       />
 
       <MlRibbonTemplateItem
@@ -483,6 +521,16 @@ function humanizeItemId(value: string): string {
           :value="(opt as any).value"
         />
       </ElSelect>
+
+      <ElInputNumber
+        v-else-if="item.type === 'inputNumber'"
+        v-bind="inputNumberControlProps"
+        class="ml-ribbon-input-number"
+        :model-value="inputNumberModelValue"
+        :disabled="isDisabled"
+        :style="{ width: inputNumberWidth }"
+        @change="handleInputNumberChange"
+      />
 
       <MlRibbonButton
         v-else

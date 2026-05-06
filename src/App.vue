@@ -70,6 +70,10 @@ const entityColor = ref('bylayer')
 const entityLineType = ref('continuous')
 const entityLineWeight = ref('0.25')
 const hatchPattern = ref('ansi31')
+const arrayCount = ref(4)
+const arraySpacing = ref(24)
+const arrayAngle = ref(45)
+const visualStyle = ref('visual-style-clean')
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
@@ -413,6 +417,98 @@ const baseTabs: RibbonTabModel[] = [
           },
         ],
       },
+      {
+        id: 'modify',
+        title: 'Modify',
+        orientation: 'row',
+        priority: 30,
+        width: 100,
+        collections: [
+          {
+            id: 'modify-main',
+            layout: 'column',
+            rows: 3,
+            items: [
+              {
+                id: 'array-count',
+                type: 'inputNumber',
+                label: 'Array Count',
+                tooltip: 'Array Count',
+                size: 'small',
+                props: {
+                  width: 'full',
+                  min: 1,
+                  max: 12,
+                  step: 1,
+                  controlsPosition: 'right',
+                  emitValueOnChange: true,
+                },
+              },
+              {
+                id: 'array-spacing',
+                type: 'inputNumber',
+                label: 'Array Spacing',
+                tooltip: 'Array Spacing',
+                size: 'small',
+                props: {
+                  width: 'full',
+                  min: 0,
+                  max: 100,
+                  step: 0.5,
+                  precision: 1,
+                  controlsPosition: 'right',
+                },
+              },
+              {
+                id: 'array-angle',
+                type: 'inputNumber',
+                label: 'Array Angle',
+                tooltip: 'Array Angle',
+                size: 'small',
+                props: {
+                  width: 'full',
+                  min: -180,
+                  max: 180,
+                  step: 15,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'styles',
+        title: 'Styles',
+        orientation: 'row',
+        priority: 35,
+        collections: [
+          {
+            id: 'styles-main',
+            layout: 'row',
+            items: [
+              {
+                id: 'visual-style-gallery',
+                type: 'gallery',
+                label: 'Visual Styles',
+                props: {
+                  categories: [
+                    {
+                      id: 'visual-styles',
+                      title: 'Visual Styles',
+                      items: [
+                        { id: 'visual-style-clean', label: 'Clean', preview: 'Aa' },
+                        { id: 'visual-style-muted', label: 'Muted', preview: 'Mm' },
+                        { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+                        { id: 'visual-style-presentation', label: 'Presentation', preview: 'Pr' },
+                      ],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -585,7 +681,17 @@ const zhCNMap: Record<string, string> = {
   'Line Type': '线型',
   'Line Weight': '线宽',
   Pattern: '图案',
+  Modify: '修改',
+  Styles: '样式',
   'Hatch Pattern': '填充图案',
+  'Array Count': '阵列数量',
+  'Array Spacing': '阵列间距',
+  'Array Angle': '阵列角度',
+  'Visual Styles': '视觉样式',
+  Clean: '清爽',
+  Muted: '柔和',
+  Blueprint: '蓝图',
+  Presentation: '演示',
   ByLayer: '随层',
   Red: '红色',
   Yellow: '黄色',
@@ -691,6 +797,44 @@ function translateRecordStrings(value?: Record<string, unknown>): Record<string,
   return Object.fromEntries(
     Object.entries(value).map(([key, entry]) => [key, typeof entry === 'string' ? translate(entry) : entry]),
   )
+}
+
+function translateGalleryCategories(value: unknown): unknown {
+  if (!Array.isArray(value)) return value
+  return value.map((category) => {
+    if (!category || typeof category !== 'object') return category
+    const categoryRecord = category as Record<string, unknown>
+    return {
+      ...categoryRecord,
+      title: typeof categoryRecord.title === 'string' ? translate(categoryRecord.title) : categoryRecord.title,
+      items: Array.isArray(categoryRecord.items)
+        ? categoryRecord.items.map((galleryItem) => {
+            if (!galleryItem || typeof galleryItem !== 'object') return galleryItem
+            const galleryItemRecord = galleryItem as Record<string, unknown>
+            return {
+              ...galleryItemRecord,
+              label:
+                typeof galleryItemRecord.label === 'string'
+                  ? translate(galleryItemRecord.label)
+                  : galleryItemRecord.label,
+            }
+          })
+        : categoryRecord.items,
+    }
+  })
+}
+
+function resolveInputNumberModelValue(itemId: string): number | undefined {
+  switch (itemId) {
+    case 'array-count':
+      return arrayCount.value
+    case 'array-spacing':
+      return arraySpacing.value
+    case 'array-angle':
+      return arrayAngle.value
+    default:
+      return undefined
+  }
 }
 
 const cadColorOptions = computed<MlDemoCadDropdownOption[]>(() => [
@@ -821,8 +965,10 @@ const tabs = computed<RibbonTabModel[]>(() =>
             ...(resolveCustomComponentProps(item.id) ?? {}),
           }
           const modelValue = resolveAppearanceModelValue(item.id)
+          const resolvedModelValue = resolveInputNumberModelValue(item.id) ?? modelValue
+          const categories = translateGalleryCategories(item.props?.categories)
           const nextProps = item.props
-            ? { ...item.props, options, componentProps }
+            ? { ...item.props, options, ...(categories ? { categories } : {}), componentProps }
             : options || componentProps
               ? { options, componentProps }
               : undefined
@@ -830,7 +976,7 @@ const tabs = computed<RibbonTabModel[]>(() =>
             ...item,
             label: typeof item.label === 'string' ? translate(item.label) : item.label,
             tooltip: typeof item.tooltip === 'string' ? translate(item.tooltip) : item.tooltip,
-            props: modelValue === undefined ? nextProps : { ...(nextProps ?? {}), modelValue },
+            props: resolvedModelValue === undefined ? nextProps : { ...(nextProps ?? {}), modelValue: resolvedModelValue },
           }
         }),
       })),
@@ -922,6 +1068,14 @@ watch(
  * @param payload Ribbon click payload.
  */
 function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: string }) {
+  if (payload.groupId === 'modify') {
+    const nextArrayCount = Number(payload.itemId)
+    if (Number.isInteger(nextArrayCount)) arrayCount.value = nextArrayCount
+  }
+  if (payload.groupId === 'styles') {
+    visualStyle.value = payload.itemId
+  }
+
   switch (payload.itemId) {
     case 'close-contextual':
       closeContextualTab(payload.tabId)

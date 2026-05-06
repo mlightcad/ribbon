@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+
+type RibbonGalleryCategory = { id: string; title: string; items: { id: string; label: string; preview?: string }[] }
 
 /**
  * @component MlRibbonGallery
@@ -29,7 +31,7 @@ const props = withDefaults(
   defineProps<{
     id: string
     label: string
-    categories: { id: string; title: string; items: { id: string; label: string; preview?: string }[] }[]
+    categories: RibbonGalleryCategory[]
     disabled?: boolean
     previewFallback?: string
   }>(),
@@ -38,6 +40,18 @@ const props = withDefaults(
 
 const emit = defineEmits<{ (e: 'select', id: string): void }>()
 const selected = ref<string>('')
+const visibleCategoryCount = computed(() => props.categories.filter((category) => category.items.length > 0).length)
+
+/**
+ * Avoids repeating the same visible title twice in compact ribbon galleries.
+ * @param category Gallery category candidate.
+ * @returns Whether the category title should be shown.
+ */
+function shouldShowCategoryTitle(category: RibbonGalleryCategory) {
+  const label = props.label.trim().toLowerCase()
+  const title = category.title.trim().toLowerCase()
+  return visibleCategoryCount.value > 1 || !label || title !== label
+}
 
 /**
  * Selects a gallery item and emits its id.
@@ -55,7 +69,9 @@ function selectItem(id: string) {
     <div v-if="label" class="ml-ribbon-gallery__title">{{ label }}</div>
     <div class="ml-ribbon-gallery__categories">
       <section v-for="category in categories" :key="category.id" class="ml-ribbon-gallery__category">
-        <h4 class="ml-ribbon-gallery__category-title">{{ category.title }}</h4>
+        <h4 v-if="shouldShowCategoryTitle(category)" class="ml-ribbon-gallery__category-title">
+          {{ category.title }}
+        </h4>
         <div class="ml-ribbon-gallery__grid">
           <button
             v-for="item in category.items"
@@ -74,5 +90,4 @@ function selectItem(id: string) {
     </div>
   </div>
 </template>
-
 

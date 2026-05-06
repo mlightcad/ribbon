@@ -18,6 +18,7 @@ export type RibbonItemType =
   | 'checkbox'
   | 'colorPicker'
   | 'comboBox'
+  | 'inputNumber'
   | 'gallery'
   | 'custom'
   | 'template'

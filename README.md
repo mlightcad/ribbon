@@ -31,6 +31,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Dense command-row configuration for `buttonGroup`: set `hideLabel: true`, `props.wrap: false`, and optional `props.buttonSize`; by default button width follows content, set `props.equalWidth: true` to force equal widths
 - Two-state toggle commands via `toggle` items with `props.modelValue`, `activeIcon`, and `inactiveIcon`
 - `comboBox` width configuration via `props.width`/`props.comboWidth` (supports `'full'`), plus optional `props.emitValueOnChange` payload mode
+- `inputNumber` items based on Element Plus Input Number, with `props.width`/`props.inputNumberWidth`, native `min`/`max`/`step`/`controlsPosition` props, and optional `props.emitValueOnChange`
 - Large button multi-line label support via `props.labelWrapLines` and optional `props.labelWrapWidth`
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`

@@ -61,7 +61,7 @@ Events:
 - `RibbonLayout = 'classic' | 'simplified'`
 - `RibbonItemSize = 'large' | 'medium' | 'small'`
 - `RibbonComponentSize = 'large' | 'default' | 'small'`
-- `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'gallery' | 'custom' | 'template'`
+- `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'inputNumber' | 'gallery' | 'custom' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
@@ -74,6 +74,7 @@ Events:
 - `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
 - Button-group options: `RibbonItemModel.hideLabel?: boolean`, `RibbonItemModel.props.wrap?: boolean`, `RibbonItemModel.props.buttonSize?: 'large' | 'default' | 'small'`, `RibbonItemModel.props.equalWidth?: boolean`, and per-button `option.tooltip?: string`; default width follows button content unless `equalWidth` is enabled
 - Combo-box options: `RibbonItemModel.props.width?: number | string` / `comboWidth?: number | string` (supports `'full'`) and `emitValueOnChange?: boolean` for emitting selected option values
+- Input-number options: `RibbonItemModel.props.width?: number | string` / `inputNumberWidth?: number | string` (supports `'full'`), Element Plus Input Number props such as `min`, `max`, `step`, and `controlsPosition`, and `emitValueOnChange?: boolean` for emitting numeric values
 - Large button label-wrap options: `RibbonItemModel.props.labelWrapLines?: number` enables multi-line labels for `size: 'large'` button items, and `RibbonItemModel.props.labelWrapWidth?: number | string` controls wrap width
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - `RibbonGroupModel.width?: number` for fixed group width in pixels; omitted width means the group auto-sizes to its content
