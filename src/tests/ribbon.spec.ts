@@ -8,6 +8,7 @@ import MlRibbon from '../ribbon/components/Ribbon.vue'
 import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonButton from '../ribbon/items/RibbonButton.vue'
 import MlRibbonDropdown from '../ribbon/items/RibbonDropdown.vue'
+import MlRibbonGallery from '../ribbon/items/RibbonGallery.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
 import MlDemoColorDropdown from '../components/MlDemoColorDropdown.vue'
@@ -432,6 +433,31 @@ describe('MlRibbonButton', () => {
   })
 })
 
+describe('MlRibbonGallery', () => {
+  it('hides duplicate single-category titles for compact ribbon layout', () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [{ id: 'visual-style-clean', label: 'Clean', preview: 'Aa' }],
+          },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-gallery__title').text()).toBe('Visual Styles')
+      expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+})
+
 describe('App demo', () => {
   it('configures entity property dropdowns as a single column collection with three rows', () => {
     const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
@@ -505,6 +531,55 @@ describe('App demo', () => {
     expect(appSource).toContain('component: MlDemoHatchButton')
     expect(appSource).toMatch(/id:\s*'hatch-pattern'[\s\S]*?size:\s*'large'/)
     expect(appSource).toContain("case 'hatch-pattern-grid':")
+  })
+
+  it('configures the custom tab with an inputNumber array count example', () => {
+    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+
+    expect(appSource).toContain('const arrayCount = ref(4)')
+    expect(appSource).toContain('const arraySpacing = ref(24)')
+    expect(appSource).toContain('const arrayAngle = ref(45)')
+    expect(appSource).toContain("id: 'modify'")
+    expect(appSource).toContain("title: 'Modify'")
+    expect(appSource).toMatch(/id:\s*'modify'[\s\S]*?width:\s*100/)
+    expect(appSource).toContain("id: 'modify-main'")
+    expect(appSource).toMatch(/id:\s*'modify-main'[\s\S]*?layout:\s*'column'[\s\S]*?rows:\s*3/)
+    expect(appSource).toContain("id: 'array-count'")
+    expect(appSource).toContain("id: 'array-spacing'")
+    expect(appSource).toContain("id: 'array-angle'")
+    expect(appSource).toContain("type: 'inputNumber'")
+    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?width:\s*'full'/)
+    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?min:\s*1/)
+    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?max:\s*12/)
+    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?step:\s*1/)
+    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?controlsPosition:\s*'right'/)
+    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?emitValueOnChange:\s*true/)
+    expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?min:\s*0/)
+    expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?width:\s*'full'/)
+    expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?max:\s*100/)
+    expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?step:\s*0\.5/)
+    expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?controlsPosition:\s*'right'/)
+    expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?min:\s*-180/)
+    expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?width:\s*'full'/)
+    expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?max:\s*180/)
+    expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?step:\s*15/)
+    expect(appSource).toContain('resolveInputNumberModelValue')
+    expect(appSource).toContain("payload.groupId === 'modify'")
+  })
+
+  it('configures the custom tab with a gallery visual styles example', () => {
+    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+
+    expect(appSource).toContain("const visualStyle = ref('visual-style-clean')")
+    expect(appSource).toContain("id: 'styles'")
+    expect(appSource).toContain("title: 'Styles'")
+    expect(appSource).toContain("id: 'visual-style-gallery'")
+    expect(appSource).toContain("type: 'gallery'")
+    expect(appSource).toContain("label: 'Visual Styles'")
+    expect(appSource).toContain("id: 'visual-style-clean'")
+    expect(appSource).toContain("id: 'visual-style-blueprint'")
+    expect(appSource).toContain('translateGalleryCategories')
+    expect(appSource).toContain("payload.groupId === 'styles'")
   })
 })
 
@@ -601,6 +676,26 @@ describe('MlRibbon', () => {
     expect(css).toMatch(/\.ml-ribbon-segmented__control\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);/)
     expect(css).toMatch(
       /\.ml-ribbon-segmented__control\s+\.el-segmented__item\s*\{[\s\S]*min-height:\s*calc\(var\(--ml-rb-compact-height\)\s*-\s*4px\);/,
+    )
+  })
+
+  it('keeps input number borders visible in the ribbon host', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-input-number\s*\{[\s\S]*box-sizing:\s*border-box;[\s\S]*height:\s*var\(--ml-rb-compact-height\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-input-number\s+\.el-input\s*\{[\s\S]*--el-input-height:\s*var\(--ml-rb-compact-height\);[\s\S]*box-sizing:\s*border-box;[\s\S]*height:\s*var\(--ml-rb-compact-height\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-input-number\s+\.el-input__wrapper\s*\{[\s\S]*box-sizing:\s*border-box;[\s\S]*border-color:\s*var\(--ml-rb-border\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-input-number\s+\.el-input-number__decrease,\s*\.ml-ribbon-item-host\s+\.el-input-number\s+\.el-input-number__increase\s*\{[\s\S]*box-sizing:\s*border-box;[\s\S]*border-color:\s*var\(--ml-rb-border\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__decrease,\s*\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__increase\s*\{[\s\S]*--el-input-number-controls-height:\s*calc\(\(var\(--ml-rb-compact-height\)\s*-\s*2px\)\s*\/\s*2\);/,
     )
   })
 
@@ -2785,6 +2880,90 @@ describe('MlRibbon', () => {
       const emissions = wrapper.emitted('item-click') ?? []
       expect(emissions).toHaveLength(1)
       expect(emissions[0]?.[0]).toBe('layer-walls')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports inputNumber width and emits numeric value when configured', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'array-count',
+        groupId: 'modify',
+        item: {
+          id: 'array-count',
+          type: 'inputNumber',
+          props: {
+            width: 'full',
+            modelValue: 4,
+            min: 1,
+            max: 12,
+            step: 1,
+            controlsPosition: 'right',
+            emitValueOnChange: true,
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="array-count"]')
+      const inputNumber = host.find('.el-input-number')
+      expect(inputNumber.attributes('style')).toContain('width: 100%')
+
+      const inputNumberComponent = host.findComponent({ name: 'ElInputNumber' })
+      expect(inputNumberComponent.props('min')).toBe(1)
+      expect(inputNumberComponent.props('max')).toBe(12)
+      expect(inputNumberComponent.props('step')).toBe(1)
+      expect(inputNumberComponent.props('controlsPosition')).toBe('right')
+      inputNumberComponent.vm.$emit('change', 8)
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('8')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits selected gallery item id from gallery items', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'visual-style-gallery',
+        groupId: 'styles',
+        item: {
+          id: 'visual-style-gallery',
+          type: 'gallery',
+          label: 'Visual Styles',
+          props: {
+            categories: [
+              {
+                id: 'visual-styles',
+                title: 'Visual Styles',
+                items: [
+                  { id: 'visual-style-clean', label: 'Clean', preview: 'Aa' },
+                  { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      const options = wrapper.findAll('.ml-ribbon-gallery__item')
+      expect(options).toHaveLength(2)
+
+      await options[1]!.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('visual-style-blueprint')
     } finally {
       wrapper.unmount()
     }
