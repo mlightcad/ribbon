@@ -456,6 +456,173 @@ describe('MlRibbonGallery', () => {
       wrapper.unmount()
     }
   })
+
+  it('renders standard gallery previews from icons and SVG references', () => {
+    const PreviewIcon = defineComponent({
+      name: 'PreviewIcon',
+      template: '<span class="ml-test-gallery-preview-icon" />',
+    })
+
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-component', label: 'Component', icon: PreviewIcon },
+              { id: 'visual-style-class', label: 'Class', icon: 'ml-test-gallery-class-icon' },
+              { id: 'visual-style-svg', label: 'SVG', svg: '#ml-test-gallery-symbol' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-test-gallery-preview-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-gallery__preview-icon--class.ml-test-gallery-class-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-gallery__preview-svg use').attributes('href')).toBe('#ml-test-gallery-symbol')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders per-item custom gallery components', async () => {
+    const CustomPreview = defineComponent({
+      name: 'CustomPreview',
+      props: ['item', 'selected', 'disabled', 'tone'],
+      template:
+        '<span class="ml-test-gallery-custom-preview" :data-selected="selected" :data-disabled="disabled" :data-tone="tone">{{ item.label }}</span>',
+    })
+
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              {
+                id: 'visual-style-custom',
+                label: 'Custom',
+                component: CustomPreview,
+                componentProps: { tone: 'blueprint' },
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const preview = wrapper.find('.ml-test-gallery-custom-preview')
+      expect(preview.text()).toBe('Custom')
+      expect(preview.attributes('data-selected')).toBe('false')
+      expect(preview.attributes('data-disabled')).toBe('false')
+      expect(preview.attributes('data-tone')).toBe('blueprint')
+
+      await wrapper.find('.ml-ribbon-gallery__item').trigger('click')
+      expect(wrapper.find('.ml-test-gallery-custom-preview').attributes('data-selected')).toBe('true')
+      expect(wrapper.emitted('select')?.[0]?.[0]).toBe('visual-style-custom')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('renders collapsed gallery as a large selected preview button', async () => {
+    const PreviewIcon = defineComponent({
+      name: 'CollapsedPreviewIcon',
+      template: '<span class="ml-test-gallery-collapsed-icon" />',
+    })
+
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        modelValue: 'visual-style-blueprint',
+        collapsed: true,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', icon: PreviewIcon },
+              { id: 'visual-style-blueprint', label: 'Blueprint', icon: PreviewIcon },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-gallery__categories').exists()).toBe(false)
+      expect(wrapper.find('.ml-ribbon-gallery__collapsed-button').exists()).toBe(true)
+      expect(wrapper.find('.ml-test-gallery-collapsed-icon').exists()).toBe(true)
+      expect(wrapper.find('.ml-ribbon-gallery__collapsed-label').text()).toBe('Blueprint')
+
+      await wrapper.find('.ml-ribbon-gallery__collapsed-button').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const panel = document.body.querySelector('.ml-ribbon-gallery-panel--collapsed')
+      expect(panel).not.toBeNull()
+
+      const panelItems = Array.from(
+        document.body.querySelectorAll<HTMLButtonElement>('.ml-ribbon-gallery-panel--collapsed .ml-ribbon-gallery__panel-item'),
+      )
+      expect(panelItems).toHaveLength(2)
+      panelItems[0]?.click()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('select')?.[0]?.[0]).toBe('visual-style-clean')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('opens a panel for overflow gallery items in inline mode', async () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        inlineItemLimit: 2,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item')).toHaveLength(2)
+      expect(wrapper.find('.ml-ribbon-gallery__more-button').exists()).toBe(true)
+
+      await wrapper.find('.ml-ribbon-gallery__more-button').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const panelItems = Array.from(
+        document.body.querySelectorAll<HTMLButtonElement>('.ml-ribbon-gallery-panel--inline .ml-ribbon-gallery__panel-item'),
+      )
+      expect(panelItems).toHaveLength(3)
+      panelItems[2]?.click()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('select')?.[0]?.[0]).toBe('visual-style-blueprint')
+    } finally {
+      wrapper.unmount()
+    }
+  })
 })
 
 describe('App demo', () => {
@@ -576,8 +743,15 @@ describe('App demo', () => {
     expect(appSource).toContain("id: 'visual-style-gallery'")
     expect(appSource).toContain("type: 'gallery'")
     expect(appSource).toContain("label: 'Visual Styles'")
+    expect(appSource).toContain("size: 'large'")
+    expect(appSource).toContain('inlineItemLimit: 4')
     expect(appSource).toContain("id: 'visual-style-clean'")
+    expect(appSource).toContain("icon: Sunny")
     expect(appSource).toContain("id: 'visual-style-blueprint'")
+    expect(appSource).toContain("id: 'visual-style-wireframe'")
+    expect(appSource).toContain("id: 'visual-style-monochrome'")
+    expect(appSource).toContain('isVisualStyleGalleryCollapsed')
+    expect(appSource).toContain('collapsed: isVisualStyleGalleryCollapsed.value')
     expect(appSource).toContain('translateGalleryCategories')
     expect(appSource).toContain("payload.groupId === 'styles'")
   })
@@ -1768,6 +1942,24 @@ describe('MlRibbon', () => {
                       options: [
                         { label: 'Find', value: 'find', icon: IconStub },
                         { label: 'Replace', value: 'replace', icon: IconStub },
+                      ],
+                    },
+                  },
+                  {
+                    id: 'visual-style-gallery',
+                    type: 'gallery',
+                    label: 'Visual Styles',
+                    props: {
+                      categories: [
+                        {
+                          id: 'visual-styles',
+                          title: 'Visual Styles',
+                          items: [
+                            { id: 'visual-style-icon', label: 'Icon', icon: IconStub },
+                            { id: 'visual-style-preview', label: 'Preview', preview: IconStub },
+                            { id: 'visual-style-custom', label: 'Custom', component: IconStub },
+                          ],
+                        },
                       ],
                     },
                   },

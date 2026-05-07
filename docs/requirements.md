@@ -72,6 +72,8 @@ Events:
 - `RibbonItemModel.props.modelValue?: boolean` for toggle default state / controlled sync
 - `RibbonItemModel.props.activeIcon` / `inactiveIcon` for toggle-state icon switching
 - `RibbonItemModel.props.activeValue` / `inactiveValue` for toggle emitted values
+- Gallery options: `RibbonItemModel.props.modelValue?: string` for selected item display, `collapsed?: boolean` to render the selected item as a large preview button with a picker panel, and `inlineItemLimit?: number` to keep only the first items inline while exposing the full list in the panel.
+- Gallery item options: `preview?: string | Component`, `icon?: string | Component`, `svg?: string`, `previewSvg?: string`, and `component?: Component` with `componentProps?: Record<string, unknown>` for per-item custom preview/content.
 - Button-group options: `RibbonItemModel.hideLabel?: boolean`, `RibbonItemModel.props.wrap?: boolean`, `RibbonItemModel.props.buttonSize?: 'large' | 'default' | 'small'`, `RibbonItemModel.props.equalWidth?: boolean`, and per-button `option.tooltip?: string`; default width follows button content unless `equalWidth` is enabled
 - Combo-box options: `RibbonItemModel.props.width?: number | string` / `comboWidth?: number | string` (supports `'full'`) and `emitValueOnChange?: boolean` for emitting selected option values
 - Input-number options: `RibbonItemModel.props.width?: number | string` / `inputNumberWidth?: number | string` (supports `'full'`), Element Plus Input Number props such as `min`, `max`, `step`, and `controlsPosition`, and `emitValueOnChange?: boolean` for emitting numeric values
@@ -84,6 +86,7 @@ Events:
 - Custom item bindings: mounted components receive `item`, `groupId`, `disabled`, and `emitItemClick(payload?)`
 - `MlRibbonButton` is exported for custom item implementations that need to match built-in ribbon button styling without duplicating theme and size logic.
 - `MlRibbonDropdown` is exported for custom item implementations that need to match built-in ribbon dropdown styling without duplicating theme, size, trigger, and option menu logic.
+- `MlRibbonGallery` supports per-item custom rendering with the `#item` slot or schema-driven gallery item `component`.
 
 Controlled props:
 - `v-model:activeTab`

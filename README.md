@@ -34,6 +34,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - `inputNumber` items based on Element Plus Input Number, with `props.width`/`props.inputNumberWidth`, native `min`/`max`/`step`/`controlsPosition` props, and optional `props.emitValueOnChange`
 - Large button multi-line label support via `props.labelWrapLines` and optional `props.labelWrapWidth`
 - Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
+- Gallery items support standard text previews, Vue/CSS icon previews, SVG preview references, per-item custom Vue components or the `MlRibbonGallery` `#item` slot, plus a picker panel for overflow items and collapsed large-button mode for tight ribbon widths
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Group width is auto-sized when `RibbonGroupModel.width` is omitted; provide `width` for a fixed pixel width
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label

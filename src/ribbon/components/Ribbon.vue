@@ -119,6 +119,27 @@ function normalizeItemProps(props?: Record<string, unknown>): Record<string, unk
       }
     })
   }
+  if (Array.isArray(nextProps.categories)) {
+    nextProps.categories = nextProps.categories.map((category) => {
+      if (!category || typeof category !== 'object') return category
+      const categoryRecord = category as Record<string, unknown>
+      return {
+        ...categoryRecord,
+        items: Array.isArray(categoryRecord.items)
+          ? categoryRecord.items.map((galleryItem) => {
+              if (!galleryItem || typeof galleryItem !== 'object') return galleryItem
+              const galleryItemRecord = galleryItem as Record<string, unknown>
+              return {
+                ...galleryItemRecord,
+                preview: normalizeComponentCandidate(galleryItemRecord.preview),
+                icon: normalizeComponentCandidate(galleryItemRecord.icon),
+                component: normalizeComponentCandidate(galleryItemRecord.component),
+              }
+            })
+          : categoryRecord.items,
+      }
+    })
+  }
   return nextProps
 }
 
