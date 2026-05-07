@@ -424,7 +424,7 @@ const baseTabs: RibbonTabModel[] = [
         title: 'Modify',
         orientation: 'row',
         priority: 30,
-        width: 100,
+        width: 150,
         collections: [
           {
             id: 'modify-main',
@@ -439,6 +439,8 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'small',
                 props: {
                   width: 'full',
+                  prefixLabel: 'Count',
+                  prefixIcon: CirclePlus,
                   min: 1,
                   max: 12,
                   step: 1,
@@ -454,6 +456,7 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'small',
                 props: {
                   width: 'full',
+                  prefixLabel: 'Spacing',
                   min: 0,
                   max: 100,
                   step: 0.5,
@@ -469,6 +472,8 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'small',
                 props: {
                   width: 'full',
+                  prefixLabel: 'Angle',
+                  prefixIcon: Operation,
                   min: -180,
                   max: 180,
                   step: 15,

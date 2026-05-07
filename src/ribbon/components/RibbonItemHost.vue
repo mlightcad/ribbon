@@ -3,7 +3,6 @@ import { computed, inject, markRaw, ref, toRaw, watch } from 'vue'
 import {
   ElCheckbox,
   ElColorPicker,
-  ElInputNumber,
   ElOption,
   ElSelect,
   ElTooltip,
@@ -16,6 +15,7 @@ import MlRibbonButton from '../items/RibbonButton.vue'
 import MlRibbonButtonGroup from '../items/RibbonButtonGroup.vue'
 import MlRibbonDropdown from '../items/RibbonDropdown.vue'
 import MlRibbonGallery from '../items/RibbonGallery.vue'
+import MlRibbonInputNumber from '../items/RibbonInputNumber.vue'
 import MlRibbonSegmented from '../items/RibbonSegmented.vue'
 import MlRibbonToggleButton from '../items/RibbonToggleButton.vue'
 import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
@@ -135,7 +135,11 @@ const inputNumberControlProps = computed<Record<string, unknown>>(() => {
   delete controlProps.modelValue
   delete controlProps.width
   delete controlProps.inputNumberWidth
+  delete controlProps.prefixLabel
+  delete controlProps.prefixIcon
+  delete controlProps.prefixIconClass
   delete controlProps.emitValueOnChange
+  delete controlProps.valuePrefix
   delete controlProps.options
   delete controlProps.component
   delete controlProps.componentProps
@@ -263,7 +267,8 @@ function handleComboBoxChange(value: unknown) {
 function handleInputNumberChange(value: number | undefined) {
   if (isDisabled.value) return
   if (props.item.props?.emitValueOnChange === true && typeof value === 'number' && Number.isFinite(value)) {
-    emit('item-click', String(value))
+    const valuePrefix = props.item.props?.valuePrefix
+    emit('item-click', `${typeof valuePrefix === 'string' ? valuePrefix : ''}${value}`)
     return
   }
   handleClick()
@@ -536,13 +541,16 @@ function humanizeItemId(value: string): string {
         />
       </ElSelect>
 
-      <ElInputNumber
+      <MlRibbonInputNumber
         v-else-if="item.type === 'inputNumber'"
-        v-bind="inputNumberControlProps"
-        class="ml-ribbon-input-number"
+        :id="item.id"
         :model-value="inputNumberModelValue"
+        :width="inputNumberWidth"
+        :prefix-label="item.props?.prefixLabel as any"
+        :prefix-icon="((item.props?.prefixIcon ?? item.props?.icon) as any) ?? item.icon"
+        :prefix-icon-class="item.props?.prefixIconClass as any"
+        :control-props="inputNumberControlProps"
         :disabled="isDisabled"
-        :style="{ width: inputNumberWidth }"
         @change="handleInputNumberChange"
       />
 

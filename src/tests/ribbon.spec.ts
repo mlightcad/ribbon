@@ -9,6 +9,7 @@ import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonButton from '../ribbon/items/RibbonButton.vue'
 import MlRibbonDropdown from '../ribbon/items/RibbonDropdown.vue'
 import MlRibbonGallery from '../ribbon/items/RibbonGallery.vue'
+import MlRibbonInputNumber from '../ribbon/items/RibbonInputNumber.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
 import MlDemoColorDropdown from '../components/MlDemoColorDropdown.vue'
@@ -1204,6 +1205,26 @@ describe('MlRibbon', () => {
     )
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__decrease,\s*\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__increase\s*\{[\s\S]*--el-input-number-controls-height:\s*calc\(\(var\(--ml-rb-compact-height\)\s*-\s*2px\)\s*\/\s*2\);/,
+    )
+  })
+
+  it('scales input number prefix label and icon with compact ribbon size variables', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(css).toMatch(
+      /\.ml-ribbon-input-number\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);[\s\S]*height:\s*var\(--ml-rb-compact-height\);[\s\S]*overflow:\s*visible;/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-input-number\.is-full\s+\.el-input-number\s*\{[\s\S]*flex:\s*1 1 0;[\s\S]*min-width:\s*0;/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-input-number__prefix\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);[\s\S]*font-size:\s*var\(--ml-rb-font-xs,\s*calc\(var\(--el-font-size-extra-small\)\s*\*\s*var\(--ml-rb-scale,\s*1\)\)\);[\s\S]*line-height:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\*\s*1\.2\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-input-number__prefix-icon\s*\{[\s\S]*width:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\+\s*1px\);[\s\S]*height:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\+\s*1px\);[\s\S]*font-size:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\+\s*1px\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-input-number__prefix-label\s*\{[\s\S]*max-width:\s*calc\(72px\s*\*\s*var\(--ml-rb-scale,\s*1\)\);/,
     )
   })
 
@@ -3411,6 +3432,40 @@ describe('MlRibbon', () => {
     }
   })
 
+  it('renders MlRibbonInputNumber with prefix label and icon', async () => {
+    const wrapper = mount(MlRibbonInputNumber, {
+      props: {
+        id: 'scale',
+        modelValue: 2,
+        width: 120,
+        prefixLabel: 'Scale',
+        prefixIconClass: 'icon-scale',
+        controlProps: {
+          min: 0.5,
+          max: 8,
+          step: 0.5,
+        },
+      },
+    })
+
+    try {
+      const inputNumber = wrapper.findComponent({ name: 'ElInputNumber' })
+      expect(wrapper.find('.ml-ribbon-input-number__prefix-label').text()).toBe('Scale')
+      expect(wrapper.find('.ml-ribbon-input-number__prefix-icon').classes()).toContain('icon-scale')
+      expect(inputNumber.props('min')).toBe(0.5)
+      expect(inputNumber.props('max')).toBe(8)
+      expect(inputNumber.props('step')).toBe(0.5)
+      expect(wrapper.find('.el-input-number').attributes('style')).toContain('width: 120px')
+
+      inputNumber.vm.$emit('change', 3)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('change')?.[0]?.[0]).toBe(3)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('supports inputNumber width and emits numeric value when configured', async () => {
     const wrapper = mount(MlRibbonItemHost, {
       props: {
@@ -3422,6 +3477,8 @@ describe('MlRibbon', () => {
           props: {
             width: 'full',
             modelValue: 4,
+            prefixLabel: 'Count',
+            prefixIconClass: 'icon-count',
             min: 1,
             max: 12,
             step: 1,
@@ -3435,8 +3492,13 @@ describe('MlRibbon', () => {
     try {
       await wrapper.vm.$nextTick()
       const host = wrapper.find('.ml-ribbon-item-host[data-item-id="array-count"]')
+      const inputNumberShell = host.find('.ml-ribbon-input-number')
       const inputNumber = host.find('.el-input-number')
-      expect(inputNumber.attributes('style')).toContain('width: 100%')
+      expect(inputNumberShell.attributes('style')).toContain('width: 100%')
+      expect(inputNumberShell.classes()).toContain('is-full')
+      expect(inputNumber.attributes('style')).toBeUndefined()
+      expect(host.find('.ml-ribbon-input-number__prefix-label').text()).toBe('Count')
+      expect(host.find('.ml-ribbon-input-number__prefix-icon').classes()).toContain('icon-count')
 
       const inputNumberComponent = host.findComponent({ name: 'ElInputNumber' })
       expect(inputNumberComponent.props('min')).toBe(1)
@@ -3451,6 +3513,104 @@ describe('MlRibbon', () => {
       expect(emissions[0]?.[0]).toBe('8')
     } finally {
       wrapper.unmount()
+    }
+  })
+
+  it('prefixes inputNumber emitted values when valuePrefix is configured', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'hatch-scale',
+        groupId: 'hatch-properties',
+        item: {
+          id: 'hatch-scale',
+          type: 'inputNumber',
+          props: {
+            modelValue: 1,
+            emitValueOnChange: true,
+            valuePrefix: 'hatch-scale:',
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="hatch-scale"]')
+      const inputNumberComponent = host.findComponent({ name: 'ElInputNumber' })
+      inputNumberComponent.vm.$emit('change', 2.5)
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('hatch-scale:2.5')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('commits inputNumber values with valuePrefix when Enter is pressed', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'hatch-scale',
+        groupId: 'hatch-properties',
+        item: {
+          id: 'hatch-scale',
+          type: 'inputNumber',
+          props: {
+            modelValue: 1,
+            emitValueOnChange: true,
+            valuePrefix: 'hatch-scale:',
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="hatch-scale"]')
+      const input = host.find('input')
+      input.element.value = '2.5'
+      await input.trigger('keydown', { key: 'Enter' })
+      await wrapper.vm.$nextTick()
+
+      const emissions = wrapper.emitted('item-click') ?? []
+      expect(emissions).toHaveLength(1)
+      expect(emissions[0]?.[0]).toBe('hatch-scale:2.5')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('stops inputNumber Enter commits from reaching document keyboard handlers', async () => {
+    const documentKeydown = vi.fn()
+    document.addEventListener('keydown', documentKeydown)
+    const wrapper = mount(MlRibbonItemHost, {
+      attachTo: document.body,
+      props: {
+        id: 'hatch-scale',
+        groupId: 'hatch-properties',
+        item: {
+          id: 'hatch-scale',
+          type: 'inputNumber',
+          props: {
+            modelValue: 1,
+            emitValueOnChange: true,
+            valuePrefix: 'hatch-scale:',
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="hatch-scale"]')
+      const input = host.find('input')
+      input.element.value = '3'
+      await input.trigger('keydown', { key: 'Enter' })
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('item-click')?.[0]?.[0]).toBe('hatch-scale:3')
+      expect(documentKeydown).not.toHaveBeenCalled()
+    } finally {
+      wrapper.unmount()
+      document.removeEventListener('keydown', documentKeydown)
     }
   })
 

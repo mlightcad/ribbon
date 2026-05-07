@@ -32,6 +32,7 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonButtonGroup`: grouped command buttons with no persistent selected item state.
 - `MlRibbonDropdown`: shared dropdown command renderer for built-in dropdown items and custom ribbon controls that need consistent trigger/menu styling.
 - `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`.
+- `MlRibbonInputNumber`: ribbon numeric input built on top of Element Plus `ElInputNumber`, with optional prefix label/icon.
 - `MlRibbonToggleButton`: two-state toggle command with optional active/inactive icon mapping.
 - `MlRibbonGallery`: categorized gallery with preview and select behavior.
 - Schema-driven custom item mounting for host Vue components inside ribbon groups.
@@ -76,7 +77,7 @@ Events:
 - Gallery item options: `preview?: string | Component`, `icon?: string | Component`, `svg?: string`, `previewSvg?: string`, and `component?: Component` with `componentProps?: Record<string, unknown>` for per-item custom preview/content.
 - Button-group options: `RibbonItemModel.hideLabel?: boolean`, `RibbonItemModel.props.wrap?: boolean`, `RibbonItemModel.props.buttonSize?: 'large' | 'default' | 'small'`, `RibbonItemModel.props.equalWidth?: boolean`, and per-button `option.tooltip?: string`; default width follows button content unless `equalWidth` is enabled
 - Combo-box options: `RibbonItemModel.props.width?: number | string` / `comboWidth?: number | string` (supports `'full'`) and `emitValueOnChange?: boolean` for emitting selected option values
-- Input-number options: `RibbonItemModel.props.width?: number | string` / `inputNumberWidth?: number | string` (supports `'full'`), Element Plus Input Number props such as `min`, `max`, `step`, and `controlsPosition`, and `emitValueOnChange?: boolean` for emitting numeric values
+- Input-number options: `RibbonItemModel.props.width?: number | string` / `inputNumberWidth?: number | string` (supports `'full'`), Element Plus Input Number props such as `min`, `max`, `step`, and `controlsPosition`, `emitValueOnChange?: boolean` for emitting numeric values, `valuePrefix?: string` for prefixing emitted numeric values when the host command needs a namespaced payload, and `prefixLabel?: string` / `prefixIcon?: string | Component` / `prefixIconClass?: string` for compact leading context
 - Large button label-wrap options: `RibbonItemModel.props.labelWrapLines?: number` enables multi-line labels for `size: 'large'` button items, and `RibbonItemModel.props.labelWrapWidth?: number | string` controls wrap width
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - `RibbonGroupModel.width?: number` for fixed group width in pixels; omitted width means the group auto-sizes to its content
@@ -86,6 +87,7 @@ Events:
 - Custom item bindings: mounted components receive `item`, `groupId`, `disabled`, and `emitItemClick(payload?)`
 - `MlRibbonButton` is exported for custom item implementations that need to match built-in ribbon button styling without duplicating theme and size logic.
 - `MlRibbonDropdown` is exported for custom item implementations that need to match built-in ribbon dropdown styling without duplicating theme, size, trigger, and option menu logic.
+- `MlRibbonInputNumber` is exported for custom item implementations that need ribbon-aligned numeric input styling and prefix affordances.
 - `MlRibbonGallery` supports per-item custom rendering with the `#item` slot or schema-driven gallery item `component`.
 
 Controlled props:
