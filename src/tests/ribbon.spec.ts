@@ -564,6 +564,7 @@ describe('MlRibbonGallery', () => {
       expect(wrapper.find('.ml-ribbon-gallery__collapsed-button').exists()).toBe(true)
       expect(wrapper.find('.ml-test-gallery-collapsed-icon').exists()).toBe(true)
       expect(wrapper.find('.ml-ribbon-gallery__collapsed-label').text()).toBe('Blueprint')
+      expect(wrapper.find('.ml-ribbon-gallery__collapsed-arrow').exists()).toBe(false)
 
       await wrapper.find('.ml-ribbon-gallery__collapsed-button').trigger('click')
       await wrapper.vm.$nextTick()
@@ -622,6 +623,337 @@ describe('MlRibbonGallery', () => {
     } finally {
       wrapper.unmount()
     }
+  })
+
+  it('does not reserve an inline title row when gallery label is omitted', () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [{ id: 'visual-style-clean', label: 'Clean', preview: 'Cl' }],
+          },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain('is-unlabeled')
+      expect(wrapper.find('.ml-ribbon-gallery__title').exists()).toBe(false)
+      expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('navigates inline overflow gallery items by row', async () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        inlineItemLimit: 2,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const visibleLabels = () =>
+        wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__label').map((label) => label.text())
+      const controls = wrapper.findAll('.ml-ribbon-gallery__control-button')
+
+      expect(controls).toHaveLength(3)
+      expect(visibleLabels()).toEqual(['Clean', 'Muted'])
+      expect(controls[0]?.attributes('disabled')).toBeDefined()
+      expect(controls[1]?.attributes('disabled')).toBeUndefined()
+
+      await controls[1]!.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(visibleLabels()).toEqual(['Blueprint', 'Wireframe'])
+      expect(controls[0]?.attributes('disabled')).toBeUndefined()
+      expect(controls[1]?.attributes('disabled')).toBeDefined()
+
+      await controls[0]!.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(visibleLabels()).toEqual(['Clean', 'Muted'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps inline gallery width stable on a partial final row', async () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        inlineItemLimit: 4,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+              { id: 'visual-style-clay', label: 'Clay', preview: 'Cy' },
+              { id: 'visual-style-analysis', label: 'Analysis', preview: 'An' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const controls = wrapper.findAll('.ml-ribbon-gallery__control-button')
+      expect(wrapper.find('.ml-ribbon-gallery__grid').attributes('style')).toContain(
+        '--ml-ribbon-gallery-inline-columns: 4',
+      )
+
+      await controls[1]!.trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item')).toHaveLength(2)
+      expect(wrapper.find('.ml-ribbon-gallery__grid').attributes('style')).toContain(
+        '--ml-ribbon-gallery-inline-columns: 4',
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('scrolls the inline gallery panel to the current row when opened', async () => {
+    const scrollIntoView = vi.fn()
+    const originalScrollIntoView = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = scrollIntoView
+
+    const wrapper = mount(MlRibbonGallery, {
+      attachTo: document.body,
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        inlineItemLimit: 2,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+              { id: 'visual-style-realistic', label: 'Realistic', preview: 'Re' },
+            ],
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            name: 'ElPopover',
+            props: ['visible'],
+            emits: ['update:visible'],
+            template: '<div><slot name="reference" /><div v-if="visible"><slot /></div></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const controls = wrapper.findAll('.ml-ribbon-gallery__control-button')
+      await controls[1]!.trigger('click')
+      await wrapper.vm.$nextTick()
+      wrapper.findComponent({ name: 'ElPopover' }).vm.$emit('update:visible', true)
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' })
+    } finally {
+      Element.prototype.scrollIntoView = originalScrollIntoView
+      wrapper.unmount()
+    }
+  })
+
+  it('offsets the inline gallery panel to align with the gallery left edge', async () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        inlineItemLimit: 2,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+            ],
+          },
+        ],
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            name: 'ElPopover',
+            props: ['visible', 'popperOptions'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const gallery = wrapper.find('.ml-ribbon-gallery').element as HTMLElement
+      const firstItem = wrapper.find('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item').element as HTMLElement
+      const moreButton = wrapper.find('.ml-ribbon-gallery__more-button').element as HTMLElement
+      gallery.getBoundingClientRect = () => ({ left: 40 }) as DOMRect
+      firstItem.getBoundingClientRect = () => ({ left: 52 }) as DOMRect
+      moreButton.getBoundingClientRect = () => ({ left: 220 }) as DOMRect
+
+      await wrapper.find('.ml-ribbon-gallery__more-button').trigger('click')
+      await wrapper.vm.$nextTick()
+
+      const popperOptions = wrapper.findComponent({ name: 'ElPopover' }).props('popperOptions') as {
+        modifiers: Array<{ options: { offset: [number, number] } }>
+      }
+      expect(popperOptions.modifiers[0]?.options.offset).toEqual([-174, 0])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('uses inlineItemLimit for gallery panel columns and width', () => {
+    const wrapper = mount(ElConfigProvider, {
+      props: { size: 'default' },
+      slots: {
+        default: () =>
+          h(MlRibbonGallery, {
+            id: 'visual-style-gallery',
+            label: 'Visual Styles',
+            inlineItemLimit: 3,
+            categories: [
+              {
+                id: 'visual-styles',
+                title: 'Visual Styles',
+                items: [
+                  { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+                  { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+                  { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+                  { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+                ],
+              },
+            ],
+          }),
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            name: 'ElPopover',
+            props: ['width'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const gallery = wrapper.findComponent(MlRibbonGallery)
+      expect(gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style')).toContain(
+        '--ml-ribbon-gallery-panel-columns: 3',
+      )
+      expect(gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style')).toContain(
+        '--ml-ribbon-gallery-panel-item-width: 64px',
+      )
+      expect(gallery.findComponent({ name: 'ElPopover' }).props('width')).toBe(238)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('scales gallery panel item size from the ribbon size context', () => {
+    const wrapper = mount(ElConfigProvider, {
+      props: { size: 'small' },
+      slots: {
+        default: () =>
+          h(MlRibbonGallery, {
+            id: 'visual-style-gallery',
+            label: 'Visual Styles',
+            inlineItemLimit: 3,
+            categories: [
+              {
+                id: 'visual-styles',
+                title: 'Visual Styles',
+                items: [
+                  { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+                  { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+                  { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+                  { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+                ],
+              },
+            ],
+          }),
+      },
+      global: {
+        stubs: {
+          ElPopover: {
+            name: 'ElPopover',
+            props: ['width', 'popperClass'],
+            template: '<div><slot name="reference" /><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const gallery = wrapper.findComponent(MlRibbonGallery)
+      expect(gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style')).toContain(
+        '--ml-ribbon-gallery-panel-item-width: 59px',
+      )
+      expect(gallery.findComponent({ name: 'ElPopover' }).props('width')).toBe(221)
+      expect(gallery.findComponent({ name: 'ElPopover' }).props('popperClass')).toContain(
+        'ml-ribbon-gallery-panel--size-small',
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('limits gallery panels to four visible rows before scrolling', () => {
+    const styles = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(styles).toContain('var(--ml-ribbon-gallery-panel-item-height) * 4')
+    expect(styles).toContain('var(--ml-ribbon-gallery-panel-gap) * 3')
+    expect(styles).toContain('width: max-content')
+    expect(styles).toContain('overflow-y: auto')
+  })
+
+  it('keeps unlabeled inline gallery items at the same height as panel items', () => {
+    const styles = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+
+    expect(styles).toContain('--ml-ribbon-gallery-item-height: calc(54px * var(--ml-rb-scale))')
+    expect(styles).toContain('--ml-ribbon-gallery-panel-item-height: calc(54px * var(--ml-rb-scale))')
+    expect(styles).toContain('.ml-ribbon-gallery-panel--size-small')
+    expect(styles).toContain('.ml-ribbon-gallery.is-unlabeled .ml-ribbon-gallery__categories')
+    expect(styles).toContain('align-items: center')
+    expect(styles).toContain('grid-auto-rows: var(--ml-ribbon-gallery-item-height)')
+    expect(styles).toContain('height: var(--ml-ribbon-gallery-item-height)')
   })
 })
 
@@ -736,13 +1068,13 @@ describe('App demo', () => {
 
   it('configures the custom tab with a gallery visual styles example', () => {
     const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+    const visualStyleItemCount = appSource.match(/id: 'visual-style-/g)?.length ?? 0
 
     expect(appSource).toContain("const visualStyle = ref('visual-style-clean')")
     expect(appSource).toContain("id: 'styles'")
     expect(appSource).toContain("title: 'Styles'")
     expect(appSource).toContain("id: 'visual-style-gallery'")
     expect(appSource).toContain("type: 'gallery'")
-    expect(appSource).toContain("label: 'Visual Styles'")
     expect(appSource).toContain("size: 'large'")
     expect(appSource).toContain('inlineItemLimit: 4')
     expect(appSource).toContain("id: 'visual-style-clean'")
@@ -750,6 +1082,8 @@ describe('App demo', () => {
     expect(appSource).toContain("id: 'visual-style-blueprint'")
     expect(appSource).toContain("id: 'visual-style-wireframe'")
     expect(appSource).toContain("id: 'visual-style-monochrome'")
+    expect(appSource).toContain("id: 'visual-style-analysis'")
+    expect(visualStyleItemCount).toBe(23)
     expect(appSource).toContain('isVisualStyleGalleryCollapsed')
     expect(appSource).toContain('collapsed: isVisualStyleGalleryCollapsed.value')
     expect(appSource).toContain('translateGalleryCategories')
