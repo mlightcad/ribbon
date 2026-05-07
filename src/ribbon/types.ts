@@ -80,6 +80,26 @@ export interface RibbonDropdownOption {
   disabled?: boolean
 }
 
+export type RibbonGalleryPreview = string | Component
+
+export interface RibbonGalleryItemModel {
+  id: string
+  label: string
+  preview?: RibbonGalleryPreview
+  icon?: string | Component
+  svg?: string
+  previewSvg?: string
+  component?: Component
+  componentProps?: Record<string, unknown>
+  disabled?: boolean
+}
+
+export interface RibbonGalleryCategoryModel {
+  id: string
+  title: string
+  items: RibbonGalleryItemModel[]
+}
+
 export interface RibbonCustomItemBindings {
   item: RibbonItemModel
   groupId: string

@@ -3,7 +3,6 @@ import { computed, inject, markRaw, ref, toRaw, watch } from 'vue'
 import {
   ElCheckbox,
   ElColorPicker,
-  ElInputNumber,
   ElOption,
   ElSelect,
   ElTooltip,
@@ -11,11 +10,12 @@ import {
 } from 'element-plus'
 import type { Component } from 'vue'
 import { ribbonKey } from '../context'
-import type { RibbonItemModel } from '../types'
+import type { RibbonGalleryCategoryModel, RibbonItemModel } from '../types'
 import MlRibbonButton from '../items/RibbonButton.vue'
 import MlRibbonButtonGroup from '../items/RibbonButtonGroup.vue'
 import MlRibbonDropdown from '../items/RibbonDropdown.vue'
 import MlRibbonGallery from '../items/RibbonGallery.vue'
+import MlRibbonInputNumber from '../items/RibbonInputNumber.vue'
 import MlRibbonSegmented from '../items/RibbonSegmented.vue'
 import MlRibbonToggleButton from '../items/RibbonToggleButton.vue'
 import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
@@ -95,6 +95,17 @@ const isDisabled = computed(() => props.disabled === true || props.item.disabled
 const toggleModelValue = computed(() => props.item.props?.modelValue as boolean | undefined)
 const toggleActiveLabel = computed(() => props.item.props?.activeLabel as string | undefined)
 const toggleInactiveLabel = computed(() => props.item.props?.inactiveLabel as string | undefined)
+const galleryCategories = computed(() =>
+  Array.isArray(props.item.props?.categories) ? (props.item.props.categories as RibbonGalleryCategoryModel[]) : [],
+)
+const galleryModelValue = computed(() => {
+  const value = props.item.props?.modelValue
+  return typeof value === 'string' ? value : undefined
+})
+const galleryInlineItemLimit = computed(() => {
+  const value = props.item.props?.inlineItemLimit
+  return typeof value === 'number' ? value : undefined
+})
 const customItemComponent = computed<Component | null>(() => {
   const candidate = props.item.props?.component
   if (!candidate || typeof candidate === 'string') return null
@@ -124,7 +135,11 @@ const inputNumberControlProps = computed<Record<string, unknown>>(() => {
   delete controlProps.modelValue
   delete controlProps.width
   delete controlProps.inputNumberWidth
+  delete controlProps.prefixLabel
+  delete controlProps.prefixIcon
+  delete controlProps.prefixIconClass
   delete controlProps.emitValueOnChange
+  delete controlProps.valuePrefix
   delete controlProps.options
   delete controlProps.component
   delete controlProps.componentProps
@@ -252,7 +267,8 @@ function handleComboBoxChange(value: unknown) {
 function handleInputNumberChange(value: number | undefined) {
   if (isDisabled.value) return
   if (props.item.props?.emitValueOnChange === true && typeof value === 'number' && Number.isFinite(value)) {
-    emit('item-click', String(value))
+    const valuePrefix = props.item.props?.valuePrefix
+    emit('item-click', `${typeof valuePrefix === 'string' ? valuePrefix : ''}${value}`)
     return
   }
   handleClick()
@@ -458,7 +474,10 @@ function humanizeItemId(value: string): string {
         v-else-if="item.type === 'gallery'"
         :id="item.id"
         :label="item.label ?? ''"
-        :categories="(item.props?.categories as any[]) ?? []"
+        :categories="galleryCategories"
+        :model-value="galleryModelValue"
+        :collapsed="item.props?.collapsed === true"
+        :inline-item-limit="galleryInlineItemLimit"
         :preview-fallback="props.galleryPreviewFallback"
         :disabled="isDisabled"
         @select="handleGallerySelect"
@@ -522,13 +541,16 @@ function humanizeItemId(value: string): string {
         />
       </ElSelect>
 
-      <ElInputNumber
+      <MlRibbonInputNumber
         v-else-if="item.type === 'inputNumber'"
-        v-bind="inputNumberControlProps"
-        class="ml-ribbon-input-number"
+        :id="item.id"
         :model-value="inputNumberModelValue"
+        :width="inputNumberWidth"
+        :prefix-label="item.props?.prefixLabel as any"
+        :prefix-icon="((item.props?.prefixIcon ?? item.props?.icon) as any) ?? item.icon"
+        :prefix-icon-class="item.props?.prefixIconClass as any"
+        :control-props="inputNumberControlProps"
         :disabled="isDisabled"
-        :style="{ width: inputNumberWidth }"
         @change="handleInputNumberChange"
       />
 

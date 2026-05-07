@@ -65,6 +65,12 @@ export { default as MlRibbonDropdown } from './items/RibbonDropdown.vue'
 export { default as MlRibbonSegmented } from './items/RibbonSegmented.vue'
 
 /**
+ * @component MlRibbonInputNumber
+ * @description Ribbon numeric input built on top of Element Plus `ElInputNumber`.
+ */
+export { default as MlRibbonInputNumber } from './items/RibbonInputNumber.vue'
+
+/**
  * @component MlRibbonToggleButton
  * @description Two-state ribbon toggle command with switchable icons.
  */
@@ -119,6 +125,9 @@ export type {
   RibbonCollectionModel,
   RibbonItemModel,
   RibbonDropdownOption,
+  RibbonGalleryPreview,
+  RibbonGalleryItemModel,
+  RibbonGalleryCategoryModel,
   RibbonDynamicApi,
   RibbonCustomItemBindings,
   KeyTipModel,

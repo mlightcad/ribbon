@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ElOption, ElSelect } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import {
@@ -79,6 +79,8 @@ const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
 const createContextOpen = ref(false)
 const selectionContextOpen = ref(true)
+const viewportWidth = ref(typeof window === 'undefined' ? 1280 : window.innerWidth)
+const isVisualStyleGalleryCollapsed = computed(() => viewportWidth.value < 980)
 
 // Sample ribbon schema that demonstrates common item types, priorities and overflow rules.
 const baseTabs: RibbonTabModel[] = [
@@ -422,7 +424,7 @@ const baseTabs: RibbonTabModel[] = [
         title: 'Modify',
         orientation: 'row',
         priority: 30,
-        width: 100,
+        width: 150,
         collections: [
           {
             id: 'modify-main',
@@ -437,6 +439,8 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'small',
                 props: {
                   width: 'full',
+                  prefixLabel: 'Count',
+                  prefixIcon: CirclePlus,
                   min: 1,
                   max: 12,
                   step: 1,
@@ -452,6 +456,7 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'small',
                 props: {
                   width: 'full',
+                  prefixLabel: 'Spacing',
                   min: 0,
                   max: 100,
                   step: 0.5,
@@ -467,6 +472,8 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'small',
                 props: {
                   width: 'full',
+                  prefixLabel: 'Angle',
+                  prefixIcon: Operation,
                   min: -180,
                   max: 180,
                   step: 15,
@@ -489,17 +496,36 @@ const baseTabs: RibbonTabModel[] = [
               {
                 id: 'visual-style-gallery',
                 type: 'gallery',
-                label: 'Visual Styles',
+                size: 'large',
                 props: {
+                  inlineItemLimit: 4,
                   categories: [
                     {
                       id: 'visual-styles',
                       title: 'Visual Styles',
                       items: [
-                        { id: 'visual-style-clean', label: 'Clean', preview: 'Aa' },
-                        { id: 'visual-style-muted', label: 'Muted', preview: 'Mm' },
-                        { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-                        { id: 'visual-style-presentation', label: 'Presentation', preview: 'Pr' },
+                        { id: 'visual-style-clean', label: 'Clean', icon: Sunny },
+                        { id: 'visual-style-muted', label: 'Muted', icon: Moon },
+                        { id: 'visual-style-blueprint', label: 'Blueprint', icon: DataLine },
+                        { id: 'visual-style-presentation', label: 'Presentation', icon: FullScreen },
+                        { id: 'visual-style-wireframe', label: 'Wireframe', icon: Connection },
+                        { id: 'visual-style-conceptual', label: 'Conceptual', icon: MagicStick },
+                        { id: 'visual-style-shaded', label: 'Shaded', icon: Brush },
+                        { id: 'visual-style-realistic', label: 'Realistic', icon: Aim },
+                        { id: 'visual-style-sketch', label: 'Sketch', icon: EditPen },
+                        { id: 'visual-style-xray', label: 'X-Ray', icon: Search },
+                        { id: 'visual-style-section', label: 'Section', icon: Crop },
+                        { id: 'visual-style-monochrome', label: 'Monochrome', icon: Operation },
+                        { id: 'visual-style-hidden-line', label: 'Hidden Line', icon: Files },
+                        { id: 'visual-style-silhouette', label: 'Silhouette', icon: Pointer },
+                        { id: 'visual-style-edge-only', label: 'Edge Only', icon: Scissor },
+                        { id: 'visual-style-inspection', label: 'Inspection', icon: Search },
+                        { id: 'visual-style-detail', label: 'Detail', icon: CopyDocument },
+                        { id: 'visual-style-flat', label: 'Flat', icon: Minus },
+                        { id: 'visual-style-material', label: 'Material', icon: Brush },
+                        { id: 'visual-style-shadowed', label: 'Shadowed', icon: Moon },
+                        { id: 'visual-style-clay', label: 'Clay', icon: CirclePlus },
+                        { id: 'visual-style-analysis', label: 'Analysis', icon: DataLine },
                       ],
                     },
                   ],
@@ -967,10 +993,17 @@ const tabs = computed<RibbonTabModel[]>(() =>
           const modelValue = resolveAppearanceModelValue(item.id)
           const resolvedModelValue = resolveInputNumberModelValue(item.id) ?? modelValue
           const categories = translateGalleryCategories(item.props?.categories)
+          const galleryDisplayProps =
+            item.id === 'visual-style-gallery'
+              ? {
+                  modelValue: visualStyle.value,
+                  collapsed: isVisualStyleGalleryCollapsed.value,
+                }
+              : undefined
           const nextProps = item.props
-            ? { ...item.props, options, ...(categories ? { categories } : {}), componentProps }
-            : options || componentProps
-              ? { options, componentProps }
+            ? { ...item.props, options, ...(categories ? { categories } : {}), componentProps, ...galleryDisplayProps }
+            : options || componentProps || galleryDisplayProps
+              ? { options, componentProps, ...galleryDisplayProps }
               : undefined
           return {
             ...item,
@@ -1050,6 +1083,19 @@ const uiTexts = computed(() => ({
     translate('This whole area is rendered from the `#backstage` slot.') ??
     'This whole area is rendered from the `#backstage` slot.',
 }))
+
+function syncViewportWidth() {
+  viewportWidth.value = window.innerWidth
+}
+
+onMounted(() => {
+  syncViewportWidth()
+  window.addEventListener('resize', syncViewportWidth)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', syncViewportWidth)
+})
 
 
 watch(
