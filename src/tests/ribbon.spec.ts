@@ -696,6 +696,44 @@ describe('MlRibbonGallery', () => {
     }
   })
 
+  it('shows the row containing the current inline gallery item when modelValue changes', async () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        modelValue: 'visual-style-clean',
+        inlineItemLimit: 2,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const visibleLabels = () =>
+        wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__label').map((label) => label.text())
+
+      expect(visibleLabels()).toEqual(['Clean', 'Muted'])
+
+      await wrapper.setProps({ modelValue: 'visual-style-wireframe' })
+      await wrapper.vm.$nextTick()
+
+      expect(visibleLabels()).toEqual(['Blueprint', 'Wireframe'])
+      expect(wrapper.find('.ml-ribbon-gallery__grid .is-selected .ml-ribbon-gallery__label').text()).toBe('Wireframe')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('keeps inline gallery width stable on a partial final row', async () => {
     const wrapper = mount(MlRibbonGallery, {
       props: {
