@@ -127,15 +127,19 @@ const inlinePanelPopperOptions = computed(() => ({
 watch(
   () => props.modelValue,
   (value) => {
-    if (typeof value === 'string') selected.value = value
+    if (typeof value !== 'string') return
+    selected.value = value
+    syncInlineRowToSelectedItem(value)
   },
   { immediate: true },
 )
 
 watch(
-  () => [galleryItems.value.length, normalizedInlineItemLimit.value] as const,
+  () => [galleryItems.value.map((item) => item.id).join('\u0000'), normalizedInlineItemLimit.value, selected.value] as const,
   () => {
-    if (inlineRowIndex.value >= inlineRowCount.value) inlineRowIndex.value = inlineRowCount.value - 1
+    if (!syncInlineRowToSelectedItem()) {
+      inlineRowIndex.value = Math.min(inlineRowIndex.value, inlineRowCount.value - 1)
+    }
   },
 )
 
@@ -200,6 +204,18 @@ function galleryItemRowIndex(item: RibbonGalleryItemModel) {
   const itemIndex = galleryItems.value.findIndex((candidate) => candidate.id === item.id)
   if (itemIndex < 0) return 0
   return Math.floor(itemIndex / normalizedInlineItemLimit.value)
+}
+
+/**
+ * Moves the inline viewport to the row containing the selected gallery item.
+ * @param value Optional selected item id, defaults to current selection.
+ * @returns Whether a matching gallery item was found.
+ */
+function syncInlineRowToSelectedItem(value = selected.value) {
+  const item = galleryItems.value.find((candidate) => candidate.id === value)
+  if (!item) return false
+  inlineRowIndex.value = galleryItemRowIndex(item)
+  return true
 }
 
 /**

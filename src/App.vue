@@ -81,6 +81,7 @@ const createContextOpen = ref(false)
 const selectionContextOpen = ref(true)
 const viewportWidth = ref(typeof window === 'undefined' ? 1280 : window.innerWidth)
 const isVisualStyleGalleryCollapsed = computed(() => viewportWidth.value < 980)
+const visualStyleDemoTargets = ['visual-style-clean', 'visual-style-realistic', 'visual-style-analysis']
 
 // Sample ribbon schema that demonstrates common item types, priorities and overflow rules.
 const baseTabs: RibbonTabModel[] = [
@@ -780,6 +781,7 @@ const zhCNMap: Record<string, string> = {
   'Enable Ribbon': '启用 Ribbon',
   'Show Create Context': '显示创建上下文',
   'Show Selection Context': '显示选择上下文',
+  'Set Gallery Current': '设置图库当前项',
   Command: '命令',
   New: '新建',
   Open: '打开',
@@ -1078,6 +1080,7 @@ const uiTexts = computed(() => ({
   enableRibbon: translate('Enable Ribbon') ?? 'Enable Ribbon',
   showCreateContext: translate('Show Create Context') ?? 'Show Create Context',
   showSelectionContext: translate('Show Selection Context') ?? 'Show Selection Context',
+  setGalleryCurrent: translate('Set Gallery Current') ?? 'Set Gallery Current',
   commandLabel: translate('Command') ?? 'Command',
   backstageMeta:
     translate('This whole area is rendered from the `#backstage` slot.') ??
@@ -1234,6 +1237,13 @@ function setRibbonDisabled(value: boolean) {
   ribbonDisabled.value = value
 }
 
+function setGalleryCurrentForDemo() {
+  const currentIndex = visualStyleDemoTargets.indexOf(visualStyle.value)
+  const nextValue = visualStyleDemoTargets[(currentIndex + 1) % visualStyleDemoTargets.length]!
+  visualStyle.value = nextValue
+  lastCommand.value = `demo/set-gallery-current/${nextValue}`
+}
+
 function showCreateContext() {
   createContextOpen.value = true
   activeTab.value = 'create-tools'
@@ -1265,6 +1275,9 @@ function closeContextualTab(tabId = activeTab.value) {
       </ElButton>
       <ElButton size="small" :disabled="ribbonDisabled || selectionContextOpen" @click="showSelectionContext">
         {{ uiTexts.showSelectionContext }}
+      </ElButton>
+      <ElButton size="small" @click="setGalleryCurrentForDemo">
+        {{ uiTexts.setGalleryCurrent }}
       </ElButton>
     </div>
     <div class="ml-demo-status">
