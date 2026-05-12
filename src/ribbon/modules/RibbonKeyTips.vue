@@ -40,9 +40,13 @@ const emit = defineEmits<{
 const input = ref('')
 const matched = computed(() => {
   if (!input.value) return props.tips
-  return props.tips.filter((tip) => tip.key.toLowerCase().startsWith(input.value.toLowerCase()))
+  return props.tips.filter((tip) =>
+    tip.key.toLowerCase().startsWith(input.value.toLowerCase()),
+  )
 })
-const displaySequence = computed(() => input.value || props.emptySequenceText || '')
+const displaySequence = computed(
+  () => input.value || props.emptySequenceText || '',
+)
 const hintText = computed(() => {
   if (!props.sequencePrefix) return displaySequence.value
   return `${props.sequencePrefix}${displaySequence.value}`
@@ -52,7 +56,9 @@ const exactMatches = computed(() =>
   props.tips.filter((tip) => tip.key.toLowerCase() === normalizedInput.value),
 )
 const hasPrefixMatches = computed(() =>
-  props.tips.some((tip) => tip.key.toLowerCase().startsWith(normalizedInput.value)),
+  props.tips.some((tip) =>
+    tip.key.toLowerCase().startsWith(normalizedInput.value),
+  ),
 )
 
 /**
@@ -107,8 +113,8 @@ watch(
 <template>
   <div v-if="open" class="ml-ribbon-keytips" aria-live="polite">
     <div class="ml-ribbon-keytips__hint">{{ hintText }}</div>
-    <span v-for="tip in matched" :key="tip.id" class="ml-ribbon-keytip">{{ tip.key }}</span>
+    <span v-for="tip in matched" :key="tip.id" class="ml-ribbon-keytip">{{
+      tip.key
+    }}</span>
   </div>
 </template>
-
-

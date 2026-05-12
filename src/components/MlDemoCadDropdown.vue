@@ -4,7 +4,10 @@ import { computed, ref, watch } from 'vue'
 import { ElIcon, ElPopover, useGlobalConfig } from 'element-plus'
 import type { Component } from 'vue'
 import type { RibbonCustomItemBindings } from '../ribbon'
-import type { MlDemoCadDropdownOption, MlDemoCadDropdownVariant } from './demoCadDropdown'
+import type {
+  MlDemoCadDropdownOption,
+  MlDemoCadDropdownVariant,
+} from './demoCadDropdown'
 
 defineOptions({
   name: 'MlDemoCadDropdown',
@@ -57,27 +60,34 @@ interface MlDemoCadDropdownProps extends RibbonCustomItemBindings {
   leadingIcon?: Component
 }
 
-const props = withDefaults(
-  defineProps<MlDemoCadDropdownProps>(),
-  {
-    title: '',
-    modelValue: '',
-    options: () => [],
-    variant: 'color',
-    placeholder: 'Select',
-    popoverWidth: 248,
-  },
-)
+const props = withDefaults(defineProps<MlDemoCadDropdownProps>(), {
+  title: '',
+  modelValue: '',
+  options: () => [],
+  variant: 'color',
+  placeholder: 'Select',
+  popoverWidth: 248,
+})
 
 const popoverVisible = ref(false)
 const globalSize = useGlobalConfig('size', '')
 const resolvedRibbonSize = computed(() => globalSize.value || 'default')
 const selectedOption = computed(
-  () => props.options.find((option) => option.value === props.modelValue) ?? props.options[0] ?? null,
+  () =>
+    props.options.find((option) => option.value === props.modelValue) ??
+    props.options[0] ??
+    null,
 )
-const displayLabel = computed(() => selectedOption.value?.label ?? props.placeholder)
-const popoverClass = computed(() => `ml-demo-cad-dropdown-popper ml-demo-cad-dropdown-popper--${resolvedRibbonSize.value}`)
-const accessibleLabel = computed(() => props.title || props.item.label || props.item.id)
+const displayLabel = computed(
+  () => selectedOption.value?.label ?? props.placeholder,
+)
+const popoverClass = computed(
+  () =>
+    `ml-demo-cad-dropdown-popper ml-demo-cad-dropdown-popper--${resolvedRibbonSize.value}`,
+)
+const accessibleLabel = computed(
+  () => props.title || props.item.label || props.item.id,
+)
 
 watch(
   () => props.disabled,
@@ -136,7 +146,11 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
     ]"
     :aria-disabled="disabled"
   >
-    <span v-if="leadingIcon" class="ml-demo-cad-dropdown__leading-icon" aria-hidden="true">
+    <span
+      v-if="leadingIcon"
+      class="ml-demo-cad-dropdown__leading-icon"
+      aria-hidden="true"
+    >
       <ElIcon>
         <component :is="leadingIcon" />
       </ElIcon>
@@ -160,17 +174,30 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
             :disabled="disabled"
             :aria-label="accessibleLabel"
           >
-            <span class="ml-demo-cad-dropdown__preview" :class="`is-${variant}`">
+            <span
+              class="ml-demo-cad-dropdown__preview"
+              :class="`is-${variant}`"
+            >
               <span
                 v-if="variant === 'color'"
                 class="ml-demo-cad-dropdown__swatch"
                 :style="previewStyle(selectedOption)"
                 aria-hidden="true"
               />
-              <span v-else class="ml-demo-cad-dropdown__line" :style="previewStyle(selectedOption)" aria-hidden="true" />
-              <span class="ml-demo-cad-dropdown__value">{{ displayLabel }}</span>
+              <span
+                v-else
+                class="ml-demo-cad-dropdown__line"
+                :style="previewStyle(selectedOption)"
+                aria-hidden="true"
+              />
+              <span class="ml-demo-cad-dropdown__value">{{
+                displayLabel
+              }}</span>
             </span>
-            <ElIcon class="ml-demo-cad-dropdown__arrow" :class="{ 'is-open': popoverVisible }">
+            <ElIcon
+              class="ml-demo-cad-dropdown__arrow"
+              :class="{ 'is-open': popoverVisible }"
+            >
               <ArrowDown />
             </ElIcon>
           </button>
@@ -186,17 +213,31 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
             :disabled="disabled"
             @click="handleOptionClick(option)"
           >
-            <span class="ml-demo-cad-dropdown__option-preview" :class="`is-${variant}`">
+            <span
+              class="ml-demo-cad-dropdown__option-preview"
+              :class="`is-${variant}`"
+            >
               <span
                 v-if="variant === 'color'"
                 class="ml-demo-cad-dropdown__swatch"
                 :style="previewStyle(option)"
                 aria-hidden="true"
               />
-              <span v-else class="ml-demo-cad-dropdown__line" :style="previewStyle(option)" aria-hidden="true" />
-              <span class="ml-demo-cad-dropdown__value">{{ option.label }}</span>
+              <span
+                v-else
+                class="ml-demo-cad-dropdown__line"
+                :style="previewStyle(option)"
+                aria-hidden="true"
+              />
+              <span class="ml-demo-cad-dropdown__value">{{
+                option.label
+              }}</span>
             </span>
-            <span v-if="option.value === selectedOption?.value" class="ml-demo-cad-dropdown__selected-mark" aria-hidden="true">
+            <span
+              v-if="option.value === selectedOption?.value"
+              class="ml-demo-cad-dropdown__selected-mark"
+              aria-hidden="true"
+            >
               ✓
             </span>
           </button>
@@ -213,17 +254,26 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
     --ml-rb-font-xs,
     calc(var(--el-font-size-extra-small) * var(--ml-demo-cad-scale))
   );
-  --ml-demo-cad-font-sm: var(--ml-rb-font-sm, calc(var(--el-font-size-small) * var(--ml-demo-cad-scale)));
+  --ml-demo-cad-font-sm: var(
+    --ml-rb-font-sm,
+    calc(var(--el-font-size-small) * var(--ml-demo-cad-scale))
+  );
   --ml-demo-cad-compact-height: var(
     --ml-rb-compact-height,
     calc(var(--el-component-size-small) * var(--ml-demo-cad-scale))
   );
   --ml-demo-cad-surface: var(--ml-rb-surface, var(--el-bg-color));
-  --ml-demo-cad-surface-soft: var(--ml-rb-surface-soft, var(--el-fill-color-blank));
+  --ml-demo-cad-surface-soft: var(
+    --ml-rb-surface-soft,
+    var(--el-fill-color-blank)
+  );
   --ml-demo-cad-hover-bg: var(--ml-rb-hover-bg, var(--el-fill-color));
   --ml-demo-cad-hover-border: var(--ml-rb-hover-border, var(--el-border-color));
   --ml-demo-cad-active-bg: var(--ml-rb-active-bg, var(--el-fill-color-dark));
-  --ml-demo-cad-active-border: var(--ml-rb-active-border, var(--el-border-color-darker));
+  --ml-demo-cad-active-border: var(
+    --ml-rb-active-border,
+    var(--el-border-color-darker)
+  );
   --ml-demo-cad-min-width: calc(150px * var(--ml-demo-cad-scale));
   display: inline-flex;
   align-items: center;
@@ -321,7 +371,10 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
   --ml-demo-cad-line-height: 2px;
   flex: 0 0 calc(64px * var(--ml-demo-cad-scale));
   width: calc(64px * var(--ml-demo-cad-scale));
-  height: max(calc(var(--ml-demo-cad-line-height) * var(--ml-demo-cad-scale)), 2px);
+  height: max(
+    calc(var(--ml-demo-cad-line-height) * var(--ml-demo-cad-scale)),
+    2px
+  );
   background: var(--ml-demo-cad-line-bg);
   background-repeat: no-repeat;
   background-position: center;
@@ -381,8 +434,16 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
 }
 
 .ml-demo-cad-dropdown__option.is-selected {
-  border-color: color-mix(in oklab, var(--el-color-primary) 45%, var(--el-border-color));
-  background: color-mix(in oklab, var(--el-color-primary) 10%, var(--el-fill-color-blank));
+  border-color: color-mix(
+    in oklab,
+    var(--el-color-primary) 45%,
+    var(--el-border-color)
+  );
+  background: color-mix(
+    in oklab,
+    var(--el-color-primary) 10%,
+    var(--el-fill-color-blank)
+  );
 }
 
 .ml-demo-cad-dropdown__option:active {
@@ -417,9 +478,15 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
 
 :global(.ml-demo-cad-dropdown-popper) {
   --ml-demo-cad-scale: var(--ml-demo-cad-popper-scale, 1);
-  --ml-demo-cad-font-xs: calc(var(--el-font-size-extra-small) * var(--ml-demo-cad-scale));
-  --ml-demo-cad-font-sm: calc(var(--el-font-size-small) * var(--ml-demo-cad-scale));
-  --ml-demo-cad-compact-height: calc(var(--el-component-size-small) * var(--ml-demo-cad-scale));
+  --ml-demo-cad-font-xs: calc(
+    var(--el-font-size-extra-small) * var(--ml-demo-cad-scale)
+  );
+  --ml-demo-cad-font-sm: calc(
+    var(--el-font-size-small) * var(--ml-demo-cad-scale)
+  );
+  --ml-demo-cad-compact-height: calc(
+    var(--el-component-size-small) * var(--ml-demo-cad-scale)
+  );
   --ml-demo-cad-surface-soft: var(--el-fill-color-blank);
   --ml-demo-cad-active-bg: var(--el-fill-color-dark);
   --ml-demo-cad-active-border: var(--el-border-color-darker);
@@ -457,9 +524,19 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
   background: var(--ml-demo-cad-surface-soft);
 }
 
-:global(.ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option.is-selected) {
-  border-color: color-mix(in oklab, var(--el-color-primary) 45%, var(--el-border-color));
-  background: color-mix(in oklab, var(--el-color-primary) 10%, var(--el-fill-color-blank));
+:global(
+  .ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option.is-selected
+) {
+  border-color: color-mix(
+    in oklab,
+    var(--el-color-primary) 45%,
+    var(--el-border-color)
+  );
+  background: color-mix(
+    in oklab,
+    var(--el-color-primary) 10%,
+    var(--el-fill-color-blank)
+  );
 }
 
 :global(.ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option:active) {
@@ -472,8 +549,12 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
   cursor: not-allowed;
 }
 
-:global(.ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option:disabled:hover),
-:global(.ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option:disabled:active) {
+:global(
+  .ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option:disabled:hover
+),
+:global(
+  .ml-demo-cad-dropdown-popper .ml-demo-cad-dropdown__option:disabled:active
+) {
   border-color: transparent;
   background: transparent;
 }
@@ -503,7 +584,10 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
   display: inline-block;
   flex: 0 0 calc(64px * var(--ml-demo-cad-scale));
   width: calc(64px * var(--ml-demo-cad-scale));
-  height: max(calc(var(--ml-demo-cad-line-height) * var(--ml-demo-cad-scale)), 2px);
+  height: max(
+    calc(var(--ml-demo-cad-line-height) * var(--ml-demo-cad-scale)),
+    2px
+  );
   background: var(--ml-demo-cad-line-bg);
   background-repeat: no-repeat;
   background-position: center;
@@ -542,6 +626,8 @@ function previewStyle(option: MlDemoCadDropdownOption | null) {
 }
 
 :global(.ml-demo-cad-dropdown-popper .el-popover) {
-  font-size: calc(var(--el-font-size-small) * var(--ml-demo-cad-popper-scale, 1));
+  font-size: calc(
+    var(--el-font-size-small) * var(--ml-demo-cad-popper-scale, 1)
+  );
 }
 </style>

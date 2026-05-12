@@ -25,7 +25,12 @@ import {
   Sunny,
 } from '@element-plus/icons-vue'
 import { MlRibbon } from './ribbon'
-import type { RibbonComponentSize, RibbonLayout, RibbonLocaleTexts, RibbonTabModel } from './ribbon'
+import type {
+  RibbonComponentSize,
+  RibbonLayout,
+  RibbonLocaleTexts,
+  RibbonTabModel,
+} from './ribbon'
 import MlDemoColorDropdown from './components/MlDemoColorDropdown.vue'
 import MlDemoHatchButton from './components/MlDemoHatchButton.vue'
 import MlDemoLineTypeDropdown from './components/MlDemoLineTypeDropdown.vue'
@@ -81,9 +86,15 @@ const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
 const createContextOpen = ref(false)
 const selectionContextOpen = ref(true)
-const viewportWidth = ref(typeof window === 'undefined' ? 1280 : window.innerWidth)
+const viewportWidth = ref(
+  typeof window === 'undefined' ? 1280 : window.innerWidth,
+)
 const isVisualStyleGalleryCollapsed = computed(() => viewportWidth.value < 980)
-const visualStyleDemoTargets = ['visual-style-clean', 'visual-style-realistic', 'visual-style-analysis']
+const visualStyleDemoTargets = [
+  'visual-style-clean',
+  'visual-style-realistic',
+  'visual-style-analysis',
+]
 
 // Sample ribbon schema that demonstrates common item types, priorities and overflow rules.
 const baseTabs: RibbonTabModel[] = [
@@ -98,17 +109,47 @@ const baseTabs: RibbonTabModel[] = [
         enableGroupOverflow: false,
         priority: 1,
         footerMenuItems: [
-          { id: 'draw-spline', type: 'button', hideLabel: true, size: 'small', props: { icon: DataLine } },
-          { id: 'draw-xline', type: 'button', hideLabel: true, size: 'small', props: { icon: Operation } },
-          { id: 'draw-ray', type: 'button', hideLabel: true, size: 'small', props: { icon: Position } },
+          {
+            id: 'draw-spline',
+            type: 'button',
+            hideLabel: true,
+            size: 'small',
+            props: { icon: DataLine },
+          },
+          {
+            id: 'draw-xline',
+            type: 'button',
+            hideLabel: true,
+            size: 'small',
+            props: { icon: Operation },
+          },
+          {
+            id: 'draw-ray',
+            type: 'button',
+            hideLabel: true,
+            size: 'small',
+            props: { icon: Position },
+          },
         ],
         collections: [
           {
             id: 'draw-primary',
             layout: 'row',
             items: [
-              { id: 'draw-line', type: 'button', label: 'Line', size: 'large', props: { icon: Minus } },
-              { id: 'draw-polyline', type: 'button', label: 'Polyline', size: 'large', props: { icon: Connection } },
+              {
+                id: 'draw-line',
+                type: 'button',
+                label: 'Line',
+                size: 'large',
+                props: { icon: Minus },
+              },
+              {
+                id: 'draw-polyline',
+                type: 'button',
+                label: 'Polyline',
+                size: 'large',
+                props: { icon: Connection },
+              },
               {
                 id: 'draw-circle',
                 type: 'dropdown',
@@ -117,12 +158,36 @@ const baseTabs: RibbonTabModel[] = [
                 props: {
                   icon: CirclePlus,
                   options: [
-                    { label: 'Center, Radius', value: 'circle-center-radius', icon: CirclePlus },
-                    { label: 'Center, Diameter', value: 'circle-center-diameter', icon: Aim },
-                    { label: '2-Point', value: 'circle-two-point', icon: Connection },
-                    { label: '3-Point', value: 'circle-three-point', icon: DataLine },
-                    { label: 'Tangent, Tangent, Radius', value: 'circle-tan-tan-radius', icon: Operation },
-                    { label: 'Tangent, Tangent, Tangent', value: 'circle-tan-tan-tan', icon: MagicStick },
+                    {
+                      label: 'Center, Radius',
+                      value: 'circle-center-radius',
+                      icon: CirclePlus,
+                    },
+                    {
+                      label: 'Center, Diameter',
+                      value: 'circle-center-diameter',
+                      icon: Aim,
+                    },
+                    {
+                      label: '2-Point',
+                      value: 'circle-two-point',
+                      icon: Connection,
+                    },
+                    {
+                      label: '3-Point',
+                      value: 'circle-three-point',
+                      icon: DataLine,
+                    },
+                    {
+                      label: 'Tangent, Tangent, Radius',
+                      value: 'circle-tan-tan-radius',
+                      icon: Operation,
+                    },
+                    {
+                      label: 'Tangent, Tangent, Tangent',
+                      value: 'circle-tan-tan-tan',
+                      icon: MagicStick,
+                    },
                   ],
                 },
               },
@@ -142,14 +207,36 @@ const baseTabs: RibbonTabModel[] = [
                 props: {
                   icon: FullScreen,
                   options: [
-                    { label: 'Rectangle', value: 'rectangle', icon: FullScreen },
-                    { label: '2-Point Rectangle', value: 'rectangle-two-point', icon: Crop },
+                    {
+                      label: 'Rectangle',
+                      value: 'rectangle',
+                      icon: FullScreen,
+                    },
+                    {
+                      label: '2-Point Rectangle',
+                      value: 'rectangle-two-point',
+                      icon: Crop,
+                    },
                     { label: 'Polygon', value: 'polygon', icon: EditPen },
                   ],
                 },
               },
-              { id: 'draw-ellipse', type: 'button', tooltip: 'Ellipse', hideLabel: true, size: 'small', props: { icon: Aim } },
-              { id: 'draw-hatch', type: 'button', tooltip: 'Hatch', hideLabel: true, size: 'small', props: { icon: MagicStick } },
+              {
+                id: 'draw-ellipse',
+                type: 'button',
+                tooltip: 'Ellipse',
+                hideLabel: true,
+                size: 'small',
+                props: { icon: Aim },
+              },
+              {
+                id: 'draw-hatch',
+                type: 'button',
+                tooltip: 'Hatch',
+                hideLabel: true,
+                size: 'small',
+                props: { icon: MagicStick },
+              },
             ],
           },
         ],
@@ -167,7 +254,14 @@ const baseTabs: RibbonTabModel[] = [
             id: 'clipboard-left',
             layout: 'row',
             items: [
-              { id: 'paste', type: 'button', label: 'Paste', size: 'large', keyTip: 'V', props: { icon: Files } },
+              {
+                id: 'paste',
+                type: 'button',
+                label: 'Paste',
+                size: 'large',
+                keyTip: 'V',
+                props: { icon: Files },
+              },
             ],
           },
           {
@@ -175,8 +269,22 @@ const baseTabs: RibbonTabModel[] = [
             layout: 'column',
             rows: 3,
             items: [
-              { id: 'cut', type: 'button', label: 'Cut', size: 'small', keyTip: 'X', props: { icon: Scissor } },
-              { id: 'copy', type: 'button', label: 'Copy', size: 'small', keyTip: 'C', props: { icon: CopyDocument } },
+              {
+                id: 'cut',
+                type: 'button',
+                label: 'Cut',
+                size: 'small',
+                keyTip: 'X',
+                props: { icon: Scissor },
+              },
+              {
+                id: 'copy',
+                type: 'button',
+                label: 'Copy',
+                size: 'small',
+                keyTip: 'C',
+                props: { icon: CopyDocument },
+              },
               {
                 id: 'format-painter',
                 type: 'button',
@@ -225,7 +333,12 @@ const baseTabs: RibbonTabModel[] = [
                   ],
                 },
               },
-              { id: 'font-color', type: 'colorPicker', label: 'Font Color', keyTip: 'FC' },
+              {
+                id: 'font-color',
+                type: 'colorPicker',
+                label: 'Font Color',
+                keyTip: 'FC',
+              },
             ],
           },
         ],
@@ -248,8 +361,18 @@ const baseTabs: RibbonTabModel[] = [
                 keyTip: 'FD',
                 props: {
                   options: [
-                    { label: 'Find', value: 'find', icon: Search, tooltip: 'Find' },
-                    { label: 'Replace', value: 'replace', icon: EditPen, tooltip: 'Replace' },
+                    {
+                      label: 'Find',
+                      value: 'find',
+                      icon: Search,
+                      tooltip: 'Find',
+                    },
+                    {
+                      label: 'Replace',
+                      value: 'replace',
+                      icon: EditPen,
+                      tooltip: 'Replace',
+                    },
                   ],
                 },
               },
@@ -324,11 +447,36 @@ const baseTabs: RibbonTabModel[] = [
                   wrap: false,
                   buttonSize: 'small',
                   options: [
-                    { label: '', value: 'layer-off', icon: Moon, tooltip: 'Layer Off' },
-                    { label: '', value: 'layer-isolate', icon: Aim, tooltip: 'Isolate' },
-                    { label: '', value: 'layer-freeze', icon: Crop, tooltip: 'Freeze Layer' },
-                    { label: '', value: 'layer-lock', icon: Scissor, tooltip: 'Lock Layer' },
-                    { label: 'Set Current', value: 'layer-set-current', icon: Position, tooltip: 'Set Current' },
+                    {
+                      label: '',
+                      value: 'layer-off',
+                      icon: Moon,
+                      tooltip: 'Layer Off',
+                    },
+                    {
+                      label: '',
+                      value: 'layer-isolate',
+                      icon: Aim,
+                      tooltip: 'Isolate',
+                    },
+                    {
+                      label: '',
+                      value: 'layer-freeze',
+                      icon: Crop,
+                      tooltip: 'Freeze Layer',
+                    },
+                    {
+                      label: '',
+                      value: 'layer-lock',
+                      icon: Scissor,
+                      tooltip: 'Lock Layer',
+                    },
+                    {
+                      label: 'Set Current',
+                      value: 'layer-set-current',
+                      icon: Position,
+                      tooltip: 'Set Current',
+                    },
                   ],
                 },
               },
@@ -341,11 +489,36 @@ const baseTabs: RibbonTabModel[] = [
                   wrap: false,
                   buttonSize: 'small',
                   options: [
-                    { label: '', value: 'layer-on', icon: Sunny, tooltip: 'Layer On' },
-                    { label: '', value: 'layer-unisolate', icon: Pointer, tooltip: 'Unisolate' },
-                    { label: '', value: 'layer-thaw', icon: MagicStick, tooltip: 'Thaw Layer' },
-                    { label: '', value: 'layer-unlock', icon: EditPen, tooltip: 'Unlock Layer' },
-                    { label: 'Layer Restore', value: 'layer-restore', icon: DataLine, tooltip: 'Layer Restore' },
+                    {
+                      label: '',
+                      value: 'layer-on',
+                      icon: Sunny,
+                      tooltip: 'Layer On',
+                    },
+                    {
+                      label: '',
+                      value: 'layer-unisolate',
+                      icon: Pointer,
+                      tooltip: 'Unisolate',
+                    },
+                    {
+                      label: '',
+                      value: 'layer-thaw',
+                      icon: MagicStick,
+                      tooltip: 'Thaw Layer',
+                    },
+                    {
+                      label: '',
+                      value: 'layer-unlock',
+                      icon: EditPen,
+                      tooltip: 'Unlock Layer',
+                    },
+                    {
+                      label: 'Layer Restore',
+                      value: 'layer-restore',
+                      icon: DataLine,
+                      tooltip: 'Layer Restore',
+                    },
                   ],
                 },
               },
@@ -507,28 +680,112 @@ const baseTabs: RibbonTabModel[] = [
                       id: 'visual-styles',
                       title: 'Visual Styles',
                       items: [
-                        { id: 'visual-style-clean', label: 'Clean', icon: Sunny },
-                        { id: 'visual-style-muted', label: 'Muted', icon: Moon },
-                        { id: 'visual-style-blueprint', label: 'Blueprint', icon: DataLine },
-                        { id: 'visual-style-presentation', label: 'Presentation', icon: FullScreen },
-                        { id: 'visual-style-wireframe', label: 'Wireframe', icon: Connection },
-                        { id: 'visual-style-conceptual', label: 'Conceptual', icon: MagicStick },
-                        { id: 'visual-style-shaded', label: 'Shaded', icon: Brush },
-                        { id: 'visual-style-realistic', label: 'Realistic', icon: Aim },
-                        { id: 'visual-style-sketch', label: 'Sketch', icon: EditPen },
-                        { id: 'visual-style-xray', label: 'X-Ray', icon: Search },
-                        { id: 'visual-style-section', label: 'Section', icon: Crop },
-                        { id: 'visual-style-monochrome', label: 'Monochrome', icon: Operation },
-                        { id: 'visual-style-hidden-line', label: 'Hidden Line', icon: Files },
-                        { id: 'visual-style-silhouette', label: 'Silhouette', icon: Pointer },
-                        { id: 'visual-style-edge-only', label: 'Edge Only', icon: Scissor },
-                        { id: 'visual-style-inspection', label: 'Inspection', icon: Search },
-                        { id: 'visual-style-detail', label: 'Detail', icon: CopyDocument },
+                        {
+                          id: 'visual-style-clean',
+                          label: 'Clean',
+                          icon: Sunny,
+                        },
+                        {
+                          id: 'visual-style-muted',
+                          label: 'Muted',
+                          icon: Moon,
+                        },
+                        {
+                          id: 'visual-style-blueprint',
+                          label: 'Blueprint',
+                          icon: DataLine,
+                        },
+                        {
+                          id: 'visual-style-presentation',
+                          label: 'Presentation',
+                          icon: FullScreen,
+                        },
+                        {
+                          id: 'visual-style-wireframe',
+                          label: 'Wireframe',
+                          icon: Connection,
+                        },
+                        {
+                          id: 'visual-style-conceptual',
+                          label: 'Conceptual',
+                          icon: MagicStick,
+                        },
+                        {
+                          id: 'visual-style-shaded',
+                          label: 'Shaded',
+                          icon: Brush,
+                        },
+                        {
+                          id: 'visual-style-realistic',
+                          label: 'Realistic',
+                          icon: Aim,
+                        },
+                        {
+                          id: 'visual-style-sketch',
+                          label: 'Sketch',
+                          icon: EditPen,
+                        },
+                        {
+                          id: 'visual-style-xray',
+                          label: 'X-Ray',
+                          icon: Search,
+                        },
+                        {
+                          id: 'visual-style-section',
+                          label: 'Section',
+                          icon: Crop,
+                        },
+                        {
+                          id: 'visual-style-monochrome',
+                          label: 'Monochrome',
+                          icon: Operation,
+                        },
+                        {
+                          id: 'visual-style-hidden-line',
+                          label: 'Hidden Line',
+                          icon: Files,
+                        },
+                        {
+                          id: 'visual-style-silhouette',
+                          label: 'Silhouette',
+                          icon: Pointer,
+                        },
+                        {
+                          id: 'visual-style-edge-only',
+                          label: 'Edge Only',
+                          icon: Scissor,
+                        },
+                        {
+                          id: 'visual-style-inspection',
+                          label: 'Inspection',
+                          icon: Search,
+                        },
+                        {
+                          id: 'visual-style-detail',
+                          label: 'Detail',
+                          icon: CopyDocument,
+                        },
                         { id: 'visual-style-flat', label: 'Flat', icon: Minus },
-                        { id: 'visual-style-material', label: 'Material', icon: Brush },
-                        { id: 'visual-style-shadowed', label: 'Shadowed', icon: Moon },
-                        { id: 'visual-style-clay', label: 'Clay', icon: CirclePlus },
-                        { id: 'visual-style-analysis', label: 'Analysis', icon: DataLine },
+                        {
+                          id: 'visual-style-material',
+                          label: 'Material',
+                          icon: Brush,
+                        },
+                        {
+                          id: 'visual-style-shadowed',
+                          label: 'Shadowed',
+                          icon: Moon,
+                        },
+                        {
+                          id: 'visual-style-clay',
+                          label: 'Clay',
+                          icon: CirclePlus,
+                        },
+                        {
+                          id: 'visual-style-analysis',
+                          label: 'Analysis',
+                          icon: DataLine,
+                        },
                       ],
                     },
                   ],
@@ -584,7 +841,13 @@ const baseTabs: RibbonTabModel[] = [
                 size: 'large',
                 props: { activeIcon: Aim, inactiveIcon: Pointer },
               },
-              { id: 'create-confirm', type: 'button', label: 'Confirm', size: 'large', props: { icon: Position } },
+              {
+                id: 'create-confirm',
+                type: 'button',
+                label: 'Confirm',
+                size: 'large',
+                props: { icon: Position },
+              },
             ],
           },
         ],
@@ -598,7 +861,15 @@ const baseTabs: RibbonTabModel[] = [
           {
             id: 'create-close-main',
             layout: 'row',
-            items: [{ id: 'close-contextual', type: 'button', label: 'Close', size: 'large', props: { icon: Close } }],
+            items: [
+              {
+                id: 'close-contextual',
+                type: 'button',
+                label: 'Close',
+                size: 'large',
+                props: { icon: Close },
+              },
+            ],
           },
         ],
       },
@@ -610,13 +881,19 @@ const baseTabs: RibbonTabModel[] = [
     visible: true,
     contextual: true,
     contextualMode: 'selection',
-    contextualTitle: 'Chart Tools',
     contextualColor: '#eebe77',
     groups: [
       {
         id: 'chart-style',
         title: 'Chart Style',
-        collections: [{ id: 'chart-c1', items: [{ id: 'color-scheme', type: 'colorPicker', label: 'Colors' }] }],
+        collections: [
+          {
+            id: 'chart-c1',
+            items: [
+              { id: 'color-scheme', type: 'colorPicker', label: 'Colors' },
+            ],
+          },
+        ],
       },
       {
         id: 'chart-close',
@@ -627,7 +904,15 @@ const baseTabs: RibbonTabModel[] = [
           {
             id: 'chart-close-main',
             layout: 'row',
-            items: [{ id: 'close-contextual', type: 'button', label: 'Close', size: 'large', props: { icon: Close } }],
+            items: [
+              {
+                id: 'close-contextual',
+                type: 'button',
+                label: 'Close',
+                size: 'large',
+                props: { icon: Close },
+              },
+            ],
           },
         ],
       },
@@ -796,7 +1081,8 @@ const zhCNMap: Record<string, string> = {
   Default: '默认',
   Small: '小',
   'Press Alt to show Key Tips.': '按 Alt 显示快捷提示。',
-  'Try V / X / C / F then P on Home tab.': '在“开始”页签尝试 V / X / C / F 再按 P。',
+  'Try V / X / C / F then P on Home tab.':
+    '在“开始”页签尝试 V / X / C / F 再按 P。',
   'Last command:': '最后命令：',
   'Current language:': '当前语言：',
   'Ribbon state:': 'Ribbon 状态：',
@@ -823,7 +1109,8 @@ const zhCNMap: Record<string, string> = {
   Walls: '墙体',
   Doors: '门',
   Dimensions: '标注',
-  'This whole area is rendered from the `#backstage` slot.': '整个区域由 `#backstage` 插槽渲染。',
+  'This whole area is rendered from the `#backstage` slot.':
+    '整个区域由 `#backstage` 插槽渲染。',
 }
 
 const translate = (value?: string) => {
@@ -832,7 +1119,9 @@ const translate = (value?: string) => {
   return zhCNMap[value] ?? value
 }
 
-function resolveAppearanceModelValue(itemId: string): string | boolean | undefined {
+function resolveAppearanceModelValue(
+  itemId: string,
+): string | boolean | undefined {
   switch (itemId) {
     case 'theme':
       return theme.value === 'dark' ? 'theme-dark' : 'theme-light'
@@ -845,10 +1134,15 @@ function resolveAppearanceModelValue(itemId: string): string | boolean | undefin
   }
 }
 
-function translateRecordStrings(value?: Record<string, unknown>): Record<string, unknown> | undefined {
+function translateRecordStrings(
+  value?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
   if (!value) return value
   return Object.fromEntries(
-    Object.entries(value).map(([key, entry]) => [key, typeof entry === 'string' ? translate(entry) : entry]),
+    Object.entries(value).map(([key, entry]) => [
+      key,
+      typeof entry === 'string' ? translate(entry) : entry,
+    ]),
   )
 }
 
@@ -859,10 +1153,14 @@ function translateGalleryCategories(value: unknown): unknown {
     const categoryRecord = category as Record<string, unknown>
     return {
       ...categoryRecord,
-      title: typeof categoryRecord.title === 'string' ? translate(categoryRecord.title) : categoryRecord.title,
+      title:
+        typeof categoryRecord.title === 'string'
+          ? translate(categoryRecord.title)
+          : categoryRecord.title,
       items: Array.isArray(categoryRecord.items)
         ? categoryRecord.items.map((galleryItem) => {
-            if (!galleryItem || typeof galleryItem !== 'object') return galleryItem
+            if (!galleryItem || typeof galleryItem !== 'object')
+              return galleryItem
             const galleryItemRecord = galleryItem as Record<string, unknown>
             return {
               ...galleryItemRecord,
@@ -891,13 +1189,48 @@ function resolveInputNumberModelValue(itemId: string): number | undefined {
 }
 
 const cadColorOptions = computed<MlDemoCadDropdownOption[]>(() => [
-  { value: 'bylayer', label: translate('ByLayer') ?? 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
-  { value: 'red', label: translate('Red') ?? 'Red', swatch: '#d64541', command: 'entity-color-red' },
-  { value: 'yellow', label: translate('Yellow') ?? 'Yellow', swatch: '#f2c94c', command: 'entity-color-yellow' },
-  { value: 'green', label: translate('Green') ?? 'Green', swatch: '#27ae60', command: 'entity-color-green' },
-  { value: 'cyan', label: translate('Cyan') ?? 'Cyan', swatch: '#00acc1', command: 'entity-color-cyan' },
-  { value: 'blue', label: translate('Blue') ?? 'Blue', swatch: '#2f80ed', command: 'entity-color-blue' },
-  { value: 'magenta', label: translate('Magenta') ?? 'Magenta', swatch: '#bb6bd9', command: 'entity-color-magenta' },
+  {
+    value: 'bylayer',
+    label: translate('ByLayer') ?? 'ByLayer',
+    swatch: '#7b8794',
+    command: 'entity-color-bylayer',
+  },
+  {
+    value: 'red',
+    label: translate('Red') ?? 'Red',
+    swatch: '#d64541',
+    command: 'entity-color-red',
+  },
+  {
+    value: 'yellow',
+    label: translate('Yellow') ?? 'Yellow',
+    swatch: '#f2c94c',
+    command: 'entity-color-yellow',
+  },
+  {
+    value: 'green',
+    label: translate('Green') ?? 'Green',
+    swatch: '#27ae60',
+    command: 'entity-color-green',
+  },
+  {
+    value: 'cyan',
+    label: translate('Cyan') ?? 'Cyan',
+    swatch: '#00acc1',
+    command: 'entity-color-cyan',
+  },
+  {
+    value: 'blue',
+    label: translate('Blue') ?? 'Blue',
+    swatch: '#2f80ed',
+    command: 'entity-color-blue',
+  },
+  {
+    value: 'magenta',
+    label: translate('Magenta') ?? 'Magenta',
+    swatch: '#bb6bd9',
+    command: 'entity-color-magenta',
+  },
 ])
 
 const cadLineTypeOptions = computed<MlDemoCadDropdownOption[]>(() => [
@@ -934,24 +1267,86 @@ const cadLineTypeOptions = computed<MlDemoCadDropdownOption[]>(() => [
 ])
 
 const cadLineWeightOptions = computed<MlDemoCadDropdownOption[]>(() => [
-  { value: 'default', label: translate('Default') ?? 'Default', weight: 2, command: 'entity-line-weight-default' },
-  { value: '0.13', label: '0.13 mm', weight: 1, command: 'entity-line-weight-0.13' },
-  { value: '0.25', label: '0.25 mm', weight: 2, command: 'entity-line-weight-0.25' },
-  { value: '0.35', label: '0.35 mm', weight: 3, command: 'entity-line-weight-0.35' },
-  { value: '0.50', label: '0.50 mm', weight: 4, command: 'entity-line-weight-0.50' },
-  { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
+  {
+    value: 'default',
+    label: translate('Default') ?? 'Default',
+    weight: 2,
+    command: 'entity-line-weight-default',
+  },
+  {
+    value: '0.13',
+    label: '0.13 mm',
+    weight: 1,
+    command: 'entity-line-weight-0.13',
+  },
+  {
+    value: '0.25',
+    label: '0.25 mm',
+    weight: 2,
+    command: 'entity-line-weight-0.25',
+  },
+  {
+    value: '0.35',
+    label: '0.35 mm',
+    weight: 3,
+    command: 'entity-line-weight-0.35',
+  },
+  {
+    value: '0.50',
+    label: '0.50 mm',
+    weight: 4,
+    command: 'entity-line-weight-0.50',
+  },
+  {
+    value: '0.70',
+    label: '0.70 mm',
+    weight: 5,
+    command: 'entity-line-weight-0.70',
+  },
 ])
 
 const cadHatchOptions = computed(() => [
-  { value: 'solid', label: translate('Solid') ?? 'Solid', pattern: 'solid', command: 'hatch-pattern-solid' },
-  { value: 'ansi31', label: 'ANSI31', pattern: 'ansi31', command: 'hatch-pattern-ansi31' },
-  { value: 'ansi37', label: 'ANSI37', pattern: 'ansi37', command: 'hatch-pattern-ansi37' },
-  { value: 'grid', label: translate('Grid') ?? 'Grid', pattern: 'grid', command: 'hatch-pattern-grid' },
-  { value: 'cross', label: translate('Cross') ?? 'Cross', pattern: 'cross', command: 'hatch-pattern-cross' },
-  { value: 'brick', label: translate('Brick') ?? 'Brick', pattern: 'brick', command: 'hatch-pattern-brick' },
+  {
+    value: 'solid',
+    label: translate('Solid') ?? 'Solid',
+    pattern: 'solid',
+    command: 'hatch-pattern-solid',
+  },
+  {
+    value: 'ansi31',
+    label: 'ANSI31',
+    pattern: 'ansi31',
+    command: 'hatch-pattern-ansi31',
+  },
+  {
+    value: 'ansi37',
+    label: 'ANSI37',
+    pattern: 'ansi37',
+    command: 'hatch-pattern-ansi37',
+  },
+  {
+    value: 'grid',
+    label: translate('Grid') ?? 'Grid',
+    pattern: 'grid',
+    command: 'hatch-pattern-grid',
+  },
+  {
+    value: 'cross',
+    label: translate('Cross') ?? 'Cross',
+    pattern: 'cross',
+    command: 'hatch-pattern-cross',
+  },
+  {
+    value: 'brick',
+    label: translate('Brick') ?? 'Brick',
+    pattern: 'brick',
+    command: 'hatch-pattern-brick',
+  },
 ])
 
-function resolveCustomComponentProps(itemId: string): Record<string, unknown> | undefined {
+function resolveCustomComponentProps(
+  itemId: string,
+): Record<string, unknown> | undefined {
   switch (itemId) {
     case 'entity-color':
       return {
@@ -1003,9 +1398,14 @@ const tabs = computed<RibbonTabModel[]>(() =>
             ? item.props.options.map((option) => {
                 if (!option || typeof option !== 'object') return option
                 const optionRecord = option as Record<string, unknown>
-                const optionLabel = typeof optionRecord.label === 'string' ? translate(optionRecord.label) : undefined
+                const optionLabel =
+                  typeof optionRecord.label === 'string'
+                    ? translate(optionRecord.label)
+                    : undefined
                 const optionTooltip =
-                  typeof optionRecord.tooltip === 'string' ? translate(optionRecord.tooltip) : undefined
+                  typeof optionRecord.tooltip === 'string'
+                    ? translate(optionRecord.tooltip)
+                    : undefined
                 return {
                   ...optionRecord,
                   ...(optionLabel ? { label: optionLabel } : {}),
@@ -1014,11 +1414,14 @@ const tabs = computed<RibbonTabModel[]>(() =>
               })
             : item.props?.options
           const componentProps = {
-            ...(translateRecordStrings(item.props?.componentProps as Record<string, unknown> | undefined) ?? {}),
+            ...(translateRecordStrings(
+              item.props?.componentProps as Record<string, unknown> | undefined,
+            ) ?? {}),
             ...(resolveCustomComponentProps(item.id) ?? {}),
           }
           const modelValue = resolveAppearanceModelValue(item.id)
-          const resolvedModelValue = resolveInputNumberModelValue(item.id) ?? modelValue
+          const resolvedModelValue =
+            resolveInputNumberModelValue(item.id) ?? modelValue
           const categories = translateGalleryCategories(item.props?.categories)
           const galleryDisplayProps =
             item.id === 'visual-style-gallery'
@@ -1030,22 +1433,41 @@ const tabs = computed<RibbonTabModel[]>(() =>
                 ? { modelValue: inlineLimitDemoStyle.value }
                 : undefined
           const nextProps = item.props
-            ? { ...item.props, options, ...(categories ? { categories } : {}), componentProps, ...galleryDisplayProps }
+            ? {
+                ...item.props,
+                options,
+                ...(categories ? { categories } : {}),
+                componentProps,
+                ...galleryDisplayProps,
+              }
             : options || componentProps || galleryDisplayProps
               ? { options, componentProps, ...galleryDisplayProps }
               : undefined
           return {
             ...item,
-            label: typeof item.label === 'string' ? translate(item.label) : item.label,
-            tooltip: typeof item.tooltip === 'string' ? translate(item.tooltip) : item.tooltip,
-            props: resolvedModelValue === undefined ? nextProps : { ...(nextProps ?? {}), modelValue: resolvedModelValue },
+            label:
+              typeof item.label === 'string'
+                ? translate(item.label)
+                : item.label,
+            tooltip:
+              typeof item.tooltip === 'string'
+                ? translate(item.tooltip)
+                : item.tooltip,
+            props:
+              resolvedModelValue === undefined
+                ? nextProps
+                : { ...(nextProps ?? {}), modelValue: resolvedModelValue },
           }
         }),
       })),
       footerMenuItems: group.footerMenuItems?.map((item) => ({
         ...item,
-        label: typeof item.label === 'string' ? translate(item.label) : item.label,
-        tooltip: typeof item.tooltip === 'string' ? translate(item.tooltip) : item.tooltip,
+        label:
+          typeof item.label === 'string' ? translate(item.label) : item.label,
+        tooltip:
+          typeof item.tooltip === 'string'
+            ? translate(item.tooltip)
+            : item.tooltip,
       })),
     })),
   })),
@@ -1058,8 +1480,16 @@ const fileMenuItems = computed(() => [
 ])
 
 const backstageItems = computed(() => [
-  { id: 'info', label: translate('Info') ?? 'Info', description: translate('Document info') ?? 'Document info' },
-  { id: 'print', label: translate('Print') ?? 'Print', description: translate('Print settings') ?? 'Print settings' },
+  {
+    id: 'info',
+    label: translate('Info') ?? 'Info',
+    description: translate('Document info') ?? 'Document info',
+  },
+  {
+    id: 'print',
+    label: translate('Print') ?? 'Print',
+    description: translate('Print settings') ?? 'Print settings',
+  },
   {
     id: 'share',
     label: translate('Share') ?? 'Share',
@@ -1082,7 +1512,6 @@ const ribbonTexts = computed<RibbonLocaleTexts>(() => {
       backstageDescription: '在这里管理文档与设置。',
       keyTipsSequencePrefix: '按键序列：',
       keyTipsEmptySequence: '无按键序列',
-      contextualTabDefaultTitle: '上下文',
       galleryPreviewFallback: '预览不可用',
     }
   }
@@ -1096,8 +1525,11 @@ const languageOptions = computed(() => [
 ])
 
 const uiTexts = computed(() => ({
-  keyTipHint: translate('Press Alt to show Key Tips.') ?? 'Press Alt to show Key Tips.',
-  sequenceHint: translate('Try V / X / C / F then P on Home tab.') ?? 'Try V / X / C / F then P on Home tab.',
+  keyTipHint:
+    translate('Press Alt to show Key Tips.') ?? 'Press Alt to show Key Tips.',
+  sequenceHint:
+    translate('Try V / X / C / F then P on Home tab.') ??
+    'Try V / X / C / F then P on Home tab.',
   lastCommand: translate('Last command:') ?? 'Last command:',
   currentLanguage: translate('Current language:') ?? 'Current language:',
   ribbonState: translate('Ribbon state:') ?? 'Ribbon state:',
@@ -1106,7 +1538,8 @@ const uiTexts = computed(() => ({
   disableRibbon: translate('Disable Ribbon') ?? 'Disable Ribbon',
   enableRibbon: translate('Enable Ribbon') ?? 'Enable Ribbon',
   showCreateContext: translate('Show Create Context') ?? 'Show Create Context',
-  showSelectionContext: translate('Show Selection Context') ?? 'Show Selection Context',
+  showSelectionContext:
+    translate('Show Selection Context') ?? 'Show Selection Context',
   setGalleryCurrent: translate('Set Gallery Current') ?? 'Set Gallery Current',
   commandLabel: translate('Command') ?? 'Command',
   backstageMeta:
@@ -1127,14 +1560,16 @@ onUnmounted(() => {
   window.removeEventListener('resize', syncViewportWidth)
 })
 
-
 watch(
   theme,
   // Keep root html classes in sync so css variables can switch themes immediately.
   (value) => {
     document.documentElement.classList.toggle('dark', value === 'dark')
     document.documentElement.classList.toggle('ml-theme-dark', value === 'dark')
-    document.documentElement.classList.toggle('ml-theme-light', value === 'light')
+    document.documentElement.classList.toggle(
+      'ml-theme-light',
+      value === 'light',
+    )
   },
   { immediate: true },
 )
@@ -1143,13 +1578,20 @@ watch(
  * Displays the last executed ribbon command in the demo.
  * @param payload Ribbon click payload.
  */
-function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: string }) {
+function onRibbonItemClick(payload: {
+  tabId: string
+  groupId: string
+  itemId: string
+}) {
   if (payload.groupId === 'modify') {
     const nextArrayCount = Number(payload.itemId)
     if (Number.isInteger(nextArrayCount)) arrayCount.value = nextArrayCount
   }
   if (payload.groupId === 'styles') {
-    if (payload.itemId === 'limit-demo-a' || payload.itemId === 'limit-demo-b') {
+    if (
+      payload.itemId === 'limit-demo-a' ||
+      payload.itemId === 'limit-demo-b'
+    ) {
       inlineLimitDemoStyle.value = payload.itemId
     } else {
       visualStyle.value = payload.itemId
@@ -1270,7 +1712,8 @@ function setRibbonDisabled(value: boolean) {
 
 function setGalleryCurrentForDemo() {
   const currentIndex = visualStyleDemoTargets.indexOf(visualStyle.value)
-  const nextValue = visualStyleDemoTargets[(currentIndex + 1) % visualStyleDemoTargets.length]!
+  const nextValue =
+    visualStyleDemoTargets[(currentIndex + 1) % visualStyleDemoTargets.length]!
   visualStyle.value = nextValue
   lastCommand.value = `demo/set-gallery-current/${nextValue}`
 }
@@ -1295,16 +1738,32 @@ function closeContextualTab(tabId = activeTab.value) {
 <template>
   <div class="demo">
     <div class="ml-demo-toolbar">
-      <ElButton size="small" :disabled="ribbonDisabled" @click="setRibbonDisabled(true)">
+      <ElButton
+        size="small"
+        :disabled="ribbonDisabled"
+        @click="setRibbonDisabled(true)"
+      >
         {{ uiTexts.disableRibbon }}
       </ElButton>
-      <ElButton size="small" :disabled="!ribbonDisabled" @click="setRibbonDisabled(false)">
+      <ElButton
+        size="small"
+        :disabled="!ribbonDisabled"
+        @click="setRibbonDisabled(false)"
+      >
         {{ uiTexts.enableRibbon }}
       </ElButton>
-      <ElButton size="small" :disabled="ribbonDisabled || createContextOpen" @click="showCreateContext">
+      <ElButton
+        size="small"
+        :disabled="ribbonDisabled || createContextOpen"
+        @click="showCreateContext"
+      >
         {{ uiTexts.showCreateContext }}
       </ElButton>
-      <ElButton size="small" :disabled="ribbonDisabled || selectionContextOpen" @click="showSelectionContext">
+      <ElButton
+        size="small"
+        :disabled="ribbonDisabled || selectionContextOpen"
+        @click="showSelectionContext"
+      >
         {{ uiTexts.showSelectionContext }}
       </ElButton>
       <ElButton size="small" @click="setGalleryCurrentForDemo">
@@ -1314,10 +1773,15 @@ function closeContextualTab(tabId = activeTab.value) {
     <div class="ml-demo-status">
       <span class="ml-demo-status__hint">{{ uiTexts.keyTipHint }}</span>
       <span class="ml-demo-status__hint">{{ uiTexts.sequenceHint }}</span>
-      <span class="ml-demo-status__value">{{ uiTexts.lastCommand }} {{ lastCommand }}</span>
-      <span class="ml-demo-status__value">{{ uiTexts.currentLanguage }} {{ language }}</span>
+      <span class="ml-demo-status__value"
+        >{{ uiTexts.lastCommand }} {{ lastCommand }}</span
+      >
+      <span class="ml-demo-status__value"
+        >{{ uiTexts.currentLanguage }} {{ language }}</span
+      >
       <span class="ml-demo-status__value">
-        {{ uiTexts.ribbonState }} {{ ribbonDisabled ? uiTexts.disabled : uiTexts.enabled }}
+        {{ uiTexts.ribbonState }}
+        {{ ribbonDisabled ? uiTexts.disabled : uiTexts.enabled }}
       </span>
     </div>
     <MlRibbon
@@ -1336,7 +1800,12 @@ function closeContextualTab(tabId = activeTab.value) {
     >
       <template #tabs-extra="{ disabled }">
         <div class="ml-demo-language-switch">
-          <ElSelect v-model="language" size="small" class="ml-demo-language-switch__select" :disabled="disabled">
+          <ElSelect
+            v-model="language"
+            size="small"
+            class="ml-demo-language-switch__select"
+            :disabled="disabled"
+          >
             <ElOption
               v-for="option in languageOptions"
               :key="option.value"
@@ -1347,13 +1816,24 @@ function closeContextualTab(tabId = activeTab.value) {
         </div>
       </template>
       <template #backstage="{ close, size }">
-        <section class="ml-demo-backstage" :class="`ml-demo-backstage--size-${size}`">
+        <section
+          class="ml-demo-backstage"
+          :class="`ml-demo-backstage--size-${size}`"
+        >
           <aside class="ml-demo-backstage__nav">
-            <button type="button" class="ml-demo-backstage__back" @click="close">
+            <button
+              type="button"
+              class="ml-demo-backstage__back"
+              @click="close"
+            >
               {{ ribbonTexts.backstageBackLabel ?? 'Back' }}
             </button>
             <ul class="ml-demo-backstage__menu">
-              <li v-for="item in backstageItems" :key="item.id" class="ml-demo-backstage__menu-item">
+              <li
+                v-for="item in backstageItems"
+                :key="item.id"
+                class="ml-demo-backstage__menu-item"
+              >
                 <strong>{{ item.label }}</strong>
                 <span>{{ item.description }}</span>
               </li>
@@ -1361,7 +1841,12 @@ function closeContextualTab(tabId = activeTab.value) {
           </aside>
           <section class="ml-demo-backstage__content">
             <h2>{{ ribbonTexts.backstageTitle ?? 'Backstage' }}</h2>
-            <p>{{ ribbonTexts.backstageDescription ?? 'Manage your document and settings here.' }}</p>
+            <p>
+              {{
+                ribbonTexts.backstageDescription ??
+                'Manage your document and settings here.'
+              }}
+            </p>
             <p class="ml-demo-backstage__meta">{{ uiTexts.backstageMeta }}</p>
           </section>
         </section>
@@ -1408,11 +1893,16 @@ function closeContextualTab(tabId = activeTab.value) {
   width: 110px;
 }
 
-:deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content) {
+:deep(
+  .ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content
+) {
   width: 100%;
 }
 
-:deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-collection--column) {
+:deep(
+  .ml-ribbon-group[data-group-id='entity-properties']
+    .ml-ribbon-collection--column
+) {
   width: 100%;
   grid-auto-columns: minmax(0, 1fr);
 }
@@ -1443,7 +1933,8 @@ function closeContextualTab(tabId = activeTab.value) {
   border-radius: 4px;
   background: var(--el-color-primary);
   color: #fff;
-  padding: calc(6px * var(--ml-demo-backstage-scale)) calc(12px * var(--ml-demo-backstage-scale));
+  padding: calc(6px * var(--ml-demo-backstage-scale))
+    calc(12px * var(--ml-demo-backstage-scale));
   cursor: pointer;
 }
 

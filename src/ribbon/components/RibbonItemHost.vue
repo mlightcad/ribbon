@@ -57,14 +57,21 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: 'item-click', payload: string): void }>()
 const ribbon = inject(ribbonKey, null)
 // Dropdown/combobox options are normalized to a stable array to simplify template rendering.
-const options = computed(() => (Array.isArray(props.item.props?.options) ? props.item.props.options : []))
+const options = computed(() =>
+  Array.isArray(props.item.props?.options) ? props.item.props.options : [],
+)
 // Read Element Plus global size so popup menus inherit the same visual scale as ribbon controls.
 const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
-const resolvedTooltipShowAfter = computed(() => normalizeTooltipDelay(ribbon?.tooltipShowAfter.value, 1000))
-const resolvedTooltipHideAfter = computed(() => normalizeTooltipDelay(ribbon?.tooltipHideAfter.value, 0))
+const resolvedTooltipShowAfter = computed(() =>
+  normalizeTooltipDelay(ribbon?.tooltipShowAfter.value, 1000),
+)
+const resolvedTooltipHideAfter = computed(() =>
+  normalizeTooltipDelay(ribbon?.tooltipHideAfter.value, 0),
+)
 const selectPopperClass = computed(
-  () => `ml-ribbon-select-dropdown ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
+  () =>
+    `ml-ribbon-select-dropdown ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
 )
 const buttonIcon = computed<string | Component | undefined>(() => {
   const byProps = props.item.props?.icon
@@ -75,11 +82,19 @@ const buttonIcon = computed<string | Component | undefined>(() => {
 const shouldShowLabel = computed(() => props.item.hideLabel !== true)
 const dropdownTriggerTooltip = ref<string | undefined>(undefined)
 const resolvedTooltip = computed(() => {
-  if (props.item.type === 'dropdown' && dropdownTriggerTooltip.value) return dropdownTriggerTooltip.value
-  return itemText(props.item.tooltip) ?? itemText(props.item.label) ?? optionTooltipText(props.item) ?? humanizeItemId(props.item.id)
+  if (props.item.type === 'dropdown' && dropdownTriggerTooltip.value)
+    return dropdownTriggerTooltip.value
+  return (
+    itemText(props.item.tooltip) ??
+    itemText(props.item.label) ??
+    optionTooltipText(props.item) ??
+    humanizeItemId(props.item.id)
+  )
 })
 const shouldUseHostTooltip = computed(() => props.item.type !== 'buttonGroup')
-const shouldDisableHostTooltip = computed(() => !shouldUseHostTooltip.value || !resolvedTooltip.value)
+const shouldDisableHostTooltip = computed(
+  () => !shouldUseHostTooltip.value || !resolvedTooltip.value,
+)
 const buttonAriaLabel = computed(() => resolvedTooltip.value ?? props.item.id)
 const keyTipText = computed(() => props.item.keyTip?.trim().toUpperCase() ?? '')
 const shouldShowKeyTip = computed(() => {
@@ -91,12 +106,25 @@ const shouldShowKeyTip = computed(() => {
   if (!sequence) return true
   return keyTipText.value.toLowerCase().startsWith(sequence)
 })
-const isDisabled = computed(() => props.disabled === true || props.item.disabled === true || ribbon?.disabled.value === true)
-const toggleModelValue = computed(() => props.item.props?.modelValue as boolean | undefined)
-const toggleActiveLabel = computed(() => props.item.props?.activeLabel as string | undefined)
-const toggleInactiveLabel = computed(() => props.item.props?.inactiveLabel as string | undefined)
+const isDisabled = computed(
+  () =>
+    props.disabled === true ||
+    props.item.disabled === true ||
+    ribbon?.disabled.value === true,
+)
+const toggleModelValue = computed(
+  () => props.item.props?.modelValue as boolean | undefined,
+)
+const toggleActiveLabel = computed(
+  () => props.item.props?.activeLabel as string | undefined,
+)
+const toggleInactiveLabel = computed(
+  () => props.item.props?.inactiveLabel as string | undefined,
+)
 const galleryCategories = computed(() =>
-  Array.isArray(props.item.props?.categories) ? (props.item.props.categories as RibbonGalleryCategoryModel[]) : [],
+  Array.isArray(props.item.props?.categories)
+    ? (props.item.props.categories as RibbonGalleryCategoryModel[])
+    : [],
 )
 const galleryModelValue = computed(() => {
   const value = props.item.props?.modelValue
@@ -116,23 +144,41 @@ const customItemComponent = computed<Component | null>(() => {
 })
 const customItemComponentProps = computed<Record<string, unknown>>(() => {
   const candidate = props.item.props?.componentProps
-  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return {}
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate))
+    return {}
   return candidate as Record<string, unknown>
 })
 const buttonGroupWrap = computed(() => props.item.props?.wrap !== false)
-const buttonGroupEqualWidth = computed(() => props.item.props?.equalWidth === true)
-const buttonGroupSize = computed<'large' | 'default' | 'small' | undefined>(() => {
-  const value = props.item.props?.buttonSize
-  if (value === 'large' || value === 'default' || value === 'small') return value
-  return undefined
-})
-const buttonGroupIconSize = computed(() => normalizeOptionalFontSize(props.item.props?.iconSize))
-const comboBoxWidth = computed(() => normalizeCssSize(props.item.props?.width ?? props.item.props?.comboWidth, '92px'))
+const buttonGroupEqualWidth = computed(
+  () => props.item.props?.equalWidth === true,
+)
+const buttonGroupSize = computed<'large' | 'default' | 'small' | undefined>(
+  () => {
+    const value = props.item.props?.buttonSize
+    if (value === 'large' || value === 'default' || value === 'small')
+      return value
+    return undefined
+  },
+)
+const buttonGroupIconSize = computed(() =>
+  normalizeOptionalFontSize(props.item.props?.iconSize),
+)
+const comboBoxWidth = computed(() =>
+  normalizeCssSize(
+    props.item.props?.width ?? props.item.props?.comboWidth,
+    '92px',
+  ),
+)
 const comboBoxModelValue = computed(() => props.item.props?.modelValue)
 const inputNumberWidth = computed(() =>
-  normalizeCssSize(props.item.props?.width ?? props.item.props?.inputNumberWidth, '96px'),
+  normalizeCssSize(
+    props.item.props?.width ?? props.item.props?.inputNumberWidth,
+    '96px',
+  ),
 )
-const inputNumberModelValue = computed(() => props.item.props?.modelValue as number | undefined)
+const inputNumberModelValue = computed(
+  () => props.item.props?.modelValue as number | undefined,
+)
 const inputNumberControlProps = computed<Record<string, unknown>>(() => {
   const controlProps = { ...(props.item.props ?? {}) }
   delete controlProps.modelValue
@@ -148,8 +194,12 @@ const inputNumberControlProps = computed<Record<string, unknown>>(() => {
   delete controlProps.componentProps
   return controlProps
 })
-const labelWrapLines = computed(() => normalizeLabelWrapLines(props.item.props?.labelWrapLines))
-const labelWrapWidth = computed(() => normalizeOptionalCssSize(props.item.props?.labelWrapWidth))
+const labelWrapLines = computed(() =>
+  normalizeLabelWrapLines(props.item.props?.labelWrapLines),
+)
+const labelWrapWidth = computed(() =>
+  normalizeOptionalCssSize(props.item.props?.labelWrapWidth),
+)
 const shouldWrapLargeButtonLabel = computed(
   () =>
     props.item.type === 'button' &&
@@ -205,7 +255,11 @@ function handleDropdownTooltipChange(tooltip: string | undefined) {
  */
 function handleSegmentedChange(value: unknown) {
   if (isDisabled.value) return
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
     emit('item-click', String(value))
     return
   }
@@ -218,8 +272,14 @@ function handleSegmentedChange(value: unknown) {
  */
 function handleToggleChange(value: boolean) {
   if (isDisabled.value) return
-  const mappedValue = value ? props.item.props?.activeValue : props.item.props?.inactiveValue
-  if (typeof mappedValue === 'string' || typeof mappedValue === 'number' || typeof mappedValue === 'boolean') {
+  const mappedValue = value
+    ? props.item.props?.activeValue
+    : props.item.props?.inactiveValue
+  if (
+    typeof mappedValue === 'string' ||
+    typeof mappedValue === 'number' ||
+    typeof mappedValue === 'boolean'
+  ) {
     emit('item-click', String(mappedValue))
     return
   }
@@ -232,7 +292,11 @@ function handleToggleChange(value: boolean) {
  */
 function handleButtonGroupChange(value: unknown) {
   if (isDisabled.value) return
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
     emit('item-click', String(value))
     return
   }
@@ -255,7 +319,11 @@ function handleGallerySelect(value: string) {
 function handleComboBoxChange(value: unknown) {
   if (isDisabled.value) return
   if (props.item.props?.emitValueOnChange === true) {
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
       emit('item-click', String(value))
       return
     }
@@ -269,9 +337,16 @@ function handleComboBoxChange(value: unknown) {
  */
 function handleInputNumberChange(value: number | undefined) {
   if (isDisabled.value) return
-  if (props.item.props?.emitValueOnChange === true && typeof value === 'number' && Number.isFinite(value)) {
+  if (
+    props.item.props?.emitValueOnChange === true &&
+    typeof value === 'number' &&
+    Number.isFinite(value)
+  ) {
     const valuePrefix = props.item.props?.valuePrefix
-    emit('item-click', `${typeof valuePrefix === 'string' ? valuePrefix : ''}${value}`)
+    emit(
+      'item-click',
+      `${typeof valuePrefix === 'string' ? valuePrefix : ''}${value}`,
+    )
     return
   }
   handleClick()
@@ -283,7 +358,11 @@ function handleInputNumberChange(value: number | undefined) {
  */
 function emitCustomItemClick(payload?: string | number | boolean) {
   if (isDisabled.value) return
-  if (typeof payload === 'string' || typeof payload === 'number' || typeof payload === 'boolean') {
+  if (
+    typeof payload === 'string' ||
+    typeof payload === 'number' ||
+    typeof payload === 'boolean'
+  ) {
     emit('item-click', String(payload))
     return
   }
@@ -319,7 +398,12 @@ function itemText(value: unknown): string | undefined {
  * @returns Non-negative integer delay.
  */
 function normalizeTooltipDelay(value: unknown, fallback: number): number {
-  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) return fallback
+  if (
+    typeof value !== 'number' ||
+    Number.isNaN(value) ||
+    !Number.isFinite(value)
+  )
+    return fallback
   return Math.max(0, Math.round(value))
 }
 
@@ -330,7 +414,8 @@ function normalizeTooltipDelay(value: unknown, fallback: number): number {
  * @returns CSS width string.
  */
 function normalizeCssSize(value: unknown, fallback: string): string {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0)
+    return `${value}px`
   if (typeof value === 'string') {
     const normalized = value.trim()
     if (!normalized) return fallback
@@ -346,7 +431,8 @@ function normalizeCssSize(value: unknown, fallback: string): string {
  * @returns CSS width string when valid; otherwise `undefined`.
  */
 function normalizeOptionalCssSize(value: unknown): string | undefined {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0)
+    return `${value}px`
   if (typeof value === 'string') {
     const normalized = value.trim()
     if (!normalized) return undefined
@@ -362,7 +448,8 @@ function normalizeOptionalCssSize(value: unknown): string | undefined {
  * @returns CSS size string when valid; otherwise `undefined`.
  */
 function normalizeOptionalFontSize(value: unknown): string | undefined {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0)
+    return `${value}px`
   if (typeof value !== 'string') return undefined
   const normalized = value.trim()
   return normalized.length > 0 ? normalized : undefined
@@ -374,7 +461,12 @@ function normalizeOptionalFontSize(value: unknown): string | undefined {
  * @returns Rounded line count when valid; otherwise `undefined`.
  */
 function normalizeLabelWrapLines(value: unknown): number | undefined {
-  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) return undefined
+  if (
+    typeof value !== 'number' ||
+    Number.isNaN(value) ||
+    !Number.isFinite(value)
+  )
+    return undefined
   return Math.max(1, Math.round(value))
 }
 
@@ -384,7 +476,9 @@ function normalizeLabelWrapLines(value: unknown): number | undefined {
  * @returns Tooltip text inferred from option labels when available.
  */
 function optionTooltipText(item: RibbonItemModel): string | undefined {
-  const optionLabels = options.value.map((option) => optionLabel(option)).filter((label): label is string => Boolean(label))
+  const optionLabels = options.value
+    .map((option) => optionLabel(option))
+    .filter((label): label is string => Boolean(label))
   if (!optionLabels.length) return undefined
   if (item.type === 'buttonGroup') return optionLabels.join(' / ')
   return optionLabels[0]
@@ -428,7 +522,9 @@ function humanizeItemId(value: string): string {
       :data-item-id="id"
       role="group"
     >
-      <span v-if="shouldShowKeyTip" class="ml-ribbon-item-host__keytip">{{ keyTipText }}</span>
+      <span v-if="shouldShowKeyTip" class="ml-ribbon-item-host__keytip">{{
+        keyTipText
+      }}</span>
 
       <MlRibbonButtonGroup
         v-if="item.type === 'buttonGroup'"
@@ -464,8 +560,12 @@ function humanizeItemId(value: string): string {
         :id="item.id"
         :label="item.label ?? item.id"
         :model-value="toggleModelValue"
-        :active-icon="((item.props?.activeIcon ?? item.props?.icon) as any) ?? item.icon"
-        :inactive-icon="((item.props?.inactiveIcon ?? item.props?.icon) as any) ?? item.icon"
+        :active-icon="
+          ((item.props?.activeIcon ?? item.props?.icon) as any) ?? item.icon
+        "
+        :inactive-icon="
+          ((item.props?.inactiveIcon ?? item.props?.icon) as any) ?? item.icon
+        "
         :active-label="toggleActiveLabel"
         :inactive-label="toggleInactiveLabel"
         :disabled="isDisabled"
@@ -523,11 +623,19 @@ function humanizeItemId(value: string): string {
         @click="handleClick"
       />
 
-      <ElCheckbox v-else-if="item.type === 'checkbox'" :disabled="isDisabled" @change="handleClick">
+      <ElCheckbox
+        v-else-if="item.type === 'checkbox'"
+        :disabled="isDisabled"
+        @change="handleClick"
+      >
         {{ item.label }}
       </ElCheckbox>
 
-      <ElColorPicker v-else-if="item.type === 'colorPicker'" :disabled="isDisabled" @change="handleClick" />
+      <ElColorPicker
+        v-else-if="item.type === 'colorPicker'"
+        :disabled="isDisabled"
+        @change="handleClick"
+      />
 
       <ElSelect
         v-else-if="item.type === 'comboBox'"
@@ -551,7 +659,9 @@ function humanizeItemId(value: string): string {
         :model-value="inputNumberModelValue"
         :width="inputNumberWidth"
         :prefix-label="item.props?.prefixLabel as any"
-        :prefix-icon="((item.props?.prefixIcon ?? item.props?.icon) as any) ?? item.icon"
+        :prefix-icon="
+          ((item.props?.prefixIcon ?? item.props?.icon) as any) ?? item.icon
+        "
         :prefix-icon-class="item.props?.prefixIconClass as any"
         :control-props="inputNumberControlProps"
         :disabled="isDisabled"

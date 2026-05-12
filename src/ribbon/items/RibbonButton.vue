@@ -38,7 +38,14 @@ const props = withDefaults(
     ariaLabel?: string
     iconSize?: string
     size?: 'large' | 'default' | 'small'
-    buttonType?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'text'
+    buttonType?:
+      | 'default'
+      | 'primary'
+      | 'success'
+      | 'warning'
+      | 'danger'
+      | 'info'
+      | 'text'
     nativeType?: 'button' | 'submit' | 'reset'
   }>(),
   {
@@ -60,8 +67,12 @@ const resolvedLabel = computed(() => {
   if (props.label !== undefined) return props.label.trim()
   return props.id
 })
-const shouldShowLabel = computed(() => !props.hideLabel && resolvedLabel.value.length > 0)
-const resolvedAriaLabel = computed(() => props.ariaLabel?.trim() || resolvedLabel.value || props.id)
+const shouldShowLabel = computed(
+  () => !props.hideLabel && resolvedLabel.value.length > 0,
+)
+const resolvedAriaLabel = computed(
+  () => props.ariaLabel?.trim() || resolvedLabel.value || props.id,
+)
 const iconComponent = computed<Component | null>(() => {
   if (!props.icon || typeof props.icon === 'string') return null
   return props.icon
@@ -72,7 +83,9 @@ const iconClass = computed<string | null>(() => {
   return normalized.length > 0 ? normalized : null
 })
 const iconModeClass = computed(() =>
-  shouldShowLabel.value ? 'ml-ribbon-item-host__icon--with-label' : 'ml-ribbon-item-host__icon--icon-only',
+  shouldShowLabel.value
+    ? 'ml-ribbon-item-host__icon--with-label'
+    : 'ml-ribbon-item-host__icon--icon-only',
 )
 const iconStyle = computed(() => {
   if (!props.iconSize) return undefined
@@ -120,7 +133,10 @@ function handleClick(event: MouseEvent) {
       :style="iconStyle"
       aria-hidden="true"
     />
-    <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label ml-ribbon-button__label">
+    <span
+      v-if="shouldShowLabel"
+      class="ml-ribbon-item-host__label ml-ribbon-button__label"
+    >
       <slot name="label">{{ resolvedLabel }}</slot>
     </span>
     <slot />

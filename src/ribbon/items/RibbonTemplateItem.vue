@@ -31,7 +31,11 @@ defineProps<{
 </script>
 
 <template>
-  <div class="ml-ribbon-template-item" :data-template-id="id" :aria-disabled="disabled">
+  <div
+    class="ml-ribbon-template-item"
+    :data-template-id="id"
+    :aria-disabled="disabled"
+  >
     <slot :item="item" :disabled="disabled">
       <span>{{ item.label ?? item.id }}</span>
     </slot>

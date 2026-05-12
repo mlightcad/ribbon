@@ -69,7 +69,9 @@ const props = withDefaults(
 const emit = defineEmits<{ (e: 'change', value: RibbonSegmentedValue): void }>()
 
 const captionText = computed(() => props.label?.trim() ?? '')
-const showCaption = computed(() => !props.hideLabel && captionText.value.length > 0)
+const showCaption = computed(
+  () => !props.hideLabel && captionText.value.length > 0,
+)
 
 function toOption(option: unknown): RibbonSegmentedOption {
   return option as RibbonSegmentedOption
@@ -103,7 +105,9 @@ function handleChange(value: RibbonSegmentedValue) {
 
 <template>
   <div class="ml-ribbon-segmented" :data-id="id">
-    <div v-if="showCaption" class="ml-ribbon-segmented__label">{{ captionText }}</div>
+    <div v-if="showCaption" class="ml-ribbon-segmented__label">
+      {{ captionText }}
+    </div>
     <ElSegmented
       class="ml-ribbon-segmented__control"
       :options="options"
@@ -115,7 +119,10 @@ function handleChange(value: RibbonSegmentedValue) {
       @change="handleChange"
     >
       <template #default="{ item }">
-        <span class="ml-ribbon-segmented__option" :data-option-value="optionKey(item)">
+        <span
+          class="ml-ribbon-segmented__option"
+          :data-option-value="optionKey(item)"
+        >
           <ElIcon
             v-if="optionIcon(item)"
             class="ml-ribbon-segmented__option-icon"
@@ -135,10 +142,7 @@ function handleChange(value: RibbonSegmentedValue) {
           >
             {{ optionLabel(item) }}
           </span>
-          <span
-            v-else
-            class="ml-ribbon-segmented__option-sr-label"
-          >
+          <span v-else class="ml-ribbon-segmented__option-sr-label">
             {{ optionLabel(item) }}
           </span>
         </span>

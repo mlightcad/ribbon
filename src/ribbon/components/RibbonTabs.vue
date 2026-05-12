@@ -26,13 +26,18 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 
-const emit = defineEmits<{ (e: 'select', payload: { id: string; triggerEl: HTMLElement | null }): void }>()
-const visibleTabs = computed(() => props.tabs.filter((x) => x.visible !== false))
+const emit = defineEmits<{
+  (e: 'select', payload: { id: string; triggerEl: HTMLElement | null }): void
+}>()
+const visibleTabs = computed(() =>
+  props.tabs.filter((x) => x.visible !== false),
+)
 
 function onTabClick(id: string, event: MouseEvent) {
   emit('select', {
     id,
-    triggerEl: event.currentTarget instanceof HTMLElement ? event.currentTarget : null,
+    triggerEl:
+      event.currentTarget instanceof HTMLElement ? event.currentTarget : null,
   })
 }
 </script>

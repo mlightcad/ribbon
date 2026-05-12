@@ -51,18 +51,27 @@ const emit = defineEmits<{ (e: 'change', value: number | undefined): void }>()
 
 const inputWidth = computed(() => normalizeCssSize(props.width, '96px'))
 const isFullWidth = computed(() => inputWidth.value === '100%')
-const rootStyle = computed((): Record<string, string> => (isFullWidth.value ? { width: '100%' } : {}))
-const inputStyle = computed((): Record<string, string> => (isFullWidth.value ? {} : { width: inputWidth.value }))
+const rootStyle = computed(
+  (): Record<string, string> => (isFullWidth.value ? { width: '100%' } : {}),
+)
+const inputStyle = computed(
+  (): Record<string, string> =>
+    isFullWidth.value ? {} : { width: inputWidth.value },
+)
 const captionText = computed(() => itemText(props.prefixLabel))
 const iconComponent = computed<Component | null>(() => {
   if (!props.prefixIcon || typeof props.prefixIcon === 'string') return null
   return props.prefixIcon
 })
 const iconClass = computed<string | null>(() => {
-  const candidate = props.prefixIconClass ?? (typeof props.prefixIcon === 'string' ? props.prefixIcon : undefined)
+  const candidate =
+    props.prefixIconClass ??
+    (typeof props.prefixIcon === 'string' ? props.prefixIcon : undefined)
   return itemText(candidate) ?? null
 })
-const hasPrefix = computed(() => Boolean(captionText.value || iconComponent.value || iconClass.value))
+const hasPrefix = computed(() =>
+  Boolean(captionText.value || iconComponent.value || iconClass.value),
+)
 const ariaLabel = computed(() => captionText.value ?? props.id)
 const lastEmittedValue = ref<number | undefined>(undefined)
 
@@ -100,7 +109,8 @@ function itemText(value: unknown): string | undefined {
 }
 
 function normalizeCssSize(value: unknown, fallback: string): string {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return `${value}px`
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0)
+    return `${value}px`
   if (typeof value === 'string') {
     const normalized = value.trim()
     if (!normalized) return fallback
@@ -120,7 +130,11 @@ function normalizeCssSize(value: unknown, fallback: string): string {
     @keydown.enter.stop.prevent="handleEnterCommit"
   >
     <span v-if="hasPrefix" class="ml-ribbon-input-number__prefix">
-      <ElIcon v-if="iconComponent" class="ml-ribbon-input-number__prefix-icon" aria-hidden="true">
+      <ElIcon
+        v-if="iconComponent"
+        class="ml-ribbon-input-number__prefix-icon"
+        aria-hidden="true"
+      >
         <component :is="iconComponent" />
       </ElIcon>
       <i
@@ -129,7 +143,9 @@ function normalizeCssSize(value: unknown, fallback: string): string {
         :class="iconClass"
         aria-hidden="true"
       />
-      <span v-if="captionText" class="ml-ribbon-input-number__prefix-label">{{ captionText }}</span>
+      <span v-if="captionText" class="ml-ribbon-input-number__prefix-label">{{
+        captionText
+      }}</span>
     </span>
     <ElInputNumber
       v-bind="controlProps"

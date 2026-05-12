@@ -34,7 +34,12 @@ const props = withDefaults(
   defineProps<{
     id: string
     label: string
-    options: { label?: string; value: string | number | boolean; icon?: string | Component; tooltip?: string }[]
+    options: {
+      label?: string
+      value: string | number | boolean
+      icon?: string | Component
+      tooltip?: string
+    }[]
     hideLabel?: boolean
     wrap?: boolean
     equalWidth?: boolean
@@ -54,7 +59,9 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits<{ (e: 'change', value: string | number | boolean): void }>()
+const emit = defineEmits<{
+  (e: 'change', value: string | number | boolean): void
+}>()
 
 /**
  * Emits the clicked option value without persisting a selected state.
@@ -96,7 +103,8 @@ function humanizeOptionValue(value: unknown): string | undefined {
     if (!normalized) return undefined
     return normalized.replace(/\b\w/g, (char) => char.toUpperCase())
   }
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value)
   return undefined
 }
 
@@ -104,10 +112,17 @@ function humanizeOptionValue(value: unknown): string | undefined {
  * Resolves per-button tooltip text with label/value fallbacks.
  * @param option Group button option.
  */
-function resolveOptionTooltip(option: { label?: string; value: string | number | boolean; tooltip?: string }): string | undefined {
-  return optionText(option.tooltip) ?? optionText(option.label) ?? humanizeOptionValue(option.value)
+function resolveOptionTooltip(option: {
+  label?: string
+  value: string | number | boolean
+  tooltip?: string
+}): string | undefined {
+  return (
+    optionText(option.tooltip) ??
+    optionText(option.label) ??
+    humanizeOptionValue(option.value)
+  )
 }
-
 </script>
 
 <template>
@@ -119,7 +134,9 @@ function resolveOptionTooltip(option: { label?: string; value: string | number |
     }"
     :data-id="id"
   >
-    <div v-if="!hideLabel && label" class="ml-ribbon-button-group__label">{{ label }}</div>
+    <div v-if="!hideLabel && label" class="ml-ribbon-button-group__label">
+      {{ label }}
+    </div>
     <ElButtonGroup>
       <ElTooltip
         v-for="option in options"

@@ -55,7 +55,10 @@ function closeBackstage() {
     direction="ltr"
     @close="closeBackstage"
   >
-    <div class="ml-ribbon-backstage" :class="`ml-ribbon-backstage--size-${props.size || 'default'}`">
+    <div
+      class="ml-ribbon-backstage"
+      :class="`ml-ribbon-backstage--size-${props.size || 'default'}`"
+    >
       <slot
         v-if="$slots.default"
         :close="closeBackstage"
@@ -66,7 +69,9 @@ function closeBackstage() {
       />
       <template v-else>
         <aside class="ml-ribbon-backstage__nav">
-          <ElButton type="primary" @click="closeBackstage">{{ props.backLabel }}</ElButton>
+          <ElButton type="primary" @click="closeBackstage">{{
+            props.backLabel
+          }}</ElButton>
         </aside>
         <section class="ml-ribbon-backstage__content">
           <h2 v-if="props.title">{{ props.title }}</h2>
@@ -76,5 +81,3 @@ function closeBackstage() {
     </div>
   </ElDrawer>
 </template>
-
-

@@ -7,6 +7,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 [Live Demo](https://mlightcad.github.io/ribbon/)
 
 ## What This Project Provides
+
 - Ribbon container/state orchestration (`MlRibbon`)
 - Tabs, groups, collections, and item host composition
 - Advanced Ribbon-only items:
@@ -44,10 +45,12 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Custom ribbon controls can reuse `MlRibbonButton` and `MlRibbonDropdown` for consistent icon, label, dropdown, theme, and size behavior.
 
 ## Naming Conventions
+
 - Component names use `Ml` prefix.
 - CSS classes use `ml-` prefix.
 
 ## Tech Stack
+
 - Vue 3
 - TypeScript
 - Vite
@@ -56,6 +59,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Playwright
 
 ## Quick Start
+
 ```bash
 pnpm install
 pnpm dev
@@ -70,6 +74,7 @@ pnpm add vue element-plus @element-plus/icons-vue
 ## Component Usage
 
 ### 1. Import
+
 ```ts
 import { MlRibbon } from '@mlightcad/ribbon'
 import '@mlightcad/ribbon/style.css'
@@ -77,6 +82,7 @@ import type { RibbonTabModel } from '@mlightcad/ribbon'
 ```
 
 ### 2. Basic Example
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -101,7 +107,13 @@ const tabs = ref<RibbonTabModel[]>([
             id: 'clipboard-actions',
             items: [
               { id: 'paste', type: 'button', label: 'Paste', size: 'large' },
-              { id: 'copy', type: 'button', label: 'Copy', tooltip: 'Copy selection', size: 'small' },
+              {
+                id: 'copy',
+                type: 'button',
+                label: 'Copy',
+                tooltip: 'Copy selection',
+                size: 'small',
+              },
               {
                 id: 'grid-snap',
                 type: 'toggle',
@@ -122,7 +134,11 @@ const tabs = ref<RibbonTabModel[]>([
   },
 ])
 
-function handleItemClick(payload: { tabId: string; groupId: string; itemId: string }) {
+function handleItemClick(payload: {
+  tabId: string
+  groupId: string
+  itemId: string
+}) {
   console.log('Ribbon item clicked:', payload)
 }
 </script>
@@ -140,6 +156,7 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 ```
 
 ### 3. Common Props
+
 - `tabs: RibbonTabModel[]` Ribbon data source (required)
 - `v-model:active-tab` active tab id
 - `v-model:layout` ribbon layout (`classic` | `simplified`)
@@ -157,6 +174,7 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `tooltip-hide-after` global tooltip hide delay in milliseconds, default `0`
 
 ### 4. Common Events
+
 - `@tab-change="(tabId) => {}"` tab switched
 - `@layout-change="(layout) => {}"` layout switched
 - `@item-click="({ tabId, groupId, itemId }) => {}"` item clicked
@@ -165,6 +183,7 @@ function handleItemClick(payload: { tabId: string; groupId: string; itemId: stri
 - `@backstage-open` / `@backstage-close`
 
 ### 4.1 Tab-Right Custom Slot
+
 Use `#tabs-extra` to render custom controls at the far-right side of the ribbon header (for example language switchers).
 Slot props include `activeTab`, `layout`, `minimized`, and `disabled`.
 
@@ -177,13 +196,18 @@ Slot props include `activeTab`, `layout`, `minimized`, and `disabled`.
 ```
 
 Contextual tabs support two interaction modes through `RibbonTabModel.contextualMode`:
+
 - `selection` keeps regular tabs and their commands interactive while selection-specific UI is visible.
 - `exclusive` keeps tab headers selectable but disables command content in all non-exclusive contextual tabs, which is useful while creating or editing a modal object.
 
+Optional `RibbonTabModel.contextualTitle`: when set to a non-empty string, a small label is shown above that contextual tab’s colored block; if omitted, only the tab strip (with `title`) is shown—there is no default block label.
+
 ### 4.2 Custom Backstage Slot (Recommended)
+
 Use `#backstage` to fully customize backstage content.
 
 Slot props:
+
 - `close`: close backstage panel
 - `open`: current backstage open state
 - `size`: current ribbon size (`large` | `default` | `small`)
@@ -202,7 +226,9 @@ Slot props:
 ```
 
 ### 4.3 Custom Vue Components Inside Groups
+
 Use `type: 'custom'` to mount a host component directly from your ribbon schema. The custom component receives:
+
 - `item`
 - `groupId`
 - `disabled`
@@ -246,6 +272,7 @@ const tabs = [
 ```
 
 ### 4.4 Dropdown option dividers
+
 `MlRibbonDropdown` / schema `type: 'dropdown'` items accept `props.options` entries shaped as `RibbonDropdownOption`. Set `divided: true` on an option to show a divider line above that item (same behavior as Element Plus `divided` on `el-dropdown-item`).
 
 ```ts
@@ -265,13 +292,16 @@ const tabs = [
 ```
 
 ### 5. Dynamic Runtime API (Component Ref)
+
 `MlRibbon` exposes `RibbonDynamicApi` via `ref`, allowing runtime mutations:
+
 - Tab operations: `addTab`, `removeTab`, `showTab`, `hideTab`, `selectTab`
 - Group operations: `addGroup`, `removeGroup`, `showGroup`, `hideGroup`
 - Item operations: `addItem`, `removeItem`, `updateItem`, `enableItem`, `disableItem`
 - Layout operations: `refreshLayout`, `minimize`, `toggleSimplified`
 
 ## Scripts
+
 ```bash
 pnpm dev
 pnpm build
@@ -286,6 +316,7 @@ pnpm preview
 - `pnpm build:demo`: demo app build from `index.html`.
 
 ## Project Structure
+
 ```text
 src/
   ribbon/
@@ -301,10 +332,12 @@ AGENTS.md
 ```
 
 ## Documentation
+
 - Requirements document: `docs/requirements.md`
 - Agent coding conventions: `AGENTS.md`
 
 ## Current Status
+
 - V1 baseline is implemented and buildable.
 - Core APIs and tests are available.
 - Key tips now support `Alt` activation, sequence matching, and command dispatch via `itemClick`.

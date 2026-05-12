@@ -9,18 +9,12 @@ import MlRibbonTabs from '../components/RibbonTabs.vue'
  *
  * @prop tabs - Full tab list (regular and contextual tabs).
  * @prop activeTab - Currently active tab id.
- * @prop defaultContextualTitle - Fallback title for contextual tab blocks.
  *
  * @event select - Emitted when any tab is selected.
  *
  * @example
  * ```vue
- * <MlRibbonContextualTabs
- *   :tabs="tabs"
- *   :active-tab="activeTab"
- *   default-contextual-title="Context"
- *   @select="activeTab = $event"
- * />
+ * <MlRibbonContextualTabs :tabs="tabs" :active-tab="activeTab" @select="activeTab = $event" />
  * ```
  */
 const props = defineProps<{
@@ -34,10 +28,11 @@ const props = defineProps<{
   }[]
   activeTab: string
   disabled?: boolean
-  defaultContextualTitle?: string
 }>()
 
-const emit = defineEmits<{ (e: 'select', payload: { id: string; triggerEl: HTMLElement | null }): void }>()
+const emit = defineEmits<{
+  (e: 'select', payload: { id: string; triggerEl: HTMLElement | null }): void
+}>()
 </script>
 
 <template>
@@ -57,8 +52,15 @@ const emit = defineEmits<{ (e: 'select', payload: { id: string; triggerEl: HTMLE
         class="ml-ribbon-contextual-tabs__block"
         :style="{ '--ctx-color': ctx.contextualColor || '#67c23a' }"
       >
-        <small>{{ ctx.contextualTitle || props.defaultContextualTitle }}</small>
-        <MlRibbonTabs :tabs="[ctx]" :active-tab="activeTab" :disabled="props.disabled" @select="emit('select', $event)" />
+        <small v-if="ctx.contextualTitle?.trim()">{{
+          ctx.contextualTitle.trim()
+        }}</small>
+        <MlRibbonTabs
+          :tabs="[ctx]"
+          :active-tab="activeTab"
+          :disabled="props.disabled"
+          @select="emit('select', $event)"
+        />
       </section>
     </div>
   </div>

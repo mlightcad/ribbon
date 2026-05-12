@@ -36,13 +36,48 @@ interface MlDemoColorDropdownProps extends RibbonCustomItemBindings {
  * Default color palette shown when the embedding ribbon item does not provide options.
  */
 const fallbackOptions: MlDemoCadDropdownOption[] = [
-  { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
-  { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
-  { value: 'yellow', label: 'Yellow', swatch: '#f2c94c', command: 'entity-color-yellow' },
-  { value: 'green', label: 'Green', swatch: '#27ae60', command: 'entity-color-green' },
-  { value: 'cyan', label: 'Cyan', swatch: '#00acc1', command: 'entity-color-cyan' },
-  { value: 'blue', label: 'Blue', swatch: '#2f80ed', command: 'entity-color-blue' },
-  { value: 'magenta', label: 'Magenta', swatch: '#bb6bd9', command: 'entity-color-magenta' },
+  {
+    value: 'bylayer',
+    label: 'ByLayer',
+    swatch: '#7b8794',
+    command: 'entity-color-bylayer',
+  },
+  {
+    value: 'red',
+    label: 'Red',
+    swatch: '#d64541',
+    command: 'entity-color-red',
+  },
+  {
+    value: 'yellow',
+    label: 'Yellow',
+    swatch: '#f2c94c',
+    command: 'entity-color-yellow',
+  },
+  {
+    value: 'green',
+    label: 'Green',
+    swatch: '#27ae60',
+    command: 'entity-color-green',
+  },
+  {
+    value: 'cyan',
+    label: 'Cyan',
+    swatch: '#00acc1',
+    command: 'entity-color-cyan',
+  },
+  {
+    value: 'blue',
+    label: 'Blue',
+    swatch: '#2f80ed',
+    command: 'entity-color-blue',
+  },
+  {
+    value: 'magenta',
+    label: 'Magenta',
+    swatch: '#bb6bd9',
+    command: 'entity-color-magenta',
+  },
 ]
 
 defineProps<MlDemoColorDropdownProps>()

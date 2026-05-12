@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { ElDropdown, ElDropdownItem, ElDropdownMenu, useGlobalConfig } from 'element-plus'
+import {
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
+  useGlobalConfig,
+} from 'element-plus'
 
 /**
  * @component MlRibbonFileMenu
@@ -34,11 +39,17 @@ const props = defineProps<{
   showOpenBackstage?: boolean
   disabled?: boolean
 }>()
-const emit = defineEmits<{ (e: 'select', id: string): void; (e: 'open-backstage'): void }>()
+const emit = defineEmits<{
+  (e: 'select', id: string): void
+  (e: 'open-backstage'): void
+}>()
 const opened = ref(false)
 const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
-const popperClass = computed(() => `ml-ribbon-file-menu-dropdown ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`)
+const popperClass = computed(
+  () =>
+    `ml-ribbon-file-menu-dropdown ml-ribbon-popper ml-ribbon-popper--size-${resolvedSize.value}`,
+)
 
 /**
  * Tracks dropdown visibility to style the File tab active state.
@@ -86,7 +97,10 @@ watch(
     </button>
     <template #dropdown>
       <ElDropdownMenu>
-        <ElDropdownItem v-if="props.showOpenBackstage !== false" command="__backstage">
+        <ElDropdownItem
+          v-if="props.showOpenBackstage !== false"
+          command="__backstage"
+        >
           {{ props.openBackstageLabel }}
         </ElDropdownItem>
         <ElDropdownItem
@@ -102,4 +116,3 @@ watch(
     </template>
   </ElDropdown>
 </template>
-

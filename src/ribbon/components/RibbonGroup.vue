@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { ElButton, ElIcon, ElPopover } from 'element-plus'
 import { ArrowDown, ArrowUp, Promotion } from '@element-plus/icons-vue'
-import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue'
 import type { Component } from 'vue'
 import { useGlobalConfig } from 'element-plus'
 import { ribbonKey } from '../context'
@@ -62,12 +70,19 @@ const props = defineProps<{
   disabled?: boolean
 }>()
 
-const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId: string }): void }>()
+const emit = defineEmits<{
+  (e: 'item-click', payload: { groupId: string; itemId: string }): void
+}>()
 const ribbon = inject(ribbonKey, null)
 
 const isAutoWidth = computed(() => props.width == null)
 const fixedWidthStyle = computed(() => {
-  if (typeof props.width !== 'number' || Number.isNaN(props.width) || props.width <= 0) return undefined
+  if (
+    typeof props.width !== 'number' ||
+    Number.isNaN(props.width) ||
+    props.width <= 0
+  )
+    return undefined
   const value = `${props.width}px`
   return {
     width: value,
@@ -76,7 +91,9 @@ const fixedWidthStyle = computed(() => {
     flex: `0 0 ${value}`,
   }
 })
-const isRibbonDisabled = computed(() => props.disabled === true || ribbon?.disabled.value === true)
+const isRibbonDisabled = computed(
+  () => props.disabled === true || ribbon?.disabled.value === true,
+)
 const groupSectionRef = ref<HTMLElement | null>(null)
 const overflowItemIds = ref<string[]>([])
 const overflowTriggerRef = ref<HTMLElement | null>(null)
@@ -86,7 +103,8 @@ const footerSkidOffset = ref(0)
 const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
 const overflowPopperClass = computed(
-  () => `ml-ribbon-group__overflow-popover ml-ribbon-group__overflow-popover--size-${resolvedSize.value}`,
+  () =>
+    `ml-ribbon-group__overflow-popover ml-ribbon-group__overflow-popover--size-${resolvedSize.value}`,
 )
 const overflowPopperOptions = computed(() => ({
   modifiers: [
@@ -115,7 +133,9 @@ const iconComponent = computed<Component | null>(() => {
 })
 
 const hasOverflowItems = computed(() => overflowItemIds.value.length > 0)
-const hasFooterMenuItems = computed(() => (props.groupModel?.footerMenuItems?.length ?? 0) > 0)
+const hasFooterMenuItems = computed(
+  () => (props.groupModel?.footerMenuItems?.length ?? 0) > 0,
+)
 const isFooterMenuOpen = ref(false)
 const isOverflowMenuOpen = ref(false)
 
@@ -158,7 +178,9 @@ const footerMenuGroupModel = computed<RibbonGroupModel | null>(() => {
  */
 function recomputeOverflowItems() {
   const section = groupSectionRef.value
-  const content = section?.querySelector<HTMLElement>('.ml-ribbon-group__content')
+  const content = section?.querySelector<HTMLElement>(
+    '.ml-ribbon-group__content',
+  )
   if (!content) {
     if (overflowItemIds.value.length > 0) overflowItemIds.value = []
     return
@@ -170,7 +192,9 @@ function recomputeOverflowItems() {
   }
 
   const hiddenIds: string[] = []
-  const itemHosts = content.querySelectorAll<HTMLElement>('.ml-ribbon-item-host[data-item-id]')
+  const itemHosts = content.querySelectorAll<HTMLElement>(
+    '.ml-ribbon-item-host[data-item-id]',
+  )
   itemHosts.forEach((host) => {
     const itemId = host.dataset.itemId
     if (!itemId) return
@@ -212,7 +236,8 @@ function recomputeOverflowOffset() {
     return
   }
   const nextOffset = Math.round(sectionRect.left - triggerRect.left)
-  if (overflowSkidOffset.value !== nextOffset) overflowSkidOffset.value = nextOffset
+  if (overflowSkidOffset.value !== nextOffset)
+    overflowSkidOffset.value = nextOffset
 }
 
 /**
@@ -269,7 +294,10 @@ let observedContent: HTMLElement | null = null
  */
 function syncObservedContent() {
   if (!resizeObserver) return
-  const content = groupSectionRef.value?.querySelector<HTMLElement>('.ml-ribbon-group__content') ?? null
+  const content =
+    groupSectionRef.value?.querySelector<HTMLElement>(
+      '.ml-ribbon-group__content',
+    ) ?? null
   if (observedContent === content) return
   if (observedContent) resizeObserver.unobserve(observedContent)
   if (content) resizeObserver.observe(content)
@@ -283,14 +311,11 @@ watch(
   },
   { deep: true },
 )
-watch(
-  isRibbonDisabled,
-  (disabled) => {
-    if (!disabled) return
-    isFooterMenuOpen.value = false
-    isOverflowMenuOpen.value = false
-  },
-)
+watch(isRibbonDisabled, (disabled) => {
+  if (!disabled) return
+  isFooterMenuOpen.value = false
+  isOverflowMenuOpen.value = false
+})
 
 onMounted(() => {
   if (typeof ResizeObserver !== 'undefined') {
@@ -322,7 +347,9 @@ onUnmounted(() => {
       <slot />
     </div>
     <footer class="ml-ribbon-group__footer">
-      <ElIcon v-if="iconComponent" class="ml-ribbon-group__icon"><component :is="iconComponent" /></ElIcon>
+      <ElIcon v-if="iconComponent" class="ml-ribbon-group__icon"
+        ><component :is="iconComponent"
+      /></ElIcon>
       <span class="ml-ribbon-group__title">{{ title }}</span>
       <ElPopover
         v-if="hasFooterMenuItems && footerMenuGroupModel"
@@ -345,7 +372,9 @@ onUnmounted(() => {
             :disabled="isRibbonDisabled"
             @click="toggleFooterMenuOpen"
           >
-            <ElIcon><component :is="isFooterMenuOpen ? ArrowUp : ArrowDown" /></ElIcon>
+            <ElIcon
+              ><component :is="isFooterMenuOpen ? ArrowUp : ArrowDown"
+            /></ElIcon>
           </button>
         </template>
         <div class="ml-ribbon-group__overflow-content">
@@ -378,7 +407,9 @@ onUnmounted(() => {
             :disabled="isRibbonDisabled"
             @click="toggleOverflowMenuOpen"
           >
-            <ElIcon><component :is="isOverflowMenuOpen ? ArrowUp : ArrowDown" /></ElIcon>
+            <ElIcon
+              ><component :is="isOverflowMenuOpen ? ArrowUp : ArrowDown"
+            /></ElIcon>
           </button>
         </template>
         <div class="ml-ribbon-group__overflow-content">
@@ -390,7 +421,12 @@ onUnmounted(() => {
           />
         </div>
       </ElPopover>
-      <ElButton v-if="showLauncherIcon ?? launcher" link class="ml-ribbon-group__launcher" :disabled="isRibbonDisabled">
+      <ElButton
+        v-if="showLauncherIcon ?? launcher"
+        link
+        class="ml-ribbon-group__launcher"
+        :disabled="isRibbonDisabled"
+      >
         <ElIcon><Promotion /></ElIcon>
       </ElButton>
     </footer>

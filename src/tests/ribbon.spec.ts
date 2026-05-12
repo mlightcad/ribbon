@@ -18,7 +18,10 @@ import MlDemoLineTypeDropdown from '../components/MlDemoLineTypeDropdown.vue'
 import MlDemoLineWeightDropdown from '../components/MlDemoLineWeightDropdown.vue'
 import type { RibbonTabModel } from '../ribbon'
 
-async function waitForRibbonLayout(wrapper: { vm: { $nextTick: () => Promise<unknown> } }, ticks = 3) {
+async function waitForRibbonLayout(
+  wrapper: { vm: { $nextTick: () => Promise<unknown> } },
+  ticks = 3,
+) {
   for (let index = 0; index < ticks; index += 1) {
     await wrapper.vm.$nextTick()
   }
@@ -32,7 +35,9 @@ const tabs: RibbonTabModel[] = [
       {
         id: 'grp',
         title: 'Group',
-        collections: [{ id: 'c1', items: [{ id: 'btn1', type: 'button', label: 'Run' }] }],
+        collections: [
+          { id: 'c1', items: [{ id: 'btn1', type: 'button', label: 'Run' }] },
+        ],
       },
     ],
   },
@@ -103,15 +108,23 @@ describe('MlRibbonDropdown', () => {
         label: 'Line Type',
         itemSize: 'small',
         options: [
-          { label: 'Continuous', value: 'continuous', tooltip: 'Continuous line' },
+          {
+            label: 'Continuous',
+            value: 'continuous',
+            tooltip: 'Continuous line',
+          },
           { label: 'Dashed', value: 'dashed', tooltip: 'Dashed line' },
         ],
       },
     })
 
     try {
-      expect(wrapper.find('.ml-ribbon-dropdown').classes()).toContain('ml-ribbon-dropdown--item-small')
-      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe('Line Type')
+      expect(wrapper.find('.ml-ribbon-dropdown').classes()).toContain(
+        'ml-ribbon-dropdown--item-small',
+      )
+      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe(
+        'Line Type',
+      )
 
       const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
       dropdown.vm.$emit('command', 'dashed')
@@ -119,8 +132,12 @@ describe('MlRibbonDropdown', () => {
       await wrapper.vm.$nextTick()
 
       expect(wrapper.emitted('command')?.[0]?.[0]).toBe('dashed')
-      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Dashed line')
-      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe('Line Type')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Dashed line',
+      )
+      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe(
+        'Line Type',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -150,10 +167,26 @@ describe('MlDemoColorDropdown', () => {
       expect(dropdown.exists()).toBe(true)
       expect(dropdown.classes()).toContain('ml-demo-cad-dropdown--size-small')
       expect(wrapper.find('.ml-demo-cad-dropdown__title').exists()).toBe(false)
-      expect(wrapper.find('.ml-demo-cad-dropdown__leading-icon').exists()).toBe(true)
-      expect(wrapper.find('.ml-demo-cad-dropdown > .ml-demo-cad-dropdown__leading-icon').exists()).toBe(true)
-      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__leading-icon').exists()).toBe(false)
-      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__swatch').exists()).toBe(true)
+      expect(wrapper.find('.ml-demo-cad-dropdown__leading-icon').exists()).toBe(
+        true,
+      )
+      expect(
+        wrapper
+          .find('.ml-demo-cad-dropdown > .ml-demo-cad-dropdown__leading-icon')
+          .exists(),
+      ).toBe(true)
+      expect(
+        wrapper
+          .find(
+            '.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__leading-icon',
+          )
+          .exists(),
+      ).toBe(false)
+      expect(
+        wrapper
+          .find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__swatch')
+          .exists(),
+      ).toBe(true)
 
       await wrapper.setProps({ size: 'large' })
       await wrapper.vm.$nextTick()
@@ -176,8 +209,18 @@ describe('MlDemoColorDropdown', () => {
         title: 'Color',
         modelValue: 'bylayer',
         options: [
-          { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
-          { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
+          {
+            value: 'bylayer',
+            label: 'ByLayer',
+            swatch: '#7b8794',
+            command: 'entity-color-bylayer',
+          },
+          {
+            value: 'red',
+            label: 'Red',
+            swatch: '#d64541',
+            command: 'entity-color-red',
+          },
         ],
       },
       global: {
@@ -211,8 +254,18 @@ describe('MlDemoColorDropdown', () => {
         emitItemClick: vi.fn(),
         modelValue: 'bylayer',
         options: [
-          { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
-          { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
+          {
+            value: 'bylayer',
+            label: 'ByLayer',
+            swatch: '#7b8794',
+            command: 'entity-color-bylayer',
+          },
+          {
+            value: 'red',
+            label: 'Red',
+            swatch: '#d64541',
+            command: 'entity-color-red',
+          },
         ],
       },
       global: {
@@ -227,7 +280,9 @@ describe('MlDemoColorDropdown', () => {
     })
 
     try {
-      const optionSwatches = wrapper.findAll('.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__swatch')
+      const optionSwatches = wrapper.findAll(
+        '.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__swatch',
+      )
       expect(optionSwatches).toHaveLength(2)
     } finally {
       wrapper.unmount()
@@ -245,8 +300,18 @@ describe('MlDemoColorDropdown', () => {
         title: 'Color',
         modelValue: 'bylayer',
         options: [
-          { value: 'bylayer', label: 'ByLayer', swatch: '#7b8794', command: 'entity-color-bylayer' },
-          { value: 'red', label: 'Red', swatch: '#d64541', command: 'entity-color-red' },
+          {
+            value: 'bylayer',
+            label: 'ByLayer',
+            swatch: '#7b8794',
+            command: 'entity-color-bylayer',
+          },
+          {
+            value: 'red',
+            label: 'Red',
+            swatch: '#d64541',
+            command: 'entity-color-red',
+          },
         ],
       },
       global: {
@@ -286,8 +351,18 @@ describe('MlDemoColorDropdown', () => {
         emitItemClick: vi.fn(),
         modelValue: 'continuous',
         options: [
-          { value: 'continuous', label: 'Continuous', pattern: 'solid', command: 'entity-line-type-continuous' },
-          { value: 'dashed', label: 'Dashed', pattern: 'dashed', command: 'entity-line-type-dashed' },
+          {
+            value: 'continuous',
+            label: 'Continuous',
+            pattern: 'solid',
+            command: 'entity-line-type-continuous',
+          },
+          {
+            value: 'dashed',
+            label: 'Dashed',
+            pattern: 'dashed',
+            command: 'entity-line-type-dashed',
+          },
         ],
       },
       global: {
@@ -302,8 +377,16 @@ describe('MlDemoColorDropdown', () => {
     })
 
     try {
-      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__line').exists()).toBe(true)
-      expect(wrapper.findAll('.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__line')).toHaveLength(2)
+      expect(
+        wrapper
+          .find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__line')
+          .exists(),
+      ).toBe(true)
+      expect(
+        wrapper.findAll(
+          '.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__line',
+        ),
+      ).toHaveLength(2)
     } finally {
       wrapper.unmount()
     }
@@ -318,8 +401,18 @@ describe('MlDemoColorDropdown', () => {
         emitItemClick: vi.fn(),
         modelValue: '0.25',
         options: [
-          { value: '0.25', label: '0.25 mm', weight: 2, command: 'entity-line-weight-0.25' },
-          { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
+          {
+            value: '0.25',
+            label: '0.25 mm',
+            weight: 2,
+            command: 'entity-line-weight-0.25',
+          },
+          {
+            value: '0.70',
+            label: '0.70 mm',
+            weight: 5,
+            command: 'entity-line-weight-0.70',
+          },
         ],
       },
       global: {
@@ -334,8 +427,16 @@ describe('MlDemoColorDropdown', () => {
     })
 
     try {
-      expect(wrapper.find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__line').exists()).toBe(true)
-      expect(wrapper.findAll('.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__line')).toHaveLength(2)
+      expect(
+        wrapper
+          .find('.ml-demo-cad-dropdown__trigger .ml-demo-cad-dropdown__line')
+          .exists(),
+      ).toBe(true)
+      expect(
+        wrapper.findAll(
+          '.ml-demo-cad-dropdown__option .ml-demo-cad-dropdown__line',
+        ),
+      ).toHaveLength(2)
     } finally {
       wrapper.unmount()
     }
@@ -354,7 +455,9 @@ describe('MlRibbonButton', () => {
 
     try {
       expect(wrapper.find('.ml-ribbon-button').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-item-host__icon').classes()).toContain('ml-test-line-icon')
+      expect(wrapper.find('.ml-ribbon-item-host__icon').classes()).toContain(
+        'ml-test-line-icon',
+      )
       expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe('Line')
 
       await wrapper.find('.ml-ribbon-button').trigger('click')
@@ -386,9 +489,17 @@ describe('MlRibbonButton', () => {
     })
 
     try {
-      expect(wrapper.find('.ml-demo-hatch-button__trigger.ml-ribbon-button').exists()).toBe(true)
-      expect(wrapper.find('.ml-demo-hatch-button__icon-pattern').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe('Hatch Pattern')
+      expect(
+        wrapper
+          .find('.ml-demo-hatch-button__trigger.ml-ribbon-button')
+          .exists(),
+      ).toBe(true)
+      expect(wrapper.find('.ml-demo-hatch-button__icon-pattern').exists()).toBe(
+        true,
+      )
+      expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe(
+        'Hatch Pattern',
+      )
       expect(wrapper.find('.ml-demo-hatch-button__arrow').exists()).toBe(false)
     } finally {
       wrapper.unmount()
@@ -405,8 +516,18 @@ describe('MlRibbonButton', () => {
         emitItemClick,
         modelValue: 'ansi31',
         options: [
-          { value: 'ansi31', label: 'ANSI31', pattern: 'ansi31', command: 'hatch-pattern-ansi31' },
-          { value: 'grid', label: 'Grid', pattern: 'grid', command: 'hatch-pattern-grid' },
+          {
+            value: 'ansi31',
+            label: 'ANSI31',
+            pattern: 'ansi31',
+            command: 'hatch-pattern-ansi31',
+          },
+          {
+            value: 'grid',
+            label: 'Grid',
+            pattern: 'grid',
+            command: 'hatch-pattern-grid',
+          },
         ],
       },
       global: {
@@ -444,15 +565,21 @@ describe('MlRibbonGallery', () => {
           {
             id: 'visual-styles',
             title: 'Visual Styles',
-            items: [{ id: 'visual-style-clean', label: 'Clean', preview: 'Aa' }],
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Aa' },
+            ],
           },
         ],
       },
     })
 
     try {
-      expect(wrapper.find('.ml-ribbon-gallery__title').text()).toBe('Visual Styles')
-      expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(false)
+      expect(wrapper.find('.ml-ribbon-gallery__title').text()).toBe(
+        'Visual Styles',
+      )
+      expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(
+        false,
+      )
     } finally {
       wrapper.unmount()
     }
@@ -473,9 +600,21 @@ describe('MlRibbonGallery', () => {
             id: 'visual-styles',
             title: 'Visual Styles',
             items: [
-              { id: 'visual-style-component', label: 'Component', icon: PreviewIcon },
-              { id: 'visual-style-class', label: 'Class', icon: 'ml-test-gallery-class-icon' },
-              { id: 'visual-style-svg', label: 'SVG', svg: '#ml-test-gallery-symbol' },
+              {
+                id: 'visual-style-component',
+                label: 'Component',
+                icon: PreviewIcon,
+              },
+              {
+                id: 'visual-style-class',
+                label: 'Class',
+                icon: 'ml-test-gallery-class-icon',
+              },
+              {
+                id: 'visual-style-svg',
+                label: 'SVG',
+                svg: '#ml-test-gallery-symbol',
+              },
             ],
           },
         ],
@@ -484,8 +623,16 @@ describe('MlRibbonGallery', () => {
 
     try {
       expect(wrapper.find('.ml-test-gallery-preview-icon').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-gallery__preview-icon--class.ml-test-gallery-class-icon').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-gallery__preview-svg use').attributes('href')).toBe('#ml-test-gallery-symbol')
+      expect(
+        wrapper
+          .find(
+            '.ml-ribbon-gallery__preview-icon--class.ml-test-gallery-class-icon',
+          )
+          .exists(),
+      ).toBe(true)
+      expect(
+        wrapper.find('.ml-ribbon-gallery__preview-svg use').attributes('href'),
+      ).toBe('#ml-test-gallery-symbol')
     } finally {
       wrapper.unmount()
     }
@@ -528,7 +675,11 @@ describe('MlRibbonGallery', () => {
       expect(preview.attributes('data-tone')).toBe('blueprint')
 
       await wrapper.find('.ml-ribbon-gallery__item').trigger('click')
-      expect(wrapper.find('.ml-test-gallery-custom-preview').attributes('data-selected')).toBe('true')
+      expect(
+        wrapper
+          .find('.ml-test-gallery-custom-preview')
+          .attributes('data-selected'),
+      ).toBe('true')
       expect(wrapper.emitted('select')?.[0]?.[0]).toBe('visual-style-custom')
     } finally {
       wrapper.unmount()
@@ -553,7 +704,11 @@ describe('MlRibbonGallery', () => {
             title: 'Visual Styles',
             items: [
               { id: 'visual-style-clean', label: 'Clean', icon: PreviewIcon },
-              { id: 'visual-style-blueprint', label: 'Blueprint', icon: PreviewIcon },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                icon: PreviewIcon,
+              },
             ],
           },
         ],
@@ -561,20 +716,36 @@ describe('MlRibbonGallery', () => {
     })
 
     try {
-      expect(wrapper.find('.ml-ribbon-gallery__categories').exists()).toBe(false)
-      expect(wrapper.find('.ml-ribbon-gallery__collapsed-button').exists()).toBe(true)
-      expect(wrapper.find('.ml-test-gallery-collapsed-icon').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-gallery__collapsed-label').text()).toBe('Blueprint')
-      expect(wrapper.find('.ml-ribbon-gallery__collapsed-arrow').exists()).toBe(false)
+      expect(wrapper.find('.ml-ribbon-gallery__categories').exists()).toBe(
+        false,
+      )
+      expect(
+        wrapper.find('.ml-ribbon-gallery__collapsed-button').exists(),
+      ).toBe(true)
+      expect(wrapper.find('.ml-test-gallery-collapsed-icon').exists()).toBe(
+        true,
+      )
+      expect(wrapper.find('.ml-ribbon-gallery__collapsed-label').text()).toBe(
+        'Blueprint',
+      )
+      expect(wrapper.find('.ml-ribbon-gallery__collapsed-arrow').exists()).toBe(
+        false,
+      )
 
-      await wrapper.find('.ml-ribbon-gallery__collapsed-button').trigger('click')
+      await wrapper
+        .find('.ml-ribbon-gallery__collapsed-button')
+        .trigger('click')
       await wrapper.vm.$nextTick()
 
-      const panel = document.body.querySelector('.ml-ribbon-gallery-panel--collapsed')
+      const panel = document.body.querySelector(
+        '.ml-ribbon-gallery-panel--collapsed',
+      )
       expect(panel).not.toBeNull()
 
       const panelItems = Array.from(
-        document.body.querySelectorAll<HTMLButtonElement>('.ml-ribbon-gallery-panel--collapsed .ml-ribbon-gallery__panel-item'),
+        document.body.querySelectorAll<HTMLButtonElement>(
+          '.ml-ribbon-gallery-panel--collapsed .ml-ribbon-gallery__panel-item',
+        ),
       )
       expect(panelItems).toHaveLength(2)
       panelItems[0]?.click()
@@ -599,7 +770,11 @@ describe('MlRibbonGallery', () => {
             items: [
               { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
               { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                preview: 'Bp',
+              },
             ],
           },
         ],
@@ -607,14 +782,20 @@ describe('MlRibbonGallery', () => {
     })
 
     try {
-      expect(wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item')).toHaveLength(2)
-      expect(wrapper.find('.ml-ribbon-gallery__more-button').exists()).toBe(true)
+      expect(
+        wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item'),
+      ).toHaveLength(2)
+      expect(wrapper.find('.ml-ribbon-gallery__more-button').exists()).toBe(
+        true,
+      )
 
       await wrapper.find('.ml-ribbon-gallery__more-button').trigger('click')
       await wrapper.vm.$nextTick()
 
       const panelItems = Array.from(
-        document.body.querySelectorAll<HTMLButtonElement>('.ml-ribbon-gallery-panel--inline .ml-ribbon-gallery__panel-item'),
+        document.body.querySelectorAll<HTMLButtonElement>(
+          '.ml-ribbon-gallery-panel--inline .ml-ribbon-gallery__panel-item',
+        ),
       )
       expect(panelItems).toHaveLength(3)
       panelItems[2]?.click()
@@ -647,8 +828,12 @@ describe('MlRibbonGallery', () => {
 
     try {
       const grid = wrapper.find('.ml-ribbon-gallery__grid')
-      expect(grid.attributes('style')).toContain('--ml-ribbon-gallery-inline-columns: 2')
-      expect(wrapper.find('.ml-ribbon-gallery__more-button').exists()).toBe(false)
+      expect(grid.attributes('style')).toContain(
+        '--ml-ribbon-gallery-inline-columns: 2',
+      )
+      expect(wrapper.find('.ml-ribbon-gallery__more-button').exists()).toBe(
+        false,
+      )
     } finally {
       wrapper.unmount()
     }
@@ -662,16 +847,22 @@ describe('MlRibbonGallery', () => {
           {
             id: 'visual-styles',
             title: 'Visual Styles',
-            items: [{ id: 'visual-style-clean', label: 'Clean', preview: 'Cl' }],
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+            ],
           },
         ],
       },
     })
 
     try {
-      expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain('is-unlabeled')
+      expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain(
+        'is-unlabeled',
+      )
       expect(wrapper.find('.ml-ribbon-gallery__title').exists()).toBe(false)
-      expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(false)
+      expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(
+        false,
+      )
     } finally {
       wrapper.unmount()
     }
@@ -694,7 +885,9 @@ describe('MlRibbonGallery', () => {
     })
 
     try {
-      expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain('is-inline-item-width-auto')
+      expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain(
+        'is-inline-item-width-auto',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -725,7 +918,9 @@ describe('MlRibbonGallery', () => {
       const popover = wrapper.findComponent({ name: 'ElPopover' })
       expect(popover.exists()).toBe(true)
       expect(popover.props('width')).toBe('fit-content')
-      expect(String(popover.props('popperClass'))).toContain('ml-ribbon-gallery-panel--item-width-auto')
+      expect(String(popover.props('popperClass'))).toContain(
+        'ml-ribbon-gallery-panel--item-width-auto',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -744,8 +939,16 @@ describe('MlRibbonGallery', () => {
             items: [
               { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
               { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                preview: 'Bp',
+              },
+              {
+                id: 'visual-style-wireframe',
+                label: 'Wireframe',
+                preview: 'Wi',
+              },
             ],
           },
         ],
@@ -754,7 +957,9 @@ describe('MlRibbonGallery', () => {
 
     try {
       const visibleLabels = () =>
-        wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__label').map((label) => label.text())
+        wrapper
+          .findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__label')
+          .map((label) => label.text())
       const controls = wrapper.findAll('.ml-ribbon-gallery__control-button')
 
       expect(controls).toHaveLength(3)
@@ -792,8 +997,16 @@ describe('MlRibbonGallery', () => {
             items: [
               { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
               { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                preview: 'Bp',
+              },
+              {
+                id: 'visual-style-wireframe',
+                label: 'Wireframe',
+                preview: 'Wi',
+              },
             ],
           },
         ],
@@ -802,7 +1015,9 @@ describe('MlRibbonGallery', () => {
 
     try {
       const visibleLabels = () =>
-        wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__label').map((label) => label.text())
+        wrapper
+          .findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__label')
+          .map((label) => label.text())
 
       expect(visibleLabels()).toEqual(['Clean', 'Muted'])
 
@@ -810,7 +1025,13 @@ describe('MlRibbonGallery', () => {
       await wrapper.vm.$nextTick()
 
       expect(visibleLabels()).toEqual(['Blueprint', 'Wireframe'])
-      expect(wrapper.find('.ml-ribbon-gallery__grid .is-selected .ml-ribbon-gallery__label').text()).toBe('Wireframe')
+      expect(
+        wrapper
+          .find(
+            '.ml-ribbon-gallery__grid .is-selected .ml-ribbon-gallery__label',
+          )
+          .text(),
+      ).toBe('Wireframe')
     } finally {
       wrapper.unmount()
     }
@@ -829,8 +1050,16 @@ describe('MlRibbonGallery', () => {
             items: [
               { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
               { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                preview: 'Bp',
+              },
+              {
+                id: 'visual-style-wireframe',
+                label: 'Wireframe',
+                preview: 'Wi',
+              },
               { id: 'visual-style-clay', label: 'Clay', preview: 'Cy' },
               { id: 'visual-style-analysis', label: 'Analysis', preview: 'An' },
             ],
@@ -841,17 +1070,19 @@ describe('MlRibbonGallery', () => {
 
     try {
       const controls = wrapper.findAll('.ml-ribbon-gallery__control-button')
-      expect(wrapper.find('.ml-ribbon-gallery__grid').attributes('style')).toContain(
-        '--ml-ribbon-gallery-inline-columns: 4',
-      )
+      expect(
+        wrapper.find('.ml-ribbon-gallery__grid').attributes('style'),
+      ).toContain('--ml-ribbon-gallery-inline-columns: 4')
 
       await controls[1]!.trigger('click')
       await wrapper.vm.$nextTick()
 
-      expect(wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item')).toHaveLength(2)
-      expect(wrapper.find('.ml-ribbon-gallery__grid').attributes('style')).toContain(
-        '--ml-ribbon-gallery-inline-columns: 4',
-      )
+      expect(
+        wrapper.findAll('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item'),
+      ).toHaveLength(2)
+      expect(
+        wrapper.find('.ml-ribbon-gallery__grid').attributes('style'),
+      ).toContain('--ml-ribbon-gallery-inline-columns: 4')
     } finally {
       wrapper.unmount()
     }
@@ -875,9 +1106,21 @@ describe('MlRibbonGallery', () => {
             items: [
               { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
               { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-              { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
-              { id: 'visual-style-realistic', label: 'Realistic', preview: 'Re' },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                preview: 'Bp',
+              },
+              {
+                id: 'visual-style-wireframe',
+                label: 'Wireframe',
+                preview: 'Wi',
+              },
+              {
+                id: 'visual-style-realistic',
+                label: 'Realistic',
+                preview: 'Re',
+              },
             ],
           },
         ],
@@ -888,7 +1131,8 @@ describe('MlRibbonGallery', () => {
             name: 'ElPopover',
             props: ['visible'],
             emits: ['update:visible'],
-            template: '<div><slot name="reference" /><div v-if="visible"><slot /></div></div>',
+            template:
+              '<div><slot name="reference" /><div v-if="visible"><slot /></div></div>',
           },
         },
       },
@@ -898,7 +1142,9 @@ describe('MlRibbonGallery', () => {
       const controls = wrapper.findAll('.ml-ribbon-gallery__control-button')
       await controls[1]!.trigger('click')
       await wrapper.vm.$nextTick()
-      wrapper.findComponent({ name: 'ElPopover' }).vm.$emit('update:visible', true)
+      wrapper
+        .findComponent({ name: 'ElPopover' })
+        .vm.$emit('update:visible', true)
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
@@ -924,7 +1170,11 @@ describe('MlRibbonGallery', () => {
             items: [
               { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
               { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-              { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+              {
+                id: 'visual-style-blueprint',
+                label: 'Blueprint',
+                preview: 'Bp',
+              },
             ],
           },
         ],
@@ -942,8 +1192,11 @@ describe('MlRibbonGallery', () => {
 
     try {
       const gallery = wrapper.find('.ml-ribbon-gallery').element as HTMLElement
-      const firstItem = wrapper.find('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item').element as HTMLElement
-      const moreButton = wrapper.find('.ml-ribbon-gallery__more-button').element as HTMLElement
+      const firstItem = wrapper.find(
+        '.ml-ribbon-gallery__grid .ml-ribbon-gallery__item',
+      ).element as HTMLElement
+      const moreButton = wrapper.find('.ml-ribbon-gallery__more-button')
+        .element as HTMLElement
       gallery.getBoundingClientRect = () => ({ left: 40 }) as DOMRect
       firstItem.getBoundingClientRect = () => ({ left: 52 }) as DOMRect
       moreButton.getBoundingClientRect = () => ({ left: 220 }) as DOMRect
@@ -951,7 +1204,9 @@ describe('MlRibbonGallery', () => {
       await wrapper.find('.ml-ribbon-gallery__more-button').trigger('click')
       await wrapper.vm.$nextTick()
 
-      const popperOptions = wrapper.findComponent({ name: 'ElPopover' }).props('popperOptions') as {
+      const popperOptions = wrapper
+        .findComponent({ name: 'ElPopover' })
+        .props('popperOptions') as {
         modifiers: Array<{ options: { offset: [number, number] } }>
       }
       expect(popperOptions.modifiers[0]?.options.offset).toEqual([-174, 0])
@@ -976,8 +1231,16 @@ describe('MlRibbonGallery', () => {
                 items: [
                   { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
                   { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-                  { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-                  { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+                  {
+                    id: 'visual-style-blueprint',
+                    label: 'Blueprint',
+                    preview: 'Bp',
+                  },
+                  {
+                    id: 'visual-style-wireframe',
+                    label: 'Wireframe',
+                    preview: 'Wi',
+                  },
                 ],
               },
             ],
@@ -996,13 +1259,15 @@ describe('MlRibbonGallery', () => {
 
     try {
       const gallery = wrapper.findComponent(MlRibbonGallery)
-      expect(gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style')).toContain(
-        '--ml-ribbon-gallery-panel-columns: 3',
+      expect(
+        gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style'),
+      ).toContain('--ml-ribbon-gallery-panel-columns: 3')
+      expect(
+        gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style'),
+      ).toContain('--ml-ribbon-gallery-panel-item-width: 64px')
+      expect(gallery.findComponent({ name: 'ElPopover' }).props('width')).toBe(
+        238,
       )
-      expect(gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style')).toContain(
-        '--ml-ribbon-gallery-panel-item-width: 64px',
-      )
-      expect(gallery.findComponent({ name: 'ElPopover' }).props('width')).toBe(238)
     } finally {
       wrapper.unmount()
     }
@@ -1024,8 +1289,16 @@ describe('MlRibbonGallery', () => {
                 items: [
                   { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
                   { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
-                  { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
-                  { id: 'visual-style-wireframe', label: 'Wireframe', preview: 'Wi' },
+                  {
+                    id: 'visual-style-blueprint',
+                    label: 'Blueprint',
+                    preview: 'Bp',
+                  },
+                  {
+                    id: 'visual-style-wireframe',
+                    label: 'Wireframe',
+                    preview: 'Wi',
+                  },
                 ],
               },
             ],
@@ -1044,20 +1317,25 @@ describe('MlRibbonGallery', () => {
 
     try {
       const gallery = wrapper.findComponent(MlRibbonGallery)
-      expect(gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style')).toContain(
-        '--ml-ribbon-gallery-panel-item-width: 59px',
+      expect(
+        gallery.find('.ml-ribbon-gallery__panel-grid').attributes('style'),
+      ).toContain('--ml-ribbon-gallery-panel-item-width: 59px')
+      expect(gallery.findComponent({ name: 'ElPopover' }).props('width')).toBe(
+        221,
       )
-      expect(gallery.findComponent({ name: 'ElPopover' }).props('width')).toBe(221)
-      expect(gallery.findComponent({ name: 'ElPopover' }).props('popperClass')).toContain(
-        'ml-ribbon-gallery-panel--size-small',
-      )
+      expect(
+        gallery.findComponent({ name: 'ElPopover' }).props('popperClass'),
+      ).toContain('ml-ribbon-gallery-panel--size-small')
     } finally {
       wrapper.unmount()
     }
   })
 
   it('limits gallery panels to four visible rows before scrolling', () => {
-    const styles = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const styles = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(styles).toContain('var(--ml-ribbon-gallery-panel-item-height) * 4')
     expect(styles).toContain('var(--ml-ribbon-gallery-panel-gap) * 3')
@@ -1066,64 +1344,105 @@ describe('MlRibbonGallery', () => {
   })
 
   it('keeps unlabeled inline gallery items at the same height as panel items', () => {
-    const styles = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const styles = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
-    expect(styles).toContain('--ml-ribbon-gallery-item-height: calc(54px * var(--ml-rb-scale))')
-    expect(styles).toContain('--ml-ribbon-gallery-panel-item-height: calc(54px * var(--ml-rb-scale))')
+    expect(styles).toContain(
+      '--ml-ribbon-gallery-item-height: calc(54px * var(--ml-rb-scale))',
+    )
+    expect(styles).toContain(
+      '--ml-ribbon-gallery-panel-item-height: calc(54px * var(--ml-rb-scale))',
+    )
     expect(styles).toContain('.ml-ribbon-gallery-panel--size-small')
-    expect(styles).toContain('.ml-ribbon-gallery.is-unlabeled .ml-ribbon-gallery__categories')
+    expect(styles).toContain(
+      '.ml-ribbon-gallery.is-unlabeled .ml-ribbon-gallery__categories',
+    )
     expect(styles).toContain('align-items: center')
-    expect(styles).toContain('grid-auto-rows: var(--ml-ribbon-gallery-item-height)')
+    expect(styles).toContain(
+      'grid-auto-rows: var(--ml-ribbon-gallery-item-height)',
+    )
     expect(styles).toContain('height: var(--ml-ribbon-gallery-item-height)')
   })
 })
 
 describe('App demo', () => {
   it('configures entity property dropdowns as a single column collection with three rows', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+    const appSource = readFileSync(
+      resolve(process.cwd(), 'src/App.vue'),
+      'utf-8',
+    )
 
     expect(appSource).toContain("id: 'entity-properties'")
     expect(appSource).toContain('width: 220')
     expect(appSource).toContain("id: 'entity-properties-main'")
     expect(appSource).toContain("layout: 'column'")
     expect(appSource).toContain('rows: 3')
-    expect(appSource).toContain(":deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-group__content)")
-    expect(appSource).toContain(":deep(.ml-ribbon-group[data-group-id='entity-properties'] .ml-ribbon-collection--column)")
+    expect(appSource).toMatch(
+      /:deep\(\s*\.ml-ribbon-group\[data-group-id='entity-properties'\]\s*\.ml-ribbon-group__content\s*\)/,
+    )
+    expect(appSource).toMatch(
+      /:deep\(\s*\.ml-ribbon-group\[data-group-id='entity-properties'\]\s*\.ml-ribbon-collection--column\s*\)/,
+    )
     expect(appSource).toContain('grid-auto-columns: minmax(0, 1fr);')
     expect(appSource).toContain("id: 'entity-color'")
     expect(appSource).toContain("id: 'entity-line-type'")
     expect(appSource).toContain("id: 'entity-line-weight'")
     expect(appSource).toMatch(/id:\s*'entity-color'[\s\S]*?size:\s*'small'/)
     expect(appSource).toMatch(/id:\s*'entity-line-type'[\s\S]*?size:\s*'small'/)
-    expect(appSource).toMatch(/id:\s*'entity-line-weight'[\s\S]*?size:\s*'small'/)
+    expect(appSource).toMatch(
+      /id:\s*'entity-line-weight'[\s\S]*?size:\s*'small'/,
+    )
   })
 
   it('configures the home layer group as left large action with right three-row controls', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+    const appSource = readFileSync(
+      resolve(process.cwd(), 'src/App.vue'),
+      'utf-8',
+    )
 
     expect(appSource).toContain("id: 'layer'")
     expect(appSource).toContain("title: 'Layer'")
     expect(appSource).toContain("id: 'layer-left'")
     expect(appSource).toContain("id: 'layer-properties'")
     expect(appSource).toMatch(/id:\s*'layer-properties'[\s\S]*?size:\s*'large'/)
-    expect(appSource).toMatch(/id:\s*'layer-properties'[\s\S]*?labelWrapLines:\s*2/)
-    expect(appSource).toMatch(/id:\s*'layer-properties'[\s\S]*?labelWrapWidth:\s*90/)
+    expect(appSource).toMatch(
+      /id:\s*'layer-properties'[\s\S]*?labelWrapLines:\s*2/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-properties'[\s\S]*?labelWrapWidth:\s*90/,
+    )
     expect(appSource).toContain("id: 'layer-main'")
     expect(appSource).toContain("layout: 'column'")
     expect(appSource).toContain('rows: 3')
     expect(appSource).toContain("id: 'layer-select'")
     expect(appSource).toContain("type: 'comboBox'")
     expect(appSource).toContain("width: 'full'")
-    expect(appSource).toContain("emitValueOnChange: true")
+    expect(appSource).toContain('emitValueOnChange: true')
     expect(appSource).toContain("id: 'layer-actions-primary'")
     expect(appSource).toContain("id: 'layer-actions-secondary'")
-    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?hideLabel:\s*true/)
-    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?wrap:\s*false/)
-    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?value:\s*'layer-off'[\s\S]*?tooltip:\s*'Layer Off'/)
-    expect(appSource).toMatch(/id:\s*'layer-actions-primary'[\s\S]*?value:\s*'layer-freeze'[\s\S]*?tooltip:\s*'Freeze Layer'/)
-    expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?hideLabel:\s*true/)
-    expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?wrap:\s*false/)
-    expect(appSource).toMatch(/id:\s*'layer-actions-secondary'[\s\S]*?value:\s*'layer-on'[\s\S]*?tooltip:\s*'Layer On'/)
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-primary'[\s\S]*?hideLabel:\s*true/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-primary'[\s\S]*?wrap:\s*false/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-primary'[\s\S]*?value:\s*'layer-off'[\s\S]*?tooltip:\s*'Layer Off'/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-primary'[\s\S]*?value:\s*'layer-freeze'[\s\S]*?tooltip:\s*'Freeze Layer'/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-secondary'[\s\S]*?hideLabel:\s*true/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-secondary'[\s\S]*?wrap:\s*false/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'layer-actions-secondary'[\s\S]*?value:\s*'layer-on'[\s\S]*?tooltip:\s*'Layer On'/,
+    )
     expect(appSource).toMatch(
       /id:\s*'layer-actions-secondary'[\s\S]*?value:\s*'layer-unlock'[\s\S]*?tooltip:\s*'Unlock Layer'/,
     )
@@ -1135,15 +1454,27 @@ describe('App demo', () => {
   })
 
   it('configures editing buttonGroup options with independent tooltips', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+    const appSource = readFileSync(
+      resolve(process.cwd(), 'src/App.vue'),
+      'utf-8',
+    )
 
-    expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?type:\s*'buttonGroup'/)
-    expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?value:\s*'find'[\s\S]*?tooltip:\s*'Find'/)
-    expect(appSource).toMatch(/id:\s*'find-replace'[\s\S]*?value:\s*'replace'[\s\S]*?tooltip:\s*'Replace'/)
+    expect(appSource).toMatch(
+      /id:\s*'find-replace'[\s\S]*?type:\s*'buttonGroup'/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'find-replace'[\s\S]*?value:\s*'find'[\s\S]*?tooltip:\s*'Find'/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'find-replace'[\s\S]*?value:\s*'replace'[\s\S]*?tooltip:\s*'Replace'/,
+    )
   })
 
   it('configures custom tab hatch pattern group with a large custom button', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+    const appSource = readFileSync(
+      resolve(process.cwd(), 'src/App.vue'),
+      'utf-8',
+    )
 
     expect(appSource).toContain("id: 'pattern'")
     expect(appSource).toContain("title: 'Pattern'")
@@ -1154,7 +1485,10 @@ describe('App demo', () => {
   })
 
   it('configures the custom tab with an inputNumber array count example', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
+    const appSource = readFileSync(
+      resolve(process.cwd(), 'src/App.vue'),
+      'utf-8',
+    )
 
     expect(appSource).toContain('const arrayCount = ref(4)')
     expect(appSource).toContain('const arraySpacing = ref(24)')
@@ -1163,7 +1497,9 @@ describe('App demo', () => {
     expect(appSource).toContain("title: 'Modify'")
     expect(appSource).toMatch(/id:\s*'modify'[\s\S]*?width:\s*100/)
     expect(appSource).toContain("id: 'modify-main'")
-    expect(appSource).toMatch(/id:\s*'modify-main'[\s\S]*?layout:\s*'column'[\s\S]*?rows:\s*3/)
+    expect(appSource).toMatch(
+      /id:\s*'modify-main'[\s\S]*?layout:\s*'column'[\s\S]*?rows:\s*3/,
+    )
     expect(appSource).toContain("id: 'array-count'")
     expect(appSource).toContain("id: 'array-spacing'")
     expect(appSource).toContain("id: 'array-angle'")
@@ -1172,13 +1508,19 @@ describe('App demo', () => {
     expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?min:\s*1/)
     expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?max:\s*12/)
     expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?step:\s*1/)
-    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?controlsPosition:\s*'right'/)
-    expect(appSource).toMatch(/id:\s*'array-count'[\s\S]*?emitValueOnChange:\s*true/)
+    expect(appSource).toMatch(
+      /id:\s*'array-count'[\s\S]*?controlsPosition:\s*'right'/,
+    )
+    expect(appSource).toMatch(
+      /id:\s*'array-count'[\s\S]*?emitValueOnChange:\s*true/,
+    )
     expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?min:\s*0/)
     expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?width:\s*'full'/)
     expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?max:\s*100/)
     expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?step:\s*0\.5/)
-    expect(appSource).toMatch(/id:\s*'array-spacing'[\s\S]*?controlsPosition:\s*'right'/)
+    expect(appSource).toMatch(
+      /id:\s*'array-spacing'[\s\S]*?controlsPosition:\s*'right'/,
+    )
     expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?min:\s*-180/)
     expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?width:\s*'full'/)
     expect(appSource).toMatch(/id:\s*'array-angle'[\s\S]*?max:\s*180/)
@@ -1188,8 +1530,12 @@ describe('App demo', () => {
   })
 
   it('configures the custom tab with a gallery visual styles example', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8')
-    const visualStyleItemCount = appSource.match(/id: 'visual-style-/g)?.length ?? 0
+    const appSource = readFileSync(
+      resolve(process.cwd(), 'src/App.vue'),
+      'utf-8',
+    )
+    const visualStyleItemCount =
+      appSource.match(/id: 'visual-style-/g)?.length ?? 0
 
     expect(appSource).toContain("const visualStyle = ref('visual-style-clean')")
     expect(appSource).toContain("id: 'styles'")
@@ -1199,14 +1545,16 @@ describe('App demo', () => {
     expect(appSource).toContain("size: 'large'")
     expect(appSource).toContain('inlineItemLimit: 4')
     expect(appSource).toContain("id: 'visual-style-clean'")
-    expect(appSource).toContain("icon: Sunny")
+    expect(appSource).toContain('icon: Sunny')
     expect(appSource).toContain("id: 'visual-style-blueprint'")
     expect(appSource).toContain("id: 'visual-style-wireframe'")
     expect(appSource).toContain("id: 'visual-style-monochrome'")
     expect(appSource).toContain("id: 'visual-style-analysis'")
     expect(visualStyleItemCount).toBe(23)
     expect(appSource).toContain('isVisualStyleGalleryCollapsed')
-    expect(appSource).toContain('collapsed: isVisualStyleGalleryCollapsed.value')
+    expect(appSource).toContain(
+      'collapsed: isVisualStyleGalleryCollapsed.value',
+    )
     expect(appSource).toContain('translateGalleryCategories')
     expect(appSource).toContain("payload.groupId === 'styles'")
   })
@@ -1232,7 +1580,12 @@ describe('MlRibbon', () => {
             id: 'properties',
             title: 'Properties',
             width: 220,
-            collections: [{ id: 'properties-main', items: [{ id: 'inspect', type: 'button', label: 'Inspect' }] }],
+            collections: [
+              {
+                id: 'properties-main',
+                items: [{ id: 'inspect', type: 'button', label: 'Inspect' }],
+              },
+            ],
           },
         ],
       },
@@ -1250,17 +1603,29 @@ describe('MlRibbon', () => {
   })
 
   it('uses fixed classic panel height derived from content and footer css variables', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(/--ml-rb-panel-content-height:\s*calc\(/)
     expect(css).toMatch(/--ml-rb-footer-height:\s*calc\(/)
-    expect(css).toContain('--ml-rb-panel-height: calc(var(--ml-rb-panel-content-height) + var(--ml-rb-footer-height));')
-    expect(css).toMatch(/\.ml-ribbon__panel\s*\{[\s\S]*min-height:\s*var\(--ml-rb-panel-height\);/)
-    expect(css).toMatch(/\.ml-ribbon__panel\s*\{[\s\S]*height:\s*var\(--ml-rb-panel-height\);/)
+    expect(css).toMatch(
+      /--ml-rb-panel-height:\s*calc\(\s*var\(--ml-rb-panel-content-height\)\s*\+\s*var\(--ml-rb-footer-height\)\s*\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon__panel\s*\{[\s\S]*min-height:\s*var\(--ml-rb-panel-height\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon__panel\s*\{[\s\S]*height:\s*var\(--ml-rb-panel-height\);/,
+    )
   })
 
   it('keeps color picker clear trigger compact across ribbon sizes', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.el-color-picker\s*\{[\s\S]*width:\s*var\(--ml-rb-compact-height\);/,
@@ -1274,7 +1639,10 @@ describe('MlRibbon', () => {
   })
 
   it('increases ribbon button icon size by 2px for base and large item layouts', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-item-host__icon\s*\{[\s\S]*font-size:\s*calc\(var\(--ml-rb-font-base\)\s*\+\s*2px\);/,
@@ -1285,7 +1653,10 @@ describe('MlRibbon', () => {
   })
 
   it('removes Element Plus icon label offset from large ribbon buttons', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-item-host\.is-large\.type-button\s+\.ml-ribbon-button__icon\s*\+\s*\.ml-ribbon-button__label\s*\{[\s\S]*margin-left:\s*0;/,
@@ -1293,23 +1664,36 @@ describe('MlRibbon', () => {
   })
 
   it('keeps CAD demo dropdowns stretched to the parent item width', () => {
-    const source = readFileSync(resolve(process.cwd(), 'src/components/MlDemoCadDropdown.vue'), 'utf-8')
+    const source = readFileSync(
+      resolve(process.cwd(), 'src/components/MlDemoCadDropdown.vue'),
+      'utf-8',
+    )
 
     expect(source).toMatch(/\.ml-demo-cad-dropdown\s*\{[\s\S]*width:\s*100%;/)
-    expect(source).toMatch(/\.ml-demo-cad-dropdown\s*\{[\s\S]*max-width:\s*100%;/)
+    expect(source).toMatch(
+      /\.ml-demo-cad-dropdown\s*\{[\s\S]*max-width:\s*100%;/,
+    )
   })
 
   it('keeps segmented controls aligned to ribbon compact height instead of raw element-plus size presets', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
-    expect(css).toMatch(/\.ml-ribbon-segmented__control\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);/)
+    expect(css).toMatch(
+      /\.ml-ribbon-segmented__control\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);/,
+    )
     expect(css).toMatch(
       /\.ml-ribbon-segmented__control\s+\.el-segmented__item\s*\{[\s\S]*min-height:\s*calc\(var\(--ml-rb-compact-height\)\s*-\s*4px\);/,
     )
   })
 
   it('keeps input number borders visible in the ribbon host', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.el-input-number\s*\{[\s\S]*box-sizing:\s*border-box;[\s\S]*height:\s*var\(--ml-rb-compact-height\);/,
@@ -1324,12 +1708,15 @@ describe('MlRibbon', () => {
       /\.ml-ribbon-item-host\s+\.el-input-number\s+\.el-input-number__decrease,\s*\.ml-ribbon-item-host\s+\.el-input-number\s+\.el-input-number__increase\s*\{[\s\S]*box-sizing:\s*border-box;[\s\S]*border-color:\s*var\(--ml-rb-border\);/,
     )
     expect(css).toMatch(
-      /\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__decrease,\s*\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__increase\s*\{[\s\S]*--el-input-number-controls-height:\s*calc\(\(var\(--ml-rb-compact-height\)\s*-\s*2px\)\s*\/\s*2\);/,
+      /\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__decrease,\s*\.ml-ribbon-item-host\s+\.el-input-number\.is-controls-right\s+\.el-input-number__increase\s*\{[\s\S]*--el-input-number-controls-height:\s*calc\(\s*\(\s*var\(--ml-rb-compact-height\)\s*-\s*2px\s*\)\s*\/\s*2\s*\);/,
     )
   })
 
   it('scales input number prefix label and icon with compact ribbon size variables', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-input-number\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);[\s\S]*height:\s*var\(--ml-rb-compact-height\);[\s\S]*overflow:\s*visible;/,
@@ -1337,11 +1724,28 @@ describe('MlRibbon', () => {
     expect(css).toMatch(
       /\.ml-ribbon-input-number\.is-full\s+\.el-input-number\s*\{[\s\S]*flex:\s*1 1 0;[\s\S]*min-width:\s*0;/,
     )
-    expect(css).toMatch(
-      /\.ml-ribbon-input-number__prefix\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);[\s\S]*font-size:\s*var\(--ml-rb-font-xs,\s*calc\(var\(--el-font-size-extra-small\)\s*\*\s*var\(--ml-rb-scale,\s*1\)\)\);[\s\S]*line-height:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\*\s*1\.2\);/,
+    const prefixBlock = css.match(
+      /\.ml-ribbon-input-number__prefix\s*\{([^}]*)\}/,
+    )?.[1]
+    expect(prefixBlock).toBeDefined()
+    expect(prefixBlock).toMatch(
+      /min-height:\s*var\(--ml-rb-compact-height\);[\s\S]*font-size:\s*var\([\s\S]*?--ml-rb-font-xs,[\s\S]*?calc\(var\(--el-font-size-extra-small\)[\s\S]*?var\(--ml-rb-scale,\s*1\)\)/,
     )
-    expect(css).toMatch(
-      /\.ml-ribbon-input-number__prefix-icon\s*\{[\s\S]*width:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\+\s*1px\);[\s\S]*height:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\+\s*1px\);[\s\S]*font-size:\s*calc\(var\(--ml-rb-font-sm,[\s\S]*\)\s*\+\s*1px\);/,
+    expect(prefixBlock).toMatch(
+      /line-height:\s*calc\([\s\S]*?--ml-rb-font-sm,[\s\S]*?\*[\s\S]*?1\.2[\s\S]*?\);/,
+    )
+    const prefixIconBlock = css.match(
+      /\.ml-ribbon-input-number__prefix-icon\s*\{([^}]*)\}/,
+    )?.[1]
+    expect(prefixIconBlock).toBeDefined()
+    expect(prefixIconBlock).toMatch(
+      /width:\s*calc\([\s\S]*?--ml-rb-font-sm,[\s\S]*?\+\s*1px[\s\S]*?\);/,
+    )
+    expect(prefixIconBlock).toMatch(
+      /height:\s*calc\([\s\S]*?--ml-rb-font-sm,[\s\S]*?\+\s*1px[\s\S]*?\);/,
+    )
+    expect(prefixIconBlock).toMatch(
+      /font-size:\s*calc\([\s\S]*?--ml-rb-font-sm,[\s\S]*?\+\s*1px[\s\S]*?\);/,
     )
     expect(css).toMatch(
       /\.ml-ribbon-input-number__prefix-label\s*\{[\s\S]*max-width:\s*calc\(72px\s*\*\s*var\(--ml-rb-scale,\s*1\)\);/,
@@ -1349,7 +1753,10 @@ describe('MlRibbon', () => {
   })
 
   it('keeps toggle buttons aligned to ribbon compact height across ribbon sizes', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-item-host\s+\.ml-ribbon-toggle\s*\{[\s\S]*min-height:\s*var\(--ml-rb-compact-height\);/,
@@ -1360,7 +1767,10 @@ describe('MlRibbon', () => {
   })
 
   it('supports wrapped large button labels through dedicated host css rules', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
     expect(css).toMatch(
       /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.el-button\s*\{[\s\S]*width:\s*var\(--ml-rb-item-label-wrap-width,\s*74px\);/,
@@ -1371,11 +1781,20 @@ describe('MlRibbon', () => {
   })
 
   it('highlights group footer when hovered', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'), 'utf-8')
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
 
-    expect(css).toMatch(/\.ml-ribbon-group__footer:hover\s*\{[\s\S]*background:\s*var\(--ml-rb-hover-bg\);/)
-    expect(css).toMatch(/\.ml-ribbon-group__footer:hover\s*\{[\s\S]*border-color:\s*var\(--ml-rb-hover-border\);/)
-    expect(css).toMatch(/\.ml-ribbon-group__footer:hover\s*\{[\s\S]*color:\s*var\(--ml-rb-tab-text\);/)
+    expect(css).toMatch(
+      /\.ml-ribbon-group__footer:hover\s*\{[\s\S]*background:\s*var\(--ml-rb-hover-bg\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-group__footer:hover\s*\{[\s\S]*border-color:\s*var\(--ml-rb-hover-border\);/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-group__footer:hover\s*\{[\s\S]*color:\s*var\(--ml-rb-tab-text\);/,
+    )
   })
 
   it('renders tab and item', () => {
@@ -1387,7 +1806,9 @@ describe('MlRibbon', () => {
   it('supports layout updates', async () => {
     const wrapper = mount(MlRibbon, { props: { tabs, activeTab: 'home' } })
     await wrapper.setProps({ layout: 'simplified' })
-    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--simplified')
+    expect(wrapper.find('.ml-ribbon').classes()).toContain(
+      'ml-ribbon--simplified',
+    )
   })
 
   it('toggles inline key tips with Alt and shows active tab item tip labels', async () => {
@@ -1399,18 +1820,33 @@ describe('MlRibbon', () => {
           {
             id: 'grp',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste', keyTip: 'V' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [
+                  { id: 'paste', type: 'button', label: 'Paste', keyTip: 'V' },
+                ],
+              },
+            ],
           },
         ],
       },
     ]
-    const wrapper = mount(MlRibbon, { props: { tabs: keyTipTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: keyTipTabs, activeTab: 'home' },
+    })
 
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }),
+    )
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--keytips-open')
-    const keyTipBadge = wrapper.find('.ml-ribbon-item-host[data-item-id="paste"] .ml-ribbon-item-host__keytip')
+    expect(wrapper.find('.ml-ribbon').classes()).toContain(
+      'ml-ribbon--keytips-open',
+    )
+    const keyTipBadge = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="paste"] .ml-ribbon-item-host__keytip',
+    )
     expect(keyTipBadge.exists()).toBe(true)
     expect(keyTipBadge.text()).toBe('V')
   })
@@ -1424,22 +1860,45 @@ describe('MlRibbon', () => {
           {
             id: 'grp',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'run', type: 'button', label: 'Run', keyTip: 'R' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [
+                  { id: 'run', type: 'button', label: 'Run', keyTip: 'R' },
+                ],
+              },
+            ],
           },
         ],
       },
     ]
-    const wrapper = mount(MlRibbon, { props: { tabs: keyTipTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: keyTipTabs, activeTab: 'home' },
+    })
 
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }),
+    )
     await wrapper.vm.$nextTick()
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }))
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'r', bubbles: true }),
+    )
     await wrapper.vm.$nextTick()
 
     const emissions = wrapper.emitted('itemClick') ?? []
     expect(emissions).toHaveLength(1)
-    expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'grp', itemId: 'run' })
-    expect(wrapper.find('.ml-ribbon-item-host[data-item-id="run"] .ml-ribbon-item-host__keytip').exists()).toBe(false)
+    expect(emissions[0]?.[0]).toEqual({
+      tabId: 'home',
+      groupId: 'grp',
+      itemId: 'run',
+    })
+    expect(
+      wrapper
+        .find(
+          '.ml-ribbon-item-host[data-item-id="run"] .ml-ribbon-item-host__keytip',
+        )
+        .exists(),
+    ).toBe(false)
   })
 
   it('uses flat medium items without duplicated title in simplified popover', async () => {
@@ -1456,7 +1915,12 @@ describe('MlRibbon', () => {
               {
                 id: 'c1',
                 items: [
-                  { id: 'paste', type: 'button', label: 'Paste', size: 'large' },
+                  {
+                    id: 'paste',
+                    type: 'button',
+                    label: 'Paste',
+                    size: 'large',
+                  },
                   { id: 'copy', type: 'button', label: 'Copy', size: 'small' },
                 ],
               },
@@ -1477,13 +1941,27 @@ describe('MlRibbon', () => {
 
       // The popover is rendered in document.body, so query from body instead of wrapper root.
       const popoverPanel = Array.from(
-        document.body.querySelectorAll('.ml-ribbon-group-popover .ml-ribbon-simplified-group__panel'),
-      ).find((panel) => panel.textContent?.includes('Paste') && panel.textContent?.includes('Copy'))
+        document.body.querySelectorAll(
+          '.ml-ribbon-group-popover .ml-ribbon-simplified-group__panel',
+        ),
+      ).find(
+        (panel) =>
+          panel.textContent?.includes('Paste') &&
+          panel.textContent?.includes('Copy'),
+      )
       expect(popoverPanel).not.toBeNull()
-      expect(popoverPanel?.querySelector('.ml-ribbon-simplified-group__title')).toBeNull()
-      expect(popoverPanel?.querySelector('.ml-ribbon-item-host.is-large')).toBeNull()
-      expect(popoverPanel?.querySelector('.ml-ribbon-item-host.is-small')).toBeNull()
-      expect(popoverPanel?.querySelectorAll('.ml-ribbon-item-host.is-medium').length).toBe(2)
+      expect(
+        popoverPanel?.querySelector('.ml-ribbon-simplified-group__title'),
+      ).toBeNull()
+      expect(
+        popoverPanel?.querySelector('.ml-ribbon-item-host.is-large'),
+      ).toBeNull()
+      expect(
+        popoverPanel?.querySelector('.ml-ribbon-item-host.is-small'),
+      ).toBeNull()
+      expect(
+        popoverPanel?.querySelectorAll('.ml-ribbon-item-host.is-medium').length,
+      ).toBe(2)
     } finally {
       wrapper.unmount()
     }
@@ -1491,7 +1969,9 @@ describe('MlRibbon', () => {
 
   it('supports size prop', () => {
     const wrapper = mount(MlRibbon, { props: { tabs, size: 'small' } })
-    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--size-small')
+    expect(wrapper.find('.ml-ribbon').classes()).toContain(
+      'ml-ribbon--size-small',
+    )
   })
 
   it('passes global tooltip delays to ribbon controls and item hosts', () => {
@@ -1527,7 +2007,9 @@ describe('MlRibbon', () => {
       expect(itemTooltip.attributes('data-show-after')).toBe('750')
       expect(itemTooltip.attributes('data-hide-after')).toBe('0')
 
-      const minimizeTooltip = wrapper.find('.ml-test-tooltip[data-content="Minimize ribbon"]')
+      const minimizeTooltip = wrapper.find(
+        '.ml-test-tooltip[data-content="Minimize ribbon"]',
+      )
       expect(minimizeTooltip.exists()).toBe(true)
       expect(minimizeTooltip.attributes('data-show-after')).toBe('750')
       expect(minimizeTooltip.attributes('data-hide-after')).toBe('0')
@@ -1545,16 +2027,32 @@ describe('MlRibbon', () => {
       },
     })
 
-    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--disabled')
-    expect(wrapper.find('.ml-ribbon-tab--file').attributes('disabled')).toBeDefined()
-    expect(wrapper.find('.ml-ribbon__control--layout').attributes('disabled')).toBeDefined()
-    expect(wrapper.find('.ml-ribbon__control--minimize').attributes('disabled')).toBeDefined()
-    expect(wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('.ml-ribbon').classes()).toContain(
+      'ml-ribbon--disabled',
+    )
+    expect(
+      wrapper.find('.ml-ribbon-tab--file').attributes('disabled'),
+    ).toBeDefined()
+    expect(
+      wrapper.find('.ml-ribbon__control--layout').attributes('disabled'),
+    ).toBeDefined()
+    expect(
+      wrapper.find('.ml-ribbon__control--minimize').attributes('disabled'),
+    ).toBeDefined()
+    expect(
+      wrapper
+        .find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
+        .attributes('disabled'),
+    ).toBeDefined()
 
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }))
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Alt', altKey: true, bubbles: true }),
+    )
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('.ml-ribbon').classes()).not.toContain('ml-ribbon--keytips-open')
+    expect(wrapper.find('.ml-ribbon').classes()).not.toContain(
+      'ml-ribbon--keytips-open',
+    )
   })
 
   it('blocks tab and item events while ribbon is disabled', async () => {
@@ -1567,15 +2065,28 @@ describe('MlRibbon', () => {
           {
             id: 'insert-group',
             title: 'Insert Group',
-            collections: [{ id: 'insert-collection', items: [{ id: 'insert-btn', type: 'button', label: 'Insert Action' }] }],
+            collections: [
+              {
+                id: 'insert-collection',
+                items: [
+                  { id: 'insert-btn', type: 'button', label: 'Insert Action' },
+                ],
+              },
+            ],
           },
         ],
       },
     ]
-    const wrapper = mount(MlRibbon, { props: { tabs: interactiveTabs, disabled: true } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: interactiveTabs, disabled: true },
+    })
 
-    const homeItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
-    const insertTabButton = wrapper.findAll('.ml-ribbon-tab').find((node) => node.text() === 'Insert')
+    const homeItemButton = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="btn1"] .el-button',
+    )
+    const insertTabButton = wrapper
+      .findAll('.ml-ribbon-tab')
+      .find((node) => node.text() === 'Insert')
 
     expect(homeItemButton.attributes('disabled')).toBeDefined()
     expect(insertTabButton?.attributes('disabled')).toBeDefined()
@@ -1598,7 +2109,12 @@ describe('MlRibbon', () => {
           {
             id: 'insert-group',
             title: 'Insert Group',
-            collections: [{ id: 'insert-collection', items: [{ id: 'insert-btn', type: 'button', label: 'Insert' }] }],
+            collections: [
+              {
+                id: 'insert-collection',
+                items: [{ id: 'insert-btn', type: 'button', label: 'Insert' }],
+              },
+            ],
           },
         ],
       },
@@ -1612,15 +2128,26 @@ describe('MlRibbon', () => {
             id: 'create-group',
             title: 'Create Group',
             enableGroupOverflow: false,
-            collections: [{ id: 'create-collection', items: [{ id: 'create-btn', type: 'button', label: 'Create' }] }],
+            collections: [
+              {
+                id: 'create-collection',
+                items: [{ id: 'create-btn', type: 'button', label: 'Create' }],
+              },
+            ],
           },
         ],
       },
     ]
-    const wrapper = mount(MlRibbon, { props: { tabs: contextualTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: contextualTabs, activeTab: 'home' },
+    })
 
-    const homeItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
-    const createTabButton = wrapper.findAll('.ml-ribbon-tab').find((node) => node.text() === 'Create')
+    const homeItemButton = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="btn1"] .el-button',
+    )
+    const createTabButton = wrapper
+      .findAll('.ml-ribbon-tab')
+      .find((node) => node.text() === 'Create')
 
     expect(homeItemButton.attributes('disabled')).toBeDefined()
     expect(createTabButton?.attributes('disabled')).toBeUndefined()
@@ -1630,7 +2157,9 @@ describe('MlRibbon', () => {
     await wrapper.setProps({ activeTab: 'create-tools' })
     await waitForRibbonLayout(wrapper)
 
-    const createItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="create-btn"] .el-button')
+    const createItemButton = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="create-btn"] .el-button',
+    )
     expect(createItemButton.exists()).toBe(true)
     expect(createItemButton.attributes('disabled')).toBeUndefined()
   })
@@ -1647,19 +2176,32 @@ describe('MlRibbon', () => {
           {
             id: 'chart-group',
             title: 'Chart Group',
-            collections: [{ id: 'chart-collection', items: [{ id: 'chart-btn', type: 'button', label: 'Chart' }] }],
+            collections: [
+              {
+                id: 'chart-collection',
+                items: [{ id: 'chart-btn', type: 'button', label: 'Chart' }],
+              },
+            ],
           },
         ],
       },
     ]
-    const wrapper = mount(MlRibbon, { props: { tabs: contextualTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: contextualTabs, activeTab: 'home' },
+    })
 
-    const homeItemButton = wrapper.find('.ml-ribbon-item-host[data-item-id="btn1"] .el-button')
+    const homeItemButton = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="btn1"] .el-button',
+    )
     await homeItemButton.trigger('click')
     await wrapper.vm.$nextTick()
 
     expect(homeItemButton.attributes('disabled')).toBeUndefined()
-    expect(wrapper.emitted('itemClick')?.[0]?.[0]).toEqual({ tabId: 'home', groupId: 'grp', itemId: 'btn1' })
+    expect(wrapper.emitted('itemClick')?.[0]?.[0]).toEqual({
+      tabId: 'home',
+      groupId: 'grp',
+      itemId: 'btn1',
+    })
   })
 
   it('hides open backstage menu command when showOpenBackstage is false', async () => {
@@ -1680,7 +2222,11 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
-      const menuItems = Array.from(document.body.querySelectorAll('.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item'))
+      const menuItems = Array.from(
+        document.body.querySelectorAll(
+          '.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item',
+        ),
+      )
       const labels = menuItems.map((item) => item.textContent?.trim() ?? '')
 
       expect(labels).toContain('Open File Unique')
@@ -1694,7 +2240,8 @@ describe('MlRibbon', () => {
     const wrapper = mount(MlRibbon, {
       props: { tabs },
       slots: {
-        backstage: '<div class="ml-test-custom-backstage-shell">Custom Backstage Shell</div>',
+        backstage:
+          '<div class="ml-test-custom-backstage-shell">Custom Backstage Shell</div>',
       },
       global: {
         stubs: {
@@ -1710,7 +2257,9 @@ describe('MlRibbon', () => {
       wrapper.findComponent(MlRibbonFileMenu).vm.$emit('open-backstage')
       await wrapper.vm.$nextTick()
 
-      expect(wrapper.find('.ml-test-custom-backstage-shell').exists()).toBe(true)
+      expect(wrapper.find('.ml-test-custom-backstage-shell').exists()).toBe(
+        true,
+      )
       expect(wrapper.find('.ml-ribbon-backstage__nav').exists()).toBe(false)
     } finally {
       wrapper.unmount()
@@ -1725,7 +2274,9 @@ describe('MlRibbon', () => {
       },
     })
 
-    const slotHost = wrapper.find('.ml-ribbon__head-right .ml-ribbon__tabs-extra')
+    const slotHost = wrapper.find(
+      '.ml-ribbon__head-right .ml-ribbon__tabs-extra',
+    )
     expect(slotHost.exists()).toBe(true)
     expect(slotHost.find('.ml-test-tabs-extra').exists()).toBe(true)
     expect(wrapper.text()).toContain('Language')
@@ -1775,21 +2326,33 @@ describe('MlRibbon', () => {
       },
     ]
 
-    const wrapper = mount(MlRibbon, { props: { tabs: customTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: customTabs, activeTab: 'home' },
+    })
 
     try {
       const customItem = wrapper.find('.ml-test-custom-item')
       expect(customItem.exists()).toBe(true)
-      expect(customItem.find('.ml-test-custom-item__title').text()).toBe('Selection')
-      expect(customItem.find('.ml-test-custom-item__group').text()).toBe('inspector')
-      expect(customItem.find('.ml-test-custom-item__id').text()).toBe('selection-panel')
+      expect(customItem.find('.ml-test-custom-item__title').text()).toBe(
+        'Selection',
+      )
+      expect(customItem.find('.ml-test-custom-item__group').text()).toBe(
+        'inspector',
+      )
+      expect(customItem.find('.ml-test-custom-item__id').text()).toBe(
+        'selection-panel',
+      )
 
       await customItem.find('.ml-test-custom-item__action').trigger('click')
       await wrapper.vm.$nextTick()
 
       const emissions = wrapper.emitted('itemClick') ?? []
       expect(emissions).toHaveLength(1)
-      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'inspector', itemId: 'custom-apply' })
+      expect(emissions[0]?.[0]).toEqual({
+        tabId: 'home',
+        groupId: 'inspector',
+        itemId: 'custom-apply',
+      })
     } finally {
       wrapper.unmount()
     }
@@ -1853,12 +2416,22 @@ describe('MlRibbon', () => {
       },
     ]
 
-    const wrapper = mount(MlRibbon, { props: { tabs: mixedTabs, activeTab: 'custom' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: mixedTabs, activeTab: 'custom' },
+    })
 
     try {
       expect(wrapper.find('.ml-test-mixed-custom').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-item-host[data-item-id="refresh-preview"]').exists()).toBe(true)
-      expect(wrapper.find('.ml-ribbon-item-host[data-item-id="view-preset"]').exists()).toBe(true)
+      expect(
+        wrapper
+          .find('.ml-ribbon-item-host[data-item-id="refresh-preview"]')
+          .exists(),
+      ).toBe(true)
+      expect(
+        wrapper
+          .find('.ml-ribbon-item-host[data-item-id="view-preset"]')
+          .exists(),
+      ).toBe(true)
       expect(wrapper.text()).toContain('Selection')
       expect(wrapper.text()).toContain('Refresh')
       expect(wrapper.text()).toContain('View')
@@ -1869,7 +2442,11 @@ describe('MlRibbon', () => {
 
   it('places minimize control beside tabs area', () => {
     const wrapper = mount(MlRibbon, { props: { tabs } })
-    expect(wrapper.find('.ml-ribbon__head-left .ml-ribbon__control--minimize').exists()).toBe(true)
+    expect(
+      wrapper
+        .find('.ml-ribbon__head-left .ml-ribbon__control--minimize')
+        .exists(),
+    ).toBe(true)
   })
 
   it('supports visibility toggles for layout switcher, minimize button and key tips toggle', () => {
@@ -1890,10 +2467,14 @@ describe('MlRibbon', () => {
   it('switches minimize button icon from down to up when ribbon is minimized', async () => {
     const wrapper = mount(MlRibbon, { props: { tabs, minimized: false } })
     const minimizeButton = wrapper.find('.ml-ribbon__control--minimize')
-    expect(minimizeButton.classes()).toContain('ml-ribbon__control--minimize-down')
+    expect(minimizeButton.classes()).toContain(
+      'ml-ribbon__control--minimize-down',
+    )
 
     await wrapper.setProps({ minimized: true })
-    expect(minimizeButton.classes()).toContain('ml-ribbon__control--minimize-up')
+    expect(minimizeButton.classes()).toContain(
+      'ml-ribbon__control--minimize-up',
+    )
   })
 
   it('reclaims panel space by removing panel DOM when minimized', async () => {
@@ -1904,7 +2485,9 @@ describe('MlRibbon', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('.ml-ribbon__panel').exists()).toBe(false)
-    expect(wrapper.find('.ml-ribbon').classes()).toContain('ml-ribbon--minimized')
+    expect(wrapper.find('.ml-ribbon').classes()).toContain(
+      'ml-ribbon--minimized',
+    )
   })
 
   it('opens the active tab panel in a popover when minimized tab is clicked', async () => {
@@ -1916,7 +2499,12 @@ describe('MlRibbon', () => {
           {
             id: 'home-group',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
           },
         ],
       },
@@ -1927,7 +2515,12 @@ describe('MlRibbon', () => {
           {
             id: 'insert-group',
             title: 'Shapes',
-            collections: [{ id: 'c2', items: [{ id: 'shape', type: 'button', label: 'Shape' }] }],
+            collections: [
+              {
+                id: 'c2',
+                items: [{ id: 'shape', type: 'button', label: 'Shape' }],
+              },
+            ],
           },
         ],
       },
@@ -1949,8 +2542,14 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
 
       const popoverPanel = Array.from(
-        document.body.querySelectorAll('.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating'),
-      ).find((panel) => panel.textContent?.includes('Shapes') && panel.textContent?.includes('Shape'))
+        document.body.querySelectorAll(
+          '.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating',
+        ),
+      ).find(
+        (panel) =>
+          panel.textContent?.includes('Shapes') &&
+          panel.textContent?.includes('Shape'),
+      )
 
       expect(popoverPanel).not.toBeNull()
       expect(wrapper.emitted('update:activeTab')?.at(-1)).toEqual(['insert'])
@@ -1974,7 +2573,11 @@ describe('MlRibbon', () => {
       await homeTab!.trigger('click')
       await waitForRibbonLayout(wrapper)
 
-      expect(document.body.querySelector('.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating')).not.toBeNull()
+      expect(
+        document.body.querySelector(
+          '.ml-ribbon-tab-panel-popover .ml-ribbon__panel--floating',
+        ),
+      ).not.toBeNull()
     } finally {
       wrapper.unmount()
     }
@@ -1997,7 +2600,10 @@ describe('MlRibbon', () => {
         id: 'ctx',
         title: 'Chart',
         contextual: true,
-        groups: [{ id: 'g1', title: 'Group', collections: [{ id: 'c1', items: [] }] }],
+        contextualTitle: '图表工具',
+        groups: [
+          { id: 'g1', title: 'Group', collections: [{ id: 'c1', items: [] }] },
+        ],
       },
     ]
     const wrapper = mount(MlRibbon, {
@@ -2005,13 +2611,29 @@ describe('MlRibbon', () => {
         tabs: contextualTabs,
         texts: {
           fileMenuLabel: '文档',
-          contextualTabDefaultTitle: '图表工具',
         },
       },
     })
 
     expect(wrapper.find('.ml-ribbon-tab--file').text()).toBe('文档')
     expect(wrapper.text()).toContain('图表工具')
+  })
+
+  it('does not render contextual block label when contextualTitle is omitted', () => {
+    const contextualTabs: RibbonTabModel[] = [
+      {
+        id: 'ctx',
+        title: 'Chart',
+        contextual: true,
+        groups: [
+          { id: 'g1', title: 'Group', collections: [{ id: 'c1', items: [] }] },
+        ],
+      },
+    ]
+    const wrapper = mount(MlRibbon, { props: { tabs: contextualTabs } })
+    expect(
+      wrapper.find('.ml-ribbon-contextual-tabs__block small').exists(),
+    ).toBe(false)
   })
 
   it('inherits size from element plus config provider', () => {
@@ -2036,23 +2658,23 @@ describe('MlRibbon', () => {
     // Mutable width lets us simulate resize without remounting the component.
     let panelWidth = 260
     // Mock geometry so overflow decisions are deterministic in jsdom.
-    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon__panel')) {
-        return new DOMRect(0, 0, panelWidth, 84)
-      }
-      if (this.classList.contains('ml-ribbon-group')) {
-        return new DOMRect(0, 0, 120, 76)
-      }
-      return new DOMRect(0, 0, 80, 24)
-    })
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, 120, 76)
+        }
+        return new DOMRect(0, 0, 80, 24)
+      })
 
-    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      return this.classList.contains('ml-ribbon__panel') ? panelWidth : 120
-    })
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains('ml-ribbon__panel') ? panelWidth : 120
+      })
 
     // Width budget is initially too narrow to fit all groups inline.
     const overflowTabs: RibbonTabModel[] = [
@@ -2063,17 +2685,32 @@ describe('MlRibbon', () => {
           {
             id: 'g1',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
           },
           {
             id: 'g2',
             title: 'Font',
-            collections: [{ id: 'c2', items: [{ id: 'bold', type: 'button', label: 'Bold' }] }],
+            collections: [
+              {
+                id: 'c2',
+                items: [{ id: 'bold', type: 'button', label: 'Bold' }],
+              },
+            ],
           },
           {
             id: 'g3',
             title: 'Insert',
-            collections: [{ id: 'c3', items: [{ id: 'shape', type: 'button', label: 'Shape' }] }],
+            collections: [
+              {
+                id: 'c3',
+                items: [{ id: 'shape', type: 'button', label: 'Shape' }],
+              },
+            ],
           },
         ],
       },
@@ -2100,23 +2737,23 @@ describe('MlRibbon', () => {
   it('emits itemClick when triggering hidden group item from classic overflow popover', async () => {
     // Keep the panel narrow so at least one group is guaranteed to move into overflow popover.
     const panelWidth = 200
-    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon__panel')) {
-        return new DOMRect(0, 0, panelWidth, 84)
-      }
-      if (this.classList.contains('ml-ribbon-group')) {
-        return new DOMRect(0, 0, 140, 76)
-      }
-      return new DOMRect(0, 0, 90, 24)
-    })
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, 140, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
 
-    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      return this.classList.contains('ml-ribbon__panel') ? panelWidth : 140
-    })
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains('ml-ribbon__panel') ? panelWidth : 140
+      })
 
     const overflowTabs: RibbonTabModel[] = [
       {
@@ -2126,12 +2763,28 @@ describe('MlRibbon', () => {
           {
             id: 'g1',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
           },
           {
             id: 'g2',
             title: 'Insert',
-            collections: [{ id: 'c2', items: [{ id: 'hidden-action', type: 'button', label: 'Hidden Action' }] }],
+            collections: [
+              {
+                id: 'c2',
+                items: [
+                  {
+                    id: 'hidden-action',
+                    type: 'button',
+                    label: 'Hidden Action',
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -2152,7 +2805,9 @@ describe('MlRibbon', () => {
 
       // Overflow popover is teleported to body by Element Plus.
       const hiddenButton = Array.from(
-        document.body.querySelectorAll<HTMLButtonElement>('.ml-ribbon-overflow-popover .el-button'),
+        document.body.querySelectorAll<HTMLButtonElement>(
+          '.ml-ribbon-overflow-popover .el-button',
+        ),
       ).find((button) => button.textContent?.includes('Hidden Action'))
       expect(hiddenButton).toBeTruthy()
       hiddenButton?.click()
@@ -2160,7 +2815,11 @@ describe('MlRibbon', () => {
 
       const emissions = wrapper.emitted('itemClick') ?? []
       expect(emissions).toHaveLength(1)
-      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'g2', itemId: 'hidden-action' })
+      expect(emissions[0]?.[0]).toEqual({
+        tabId: 'home',
+        groupId: 'g2',
+        itemId: 'hidden-action',
+      })
     } finally {
       wrapper.unmount()
       rectSpy.mockRestore()
@@ -2170,24 +2829,24 @@ describe('MlRibbon', () => {
 
   it('uses visible panel width to decide classic overflow trigger', async () => {
     // getBoundingClientRect represents the true visible width even when clientWidth is stale/oversized.
-    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon__panel')) {
-        return new DOMRect(0, 0, 220, 84)
-      }
-      if (this.classList.contains('ml-ribbon-group')) {
-        return new DOMRect(0, 0, 130, 76)
-      }
-      return new DOMRect(0, 0, 90, 24)
-    })
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, 220, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, 130, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
 
-    const clientWidthSpy = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon__panel')) return 1200
-      return 130
-    })
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) return 1200
+        return 130
+      })
 
     const overflowTabs: RibbonTabModel[] = [
       {
@@ -2197,12 +2856,28 @@ describe('MlRibbon', () => {
           {
             id: 'g1',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
           },
           {
             id: 'g2',
             title: 'Insert',
-            collections: [{ id: 'c2', items: [{ id: 'hidden-action', type: 'button', label: 'Hidden Action' }] }],
+            collections: [
+              {
+                id: 'c2',
+                items: [
+                  {
+                    id: 'hidden-action',
+                    type: 'button',
+                    label: 'Hidden Action',
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -2222,17 +2897,17 @@ describe('MlRibbon', () => {
   it('keeps one group visible when width fits one group plus overflow slot', async () => {
     // Exact width budget: one regular group + overflow trigger slot.
     const panelWidth = 175
-    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon__panel')) {
-        return new DOMRect(0, 0, panelWidth, 84)
-      }
-      if (this.classList.contains('ml-ribbon-group')) {
-        return new DOMRect(0, 0, 130, 76)
-      }
-      return new DOMRect(0, 0, 90, 24)
-    })
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, 130, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
 
     const overflowTabs: RibbonTabModel[] = [
       {
@@ -2242,12 +2917,22 @@ describe('MlRibbon', () => {
           {
             id: 'g1',
             title: 'Clipboard',
-            collections: [{ id: 'c1', items: [{ id: 'paste', type: 'button', label: 'Paste' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
           },
           {
             id: 'g2',
             title: 'Insert',
-            collections: [{ id: 'c2', items: [{ id: 'shape', type: 'button', label: 'Shape' }] }],
+            collections: [
+              {
+                id: 'c2',
+                items: [{ id: 'shape', type: 'button', label: 'Shape' }],
+              },
+            ],
           },
         ],
       },
@@ -2270,18 +2955,18 @@ describe('MlRibbon', () => {
   it('restores overflowable groups when width grows after only fixed group is visible', async () => {
     // Start from a constrained width where only fixed (non-overflowable) group can stay visible.
     let panelWidth = 220
-    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon__panel')) {
-        return new DOMRect(0, 0, panelWidth, 84)
-      }
-      if (this.classList.contains('ml-ribbon-group')) {
-        if (this.dataset.groupId === 'g1') return new DOMRect(0, 0, 190, 76)
-        return new DOMRect(0, 0, 120, 76)
-      }
-      return new DOMRect(0, 0, 90, 24)
-    })
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          if (this.dataset.groupId === 'g1') return new DOMRect(0, 0, 190, 76)
+          return new DOMRect(0, 0, 120, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
 
     const overflowTabs: RibbonTabModel[] = [
       {
@@ -2292,17 +2977,32 @@ describe('MlRibbon', () => {
             id: 'g1',
             title: 'Pinned',
             enableGroupOverflow: false,
-            collections: [{ id: 'c1', items: [{ id: 'pin', type: 'button', label: 'Pin' }] }],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'pin', type: 'button', label: 'Pin' }],
+              },
+            ],
           },
           {
             id: 'g2',
             title: 'Font',
-            collections: [{ id: 'c2', items: [{ id: 'bold', type: 'button', label: 'Bold' }] }],
+            collections: [
+              {
+                id: 'c2',
+                items: [{ id: 'bold', type: 'button', label: 'Bold' }],
+              },
+            ],
           },
           {
             id: 'g3',
             title: 'Insert',
-            collections: [{ id: 'c3', items: [{ id: 'shape', type: 'button', label: 'Shape' }] }],
+            collections: [
+              {
+                id: 'c3',
+                items: [{ id: 'shape', type: 'button', label: 'Shape' }],
+              },
+            ],
           },
         ],
       },
@@ -2312,7 +3012,9 @@ describe('MlRibbon', () => {
       const wrapper = mount(MlRibbon, { props: { tabs: overflowTabs } })
       await waitForRibbonLayout(wrapper)
 
-      expect(wrapper.findAll('.ml-ribbon__panel .ml-ribbon-group').length).toBe(2)
+      expect(wrapper.findAll('.ml-ribbon__panel .ml-ribbon-group').length).toBe(
+        2,
+      )
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(true)
 
       // Simulate grow event and force recalculation through prop update.
@@ -2321,7 +3023,9 @@ describe('MlRibbon', () => {
       await waitForRibbonLayout(wrapper)
 
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(false)
-      expect(wrapper.findAll('.ml-ribbon__panel .ml-ribbon-group').length).toBe(3)
+      expect(wrapper.findAll('.ml-ribbon__panel .ml-ribbon-group').length).toBe(
+        3,
+      )
     } finally {
       rectSpy.mockRestore()
     }
@@ -2329,20 +3033,20 @@ describe('MlRibbon', () => {
 
   it('shows group overflow arrow when items are clipped inside a group', async () => {
     // Mock item coordinates so the second item appears outside the content viewport.
-    const rectSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: HTMLElement,
-    ) {
-      if (this.classList.contains('ml-ribbon-group__content')) {
-        return new DOMRect(0, 0, 100, 36)
-      }
-      if (this.classList.contains('ml-ribbon-item-host')) {
-        if (this.dataset.itemId === 'btn-hidden') {
-          return new DOMRect(110, 0, 24, 20)
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon-group__content')) {
+          return new DOMRect(0, 0, 100, 36)
         }
-        return new DOMRect(4, 0, 24, 20)
-      }
-      return new DOMRect(0, 0, 160, 40)
-    })
+        if (this.classList.contains('ml-ribbon-item-host')) {
+          if (this.dataset.itemId === 'btn-hidden') {
+            return new DOMRect(110, 0, 24, 20)
+          }
+          return new DOMRect(4, 0, 24, 20)
+        }
+        return new DOMRect(0, 0, 160, 40)
+      })
 
     const overflowTabs: RibbonTabModel[] = [
       {
@@ -2400,11 +3104,25 @@ describe('MlRibbon', () => {
           {
             id: 'clipboard',
             title: 'Clipboard',
-            footerMenuItems: [{ id: 'footer-find', type: 'button', label: 'Footer Find', props: { icon: IconStub } }],
+            footerMenuItems: [
+              {
+                id: 'footer-find',
+                type: 'button',
+                label: 'Footer Find',
+                props: { icon: IconStub },
+              },
+            ],
             collections: [
               {
                 id: 'c1',
-                items: [{ id: 'paste', type: 'button', label: 'Paste', props: { icon: IconStub } }],
+                items: [
+                  {
+                    id: 'paste',
+                    type: 'button',
+                    label: 'Paste',
+                    props: { icon: IconStub },
+                  },
+                ],
               },
               {
                 id: 'c2',
@@ -2430,9 +3148,21 @@ describe('MlRibbon', () => {
                           id: 'visual-styles',
                           title: 'Visual Styles',
                           items: [
-                            { id: 'visual-style-icon', label: 'Icon', icon: IconStub },
-                            { id: 'visual-style-preview', label: 'Preview', preview: IconStub },
-                            { id: 'visual-style-custom', label: 'Custom', component: IconStub },
+                            {
+                              id: 'visual-style-icon',
+                              label: 'Icon',
+                              icon: IconStub,
+                            },
+                            {
+                              id: 'visual-style-preview',
+                              label: 'Preview',
+                              preview: IconStub,
+                            },
+                            {
+                              id: 'visual-style-custom',
+                              label: 'Custom',
+                              component: IconStub,
+                            },
                           ],
                         },
                       ],
@@ -2448,12 +3178,16 @@ describe('MlRibbon', () => {
 
     // Silence console noise and assert no Vue warning about reactive component definitions is emitted.
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const wrapper = mount(MlRibbon, { props: { tabs: reactiveTabs.value, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: reactiveTabs.value, activeTab: 'home' },
+    })
 
     try {
       await wrapper.vm.$nextTick()
       const hasReactiveComponentWarning = warnSpy.mock.calls.some((call) =>
-        call.some((value) => String(value).includes('Component that was made reactive')),
+        call.some((value) =>
+          String(value).includes('Component that was made reactive'),
+        ),
       )
       expect(hasReactiveComponentWarning).toBe(false)
     } finally {
@@ -2475,7 +3209,12 @@ describe('MlRibbon', () => {
               {
                 id: 'c1',
                 items: [
-                  { id: 'ellipse', type: 'button', label: 'Ellipse', hideLabel: true },
+                  {
+                    id: 'ellipse',
+                    type: 'button',
+                    label: 'Ellipse',
+                    hideLabel: true,
+                  },
                   {
                     id: 'rect',
                     type: 'dropdown',
@@ -2519,21 +3258,30 @@ describe('MlRibbon', () => {
                     type: 'dropdown',
                     label: 'Circle',
                     size: 'large',
-                    props: { options: [{ label: 'Circle', value: 'circle' }], icon: IconStub },
+                    props: {
+                      options: [{ label: 'Circle', value: 'circle' }],
+                      icon: IconStub,
+                    },
                   },
                   {
                     id: 'small-dropdown',
                     type: 'dropdown',
                     label: 'Line',
                     size: 'small',
-                    props: { options: [{ label: 'Line', value: 'line' }], icon: IconStub },
+                    props: {
+                      options: [{ label: 'Line', value: 'line' }],
+                      icon: IconStub,
+                    },
                   },
                   {
                     id: 'icon-only-dropdown',
                     type: 'dropdown',
                     hideLabel: true,
                     size: 'small',
-                    props: { options: [{ label: 'Ray', value: 'ray' }], icon: IconStub },
+                    props: {
+                      options: [{ label: 'Ray', value: 'ray' }],
+                      icon: IconStub,
+                    },
                   },
                 ],
               },
@@ -2545,18 +3293,48 @@ describe('MlRibbon', () => {
 
     const wrapper = mount(MlRibbon, { props: { tabs: dropdownTabs } })
 
-    const largeHost = wrapper.find('.ml-ribbon-item-host[data-item-id="large-dropdown"]')
+    const largeHost = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="large-dropdown"]',
+    )
     expect(largeHost.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
-    expect(largeHost.find('.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow').exists()).toBe(true)
+    expect(
+      largeHost
+        .find(
+          '.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow',
+        )
+        .exists(),
+    ).toBe(true)
 
-    const smallHost = wrapper.find('.ml-ribbon-item-host[data-item-id="small-dropdown"]')
+    const smallHost = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="small-dropdown"]',
+    )
     expect(smallHost.find('.ml-ribbon-item-host__label').text()).toBe('Line')
-    expect(smallHost.find('.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow').exists()).toBe(true)
+    expect(
+      smallHost
+        .find(
+          '.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow',
+        )
+        .exists(),
+    ).toBe(true)
 
-    const iconOnlyHost = wrapper.find('.ml-ribbon-item-host[data-item-id="icon-only-dropdown"]')
-    expect(iconOnlyHost.find('.ml-ribbon-item-host__label').exists()).toBe(false)
-    expect(iconOnlyHost.find('.ml-ribbon-item-host__icon + .ml-ribbon-item-host__text-row').exists()).toBe(true)
-    expect(iconOnlyHost.find('.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow').exists()).toBe(true)
+    const iconOnlyHost = wrapper.find(
+      '.ml-ribbon-item-host[data-item-id="icon-only-dropdown"]',
+    )
+    expect(iconOnlyHost.find('.ml-ribbon-item-host__label').exists()).toBe(
+      false,
+    )
+    expect(
+      iconOnlyHost
+        .find('.ml-ribbon-item-host__icon + .ml-ribbon-item-host__text-row')
+        .exists(),
+    ).toBe(true)
+    expect(
+      iconOnlyHost
+        .find(
+          '.ml-ribbon-item-host__text-row .ml-ribbon-item-host__dropdown-arrow',
+        )
+        .exists(),
+    ).toBe(true)
   })
 
   it('switches dropdown trigger arrow to up when dropdown menu is open', async () => {
@@ -2578,7 +3356,10 @@ describe('MlRibbon', () => {
                     label: 'Circle',
                     props: {
                       options: [
-                        { label: 'Center, Radius', value: 'circle-center-radius' },
+                        {
+                          label: 'Center, Radius',
+                          value: 'circle-center-radius',
+                        },
                         { label: '2-Point', value: 'circle-two-point' },
                       ],
                     },
@@ -2597,7 +3378,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="draw-circle"]',
+      )
       const arrow = host.find('.ml-ribbon-item-host__dropdown-arrow')
       expect(arrow.classes()).not.toContain('is-open')
 
@@ -2636,7 +3419,11 @@ describe('MlRibbon', () => {
                     label: 'Circle',
                     props: {
                       options: [
-                        { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
+                        {
+                          label: 'Center, Radius',
+                          value: 'circle-center-radius',
+                          icon: IconStub,
+                        },
                         { label: '2-Point', value: 'circle-two-point' },
                       ],
                     },
@@ -2655,7 +3442,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const triggerButton = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"] .el-button')
+      const triggerButton = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="draw-circle"] .el-button',
+      )
       expect(triggerButton.exists()).toBe(true)
 
       await triggerButton.trigger('click')
@@ -2663,7 +3452,9 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
 
       // Dropdown menu is teleported to body, query there for icon assertions.
-      const dropdownIcon = document.body.querySelector('.ml-ribbon-dropdown-menu .ml-ribbon-dropdown-item__icon')
+      const dropdownIcon = document.body.querySelector(
+        '.ml-ribbon-dropdown-menu .ml-ribbon-dropdown-item__icon',
+      )
       expect(dropdownIcon).toBeTruthy()
     } finally {
       wrapper.unmount()
@@ -2689,7 +3480,11 @@ describe('MlRibbon', () => {
                     label: 'Rectangle',
                     props: {
                       options: [
-                        { label: 'Rectangle', value: 'rectangle', icon: 'ml-test-option-class-icon' },
+                        {
+                          label: 'Rectangle',
+                          value: 'rectangle',
+                          icon: 'ml-test-option-class-icon',
+                        },
                         { label: 'Polygon', value: 'polygon' },
                       ],
                     },
@@ -2708,7 +3503,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const triggerButton = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-rectangle"] .el-button')
+      const triggerButton = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="draw-rectangle"] .el-button',
+      )
       expect(triggerButton.exists()).toBe(true)
 
       await triggerButton.trigger('click')
@@ -2754,7 +3551,9 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
       const host = wrapper.find('.ml-ribbon-item-host[data-item-id="theme"]')
       expect(host.findAll('.ml-test-segmented-icon')).toHaveLength(2)
-      expect(host.find('.ml-ribbon-segmented__option-label').exists()).toBe(false)
+      expect(host.find('.ml-ribbon-segmented__option-label').exists()).toBe(
+        false,
+      )
       expect(host.findAll('.el-segmented__item.is-selected')).toHaveLength(1)
       expect(host.find('.ml-ribbon-segmented__label').text()).toBe('Theme')
     } finally {
@@ -2791,7 +3590,9 @@ describe('MlRibbon', () => {
       expect(tooltip.attributes('data-disabled')).toBe('false')
       expect(tooltip.attributes('data-show-after')).toBe('1000')
       expect(tooltip.attributes('data-hide-after')).toBe('0')
-      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Copy selection')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Copy selection',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -2816,13 +3617,17 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="layer-properties"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="layer-properties"]',
+      )
       const style = host.attributes('style') ?? ''
 
       expect(host.classes()).toContain('is-label-wrap')
       expect(style).toContain('--ml-rb-item-label-max-lines: 2')
       expect(style).toContain('--ml-rb-item-label-wrap-width: 74px')
-      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Layer Properties')
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe(
+        'Layer Properties',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -2888,7 +3693,9 @@ describe('MlRibbon', () => {
       const tooltip = wrapper.find('.ml-test-tooltip')
       expect(tooltip.attributes('data-content')).toBe('Draw Ellipse')
       expect(tooltip.attributes('data-disabled')).toBe('false')
-      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Draw Ellipse')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Draw Ellipse',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -2905,7 +3712,11 @@ describe('MlRibbon', () => {
           props: {
             options: [
               { label: 'Find', value: 'find', tooltip: 'Find command' },
-              { label: 'Replace', value: 'replace', tooltip: 'Replace command' },
+              {
+                label: 'Replace',
+                value: 'replace',
+                tooltip: 'Replace command',
+              },
             ],
           },
         },
@@ -2945,8 +3756,16 @@ describe('MlRibbon', () => {
           label: 'Circle',
           props: {
             options: [
-              { label: 'Center, Radius', value: 'circle-center-radius', tooltip: 'Center and radius' },
-              { label: '2-Point', value: 'circle-two-point', tooltip: 'Two points' },
+              {
+                label: 'Center, Radius',
+                value: 'circle-center-radius',
+                tooltip: 'Center and radius',
+              },
+              {
+                label: '2-Point',
+                value: 'circle-two-point',
+                tooltip: 'Two points',
+              },
             ],
           },
         },
@@ -2959,7 +3778,8 @@ describe('MlRibbon', () => {
               '<div class="ml-test-tooltip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
           },
           ElDropdown: {
-            template: '<div class="ml-test-dropdown"><slot /><slot name="dropdown" /></div>',
+            template:
+              '<div class="ml-test-dropdown"><slot /><slot name="dropdown" /></div>',
           },
           ElDropdownMenu: {
             template: '<div class="ml-test-dropdown-menu"><slot /></div>',
@@ -2997,7 +3817,11 @@ describe('MlRibbon', () => {
           props: {
             options: [
               { label: 'Rectangle', value: 'rectangle', tooltip: 'Rectangle' },
-              { label: 'Polygon', value: 'polygon', tooltip: 'Polygon command' },
+              {
+                label: 'Polygon',
+                value: 'polygon',
+                tooltip: 'Polygon command',
+              },
             ],
           },
         },
@@ -3013,8 +3837,12 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
-      expect(wrapper.find('.el-button').attributes('aria-label')).toBe('Polygon command')
-      expect(wrapper.findComponent({ name: 'ElTooltip' }).props('content')).toBe('Polygon command')
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Polygon command',
+      )
+      expect(
+        wrapper.findComponent({ name: 'ElTooltip' }).props('content'),
+      ).toBe('Polygon command')
     } finally {
       wrapper.unmount()
     }
@@ -3043,7 +3871,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="ribbon-size"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="ribbon-size"]',
+      )
       expect(host.findAll('.ml-ribbon-segmented__option-label')).toHaveLength(3)
 
       const inputs = host.findAll('input[type="radio"]')
@@ -3121,7 +3951,9 @@ describe('MlRibbon', () => {
       },
     ]
 
-    const wrapper = mount(MlRibbon, { props: { tabs: segmentedTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: segmentedTabs, activeTab: 'home' },
+    })
 
     try {
       await wrapper.vm.$nextTick()
@@ -3132,7 +3964,11 @@ describe('MlRibbon', () => {
 
       const emissions = wrapper.emitted('itemClick') ?? []
       expect(emissions).toHaveLength(1)
-      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'appearance', itemId: 'theme-dark' })
+      expect(emissions[0]?.[0]).toEqual({
+        tabId: 'home',
+        groupId: 'appearance',
+        itemId: 'theme-dark',
+      })
     } finally {
       wrapper.unmount()
     }
@@ -3167,7 +4003,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="grid-snap"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="grid-snap"]',
+      )
       const toggle = host.find('.ml-ribbon-toggle')
 
       expect(host.find('.ml-test-toggle-icon-off').exists()).toBe(true)
@@ -3220,7 +4058,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="grid-snap"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="grid-snap"]',
+      )
 
       expect(host.classes()).toContain('is-label-hidden')
       expect(host.find('.ml-ribbon-toggle').exists()).toBe(true)
@@ -3265,11 +4105,15 @@ describe('MlRibbon', () => {
       },
     ]
 
-    const wrapper = mount(MlRibbon, { props: { tabs: toggleTabs, activeTab: 'home' } })
+    const wrapper = mount(MlRibbon, {
+      props: { tabs: toggleTabs, activeTab: 'home' },
+    })
 
     try {
       await wrapper.vm.$nextTick()
-      const toggle = wrapper.find('.ml-ribbon-item-host[data-item-id="grid-snap"] .ml-ribbon-toggle')
+      const toggle = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="grid-snap"] .ml-ribbon-toggle',
+      )
 
       expect(toggle.find('.ml-test-toggle-off-class').exists()).toBe(true)
 
@@ -3278,7 +4122,11 @@ describe('MlRibbon', () => {
 
       const emissions = wrapper.emitted('itemClick') ?? []
       expect(emissions).toHaveLength(1)
-      expect(emissions[0]?.[0]).toEqual({ tabId: 'home', groupId: 'view', itemId: 'grid-snap-on' })
+      expect(emissions[0]?.[0]).toEqual({
+        tabId: 'home',
+        groupId: 'view',
+        itemId: 'grid-snap-on',
+      })
     } finally {
       wrapper.unmount()
     }
@@ -3305,7 +4153,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="find-replace"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="find-replace"]',
+      )
       const buttons = host.findAll('.ml-ribbon-button-group .el-button')
 
       expect(buttons).toHaveLength(2)
@@ -3346,12 +4196,16 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="layer-actions-primary"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="layer-actions-primary"]',
+      )
       const group = host.find('.ml-ribbon-button-group')
       const buttons = host.findAll('.ml-ribbon-button-group .el-button')
 
       expect(group.classes()).toContain('ml-ribbon-button-group--nowrap')
-      expect(group.classes()).not.toContain('ml-ribbon-button-group--equal-width')
+      expect(group.classes()).not.toContain(
+        'ml-ribbon-button-group--equal-width',
+      )
       expect(host.find('.ml-ribbon-button-group__label').exists()).toBe(false)
       expect(buttons).toHaveLength(2)
       expect(buttons[0]?.classes()).toContain('el-button--small')
@@ -3427,11 +4281,17 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const icons = wrapper.findAll('.ml-ribbon-button-group .ml-ribbon-item-host__icon')
+      const icons = wrapper.findAll(
+        '.ml-ribbon-button-group .ml-ribbon-item-host__icon',
+      )
 
       expect(icons).toHaveLength(2)
-      expect(icons[0]?.classes()).toContain('ml-ribbon-item-host__icon--icon-only')
-      expect(icons[1]?.classes()).toContain('ml-ribbon-item-host__icon--with-label')
+      expect(icons[0]?.classes()).toContain(
+        'ml-ribbon-item-host__icon--icon-only',
+      )
+      expect(icons[1]?.classes()).toContain(
+        'ml-ribbon-item-host__icon--with-label',
+      )
       expect(wrapper.findAll('.ml-ribbon-button-group__text')).toHaveLength(1)
     } finally {
       wrapper.unmount()
@@ -3466,7 +4326,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const icons = wrapper.findAll('.ml-ribbon-button-group .ml-ribbon-item-host__icon')
+      const icons = wrapper.findAll(
+        '.ml-ribbon-button-group .ml-ribbon-item-host__icon',
+      )
 
       expect(icons).toHaveLength(2)
       expect(icons[0]?.attributes('style')).toContain('font-size: 14px')
@@ -3503,7 +4365,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const icons = wrapper.findAll('.ml-ribbon-button-group .ml-ribbon-item-host__icon')
+      const icons = wrapper.findAll(
+        '.ml-ribbon-button-group .ml-ribbon-item-host__icon',
+      )
 
       expect(icons).toHaveLength(2)
       expect(icons[0]?.attributes('style')).toBeUndefined()
@@ -3536,7 +4400,9 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="layer-select"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="layer-select"]',
+      )
       const select = host.find('.el-select')
       expect(select.attributes('style')).toContain('width: 100%')
 
@@ -3570,12 +4436,18 @@ describe('MlRibbon', () => {
 
     try {
       const inputNumber = wrapper.findComponent({ name: 'ElInputNumber' })
-      expect(wrapper.find('.ml-ribbon-input-number__prefix-label').text()).toBe('Scale')
-      expect(wrapper.find('.ml-ribbon-input-number__prefix-icon').classes()).toContain('icon-scale')
+      expect(wrapper.find('.ml-ribbon-input-number__prefix-label').text()).toBe(
+        'Scale',
+      )
+      expect(
+        wrapper.find('.ml-ribbon-input-number__prefix-icon').classes(),
+      ).toContain('icon-scale')
       expect(inputNumber.props('min')).toBe(0.5)
       expect(inputNumber.props('max')).toBe(8)
       expect(inputNumber.props('step')).toBe(0.5)
-      expect(wrapper.find('.el-input-number').attributes('style')).toContain('width: 120px')
+      expect(wrapper.find('.el-input-number').attributes('style')).toContain(
+        'width: 120px',
+      )
 
       inputNumber.vm.$emit('change', 3)
       await wrapper.vm.$nextTick()
@@ -3611,14 +4483,20 @@ describe('MlRibbon', () => {
 
     try {
       await wrapper.vm.$nextTick()
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="array-count"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="array-count"]',
+      )
       const inputNumberShell = host.find('.ml-ribbon-input-number')
       const inputNumber = host.find('.el-input-number')
       expect(inputNumberShell.attributes('style')).toContain('width: 100%')
       expect(inputNumberShell.classes()).toContain('is-full')
       expect(inputNumber.attributes('style')).toBeUndefined()
-      expect(host.find('.ml-ribbon-input-number__prefix-label').text()).toBe('Count')
-      expect(host.find('.ml-ribbon-input-number__prefix-icon').classes()).toContain('icon-count')
+      expect(host.find('.ml-ribbon-input-number__prefix-label').text()).toBe(
+        'Count',
+      )
+      expect(
+        host.find('.ml-ribbon-input-number__prefix-icon').classes(),
+      ).toContain('icon-count')
 
       const inputNumberComponent = host.findComponent({ name: 'ElInputNumber' })
       expect(inputNumberComponent.props('min')).toBe(1)
@@ -3654,7 +4532,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="hatch-scale"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="hatch-scale"]',
+      )
       const inputNumberComponent = host.findComponent({ name: 'ElInputNumber' })
       inputNumberComponent.vm.$emit('change', 2.5)
       await wrapper.vm.$nextTick()
@@ -3685,7 +4565,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="hatch-scale"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="hatch-scale"]',
+      )
       const input = host.find('input')
       input.element.value = '2.5'
       await input.trigger('keydown', { key: 'Enter' })
@@ -3720,7 +4602,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="hatch-scale"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="hatch-scale"]',
+      )
       const input = host.find('input')
       input.element.value = '3'
       await input.trigger('keydown', { key: 'Enter' })
@@ -3750,7 +4634,11 @@ describe('MlRibbon', () => {
                 title: 'Visual Styles',
                 items: [
                   { id: 'visual-style-clean', label: 'Clean', preview: 'Aa' },
-                  { id: 'visual-style-blueprint', label: 'Blueprint', preview: 'Bp' },
+                  {
+                    id: 'visual-style-blueprint',
+                    label: 'Blueprint',
+                    preview: 'Bp',
+                  },
                 ],
               },
             ],
@@ -3807,11 +4695,15 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="selection-panel"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="selection-panel"]',
+      )
       expect(host.find('.ml-test-custom-host').exists()).toBe(true)
       expect(host.find('.ml-test-custom-host__title').text()).toBe('Selection')
       expect(host.find('.ml-test-custom-host__group').text()).toBe('inspector')
-      expect(host.find('.ml-test-custom-host__id').text()).toBe('selection-panel')
+      expect(host.find('.ml-test-custom-host__id').text()).toBe(
+        'selection-panel',
+      )
 
       await host.find('.ml-test-custom-host__action').trigger('click')
       await wrapper.vm.$nextTick()
@@ -3848,8 +4740,16 @@ describe('MlRibbon', () => {
                     label: 'Circle',
                     props: {
                       options: [
-                        { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
-                        { label: '2-Point', value: 'circle-two-point', icon: IconStub },
+                        {
+                          label: 'Center, Radius',
+                          value: 'circle-center-radius',
+                          icon: IconStub,
+                        },
+                        {
+                          label: '2-Point',
+                          value: 'circle-two-point',
+                          icon: IconStub,
+                        },
                       ],
                     },
                   },
@@ -3866,7 +4766,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="draw-circle"]',
+      )
       expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
 
       const dropdown = host.findComponent({ name: 'ElDropdown' })
@@ -3905,8 +4807,16 @@ describe('MlRibbon', () => {
                     props: {
                       syncLabelWithSelection: true,
                       options: [
-                        { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
-                        { label: '2-Point', value: 'circle-two-point', icon: IconStub },
+                        {
+                          label: 'Center, Radius',
+                          value: 'circle-center-radius',
+                          icon: IconStub,
+                        },
+                        {
+                          label: '2-Point',
+                          value: 'circle-two-point',
+                          icon: IconStub,
+                        },
                       ],
                     },
                   },
@@ -3923,7 +4833,9 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="draw-circle"]',
+      )
       expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
 
       const dropdown = host.findComponent({ name: 'ElDropdown' })
@@ -3953,7 +4865,11 @@ describe('MlRibbon', () => {
           label: 'Circle',
           props: {
             options: [
-              { label: 'Center, Radius', value: 'circle-center-radius', icon: IconStub },
+              {
+                label: 'Center, Radius',
+                value: 'circle-center-radius',
+                icon: IconStub,
+              },
               { label: '2-Point', value: 'circle-two-point', icon: IconStub },
             ],
           },
@@ -3962,15 +4878,21 @@ describe('MlRibbon', () => {
     })
 
     try {
-      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="draw-circle"]')
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="draw-circle"]',
+      )
       const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
       dropdown.vm.$emit('command', 'circle-two-point')
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
-      const iconTrigger = host.find('.ml-ribbon-item-host__icon--dropdown-primary')
+      const iconTrigger = host.find(
+        '.ml-ribbon-item-host__icon--dropdown-primary',
+      )
       expect(iconTrigger.exists()).toBe(true)
-      iconTrigger.element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      iconTrigger.element.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
@@ -4001,8 +4923,15 @@ describe('MlRibbon', () => {
           {
             id: 'draw',
             title: 'Draw',
-            footerMenuItems: [{ id: 'spline', type: 'button', hideLabel: true }],
-            collections: [{ id: 'c1', items: [{ id: 'line', type: 'button', label: 'Line' }] }],
+            footerMenuItems: [
+              { id: 'spline', type: 'button', hideLabel: true },
+            ],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'line', type: 'button', label: 'Line' }],
+              },
+            ],
           },
         ],
       },
@@ -4022,8 +4951,15 @@ describe('MlRibbon', () => {
           {
             id: 'draw',
             title: 'Draw',
-            footerMenuItems: [{ id: 'spline', type: 'button', hideLabel: true }],
-            collections: [{ id: 'c1', items: [{ id: 'line', type: 'button', label: 'Line' }] }],
+            footerMenuItems: [
+              { id: 'spline', type: 'button', hideLabel: true },
+            ],
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'line', type: 'button', label: 'Line' }],
+              },
+            ],
           },
         ],
       },
