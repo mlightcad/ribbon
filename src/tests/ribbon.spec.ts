@@ -626,6 +626,34 @@ describe('MlRibbonGallery', () => {
     }
   })
 
+  it('uses the item count as the inline column cap when fewer items than inlineItemLimit', () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'visual-style-gallery',
+        label: 'Visual Styles',
+        inlineItemLimit: 4,
+        categories: [
+          {
+            id: 'visual-styles',
+            title: 'Visual Styles',
+            items: [
+              { id: 'visual-style-clean', label: 'Clean', preview: 'Cl' },
+              { id: 'visual-style-muted', label: 'Muted', preview: 'Mu' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const grid = wrapper.find('.ml-ribbon-gallery__grid')
+      expect(grid.attributes('style')).toContain('--ml-ribbon-gallery-inline-columns: 2')
+      expect(wrapper.find('.ml-ribbon-gallery__more-button').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('does not reserve an inline title row when gallery label is omitted', () => {
     const wrapper = mount(MlRibbonGallery, {
       props: {
@@ -644,6 +672,60 @@ describe('MlRibbonGallery', () => {
       expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain('is-unlabeled')
       expect(wrapper.find('.ml-ribbon-gallery__title').exists()).toBe(false)
       expect(wrapper.find('.ml-ribbon-gallery__category-title').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('enables auto inline column sizing on the gallery root when inlineItemWidthMode is auto', () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'text-style-gallery',
+        label: 'Text Style',
+        inlineItemWidthMode: 'auto',
+        categories: [
+          {
+            id: 'styles',
+            title: 'Styles',
+            items: [{ id: 'standard', label: 'Standard', preview: 'Standard' }],
+          },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-gallery').classes()).toContain('is-inline-item-width-auto')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('uses fit-content width and auto panel class on overflow popover when inlineItemWidthMode is auto', () => {
+    const wrapper = mount(MlRibbonGallery, {
+      props: {
+        id: 'text-style-gallery',
+        label: 'Text Style',
+        inlineItemWidthMode: 'auto',
+        inlineItemLimit: 2,
+        categories: [
+          {
+            id: 'styles',
+            title: 'Styles',
+            items: [
+              { id: 'a', label: 'Alpha', preview: 'A' },
+              { id: 'b', label: 'Beta', preview: 'B' },
+              { id: 'c', label: 'Gamma', preview: 'G' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const popover = wrapper.findComponent({ name: 'ElPopover' })
+      expect(popover.exists()).toBe(true)
+      expect(popover.props('width')).toBe('fit-content')
+      expect(String(popover.props('popperClass'))).toContain('ml-ribbon-gallery-panel--item-width-auto')
     } finally {
       wrapper.unmount()
     }

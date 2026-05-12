@@ -106,6 +106,9 @@ const galleryInlineItemLimit = computed(() => {
   const value = props.item.props?.inlineItemLimit
   return typeof value === 'number' ? value : undefined
 })
+const galleryInlineItemWidthMode = computed<'fixed' | 'auto'>(() =>
+  props.item.props?.inlineItemWidthMode === 'auto' ? 'auto' : 'fixed',
+)
 const customItemComponent = computed<Component | null>(() => {
   const candidate = props.item.props?.component
   if (!candidate || typeof candidate === 'string') return null
@@ -478,6 +481,7 @@ function humanizeItemId(value: string): string {
         :model-value="galleryModelValue"
         :collapsed="item.props?.collapsed === true"
         :inline-item-limit="galleryInlineItemLimit"
+        :inline-item-width-mode="galleryInlineItemWidthMode"
         :preview-fallback="props.galleryPreviewFallback"
         :disabled="isDisabled"
         @select="handleGallerySelect"

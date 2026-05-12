@@ -74,6 +74,8 @@ const arrayCount = ref(4)
 const arraySpacing = ref(24)
 const arrayAngle = ref(45)
 const visualStyle = ref('visual-style-clean')
+/** Selected id for the demo gallery that has fewer items than `inlineItemLimit` (manual regression check). */
+const inlineLimitDemoStyle = ref('limit-demo-a')
 const language = ref<'en-US' | 'zh-CN'>('en-US')
 const lastCommand = ref('None')
 const ribbonDisabled = ref(false)
@@ -532,6 +534,25 @@ const baseTabs: RibbonTabModel[] = [
                   ],
                 },
               },
+              {
+                id: 'inline-limit-demo-gallery',
+                type: 'gallery',
+                label: 'Inline limit demo',
+                size: 'large',
+                props: {
+                  inlineItemLimit: 4,
+                  categories: [
+                    {
+                      id: 'inline-limit-demo',
+                      title: '2 items, inline limit 4',
+                      items: [
+                        { id: 'limit-demo-a', label: 'Option A', icon: Sunny },
+                        { id: 'limit-demo-b', label: 'Option B', icon: Moon },
+                      ],
+                    },
+                  ],
+                },
+              },
             ],
           },
         ],
@@ -710,6 +731,10 @@ const zhCNMap: Record<string, string> = {
   Pattern: '图案',
   Modify: '修改',
   Styles: '样式',
+  'Inline limit demo': '内联上限演示',
+  '2 items, inline limit 4': '2 项，内联上限 4',
+  'Option A': '选项 A',
+  'Option B': '选项 B',
   'Hatch Pattern': '填充图案',
   'Array Count': '阵列数量',
   'Array Spacing': '阵列间距',
@@ -1001,7 +1026,9 @@ const tabs = computed<RibbonTabModel[]>(() =>
                   modelValue: visualStyle.value,
                   collapsed: isVisualStyleGalleryCollapsed.value,
                 }
-              : undefined
+              : item.id === 'inline-limit-demo-gallery'
+                ? { modelValue: inlineLimitDemoStyle.value }
+                : undefined
           const nextProps = item.props
             ? { ...item.props, options, ...(categories ? { categories } : {}), componentProps, ...galleryDisplayProps }
             : options || componentProps || galleryDisplayProps
@@ -1122,7 +1149,11 @@ function onRibbonItemClick(payload: { tabId: string; groupId: string; itemId: st
     if (Number.isInteger(nextArrayCount)) arrayCount.value = nextArrayCount
   }
   if (payload.groupId === 'styles') {
-    visualStyle.value = payload.itemId
+    if (payload.itemId === 'limit-demo-a' || payload.itemId === 'limit-demo-b') {
+      inlineLimitDemoStyle.value = payload.itemId
+    } else {
+      visualStyle.value = payload.itemId
+    }
   }
 
   switch (payload.itemId) {

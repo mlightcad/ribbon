@@ -22,6 +22,9 @@ defineOptions({
  * @prop modelValue - Selected item id used for controlled gallery display.
  * @prop collapsed - Renders the selected item as a large preview button.
  * @prop inlineItemLimit - Maximum number of items shown inline before the rest moves to the panel.
+ *   When the gallery has fewer items than this limit, the layout uses the item count instead.
+ * @prop inlineItemWidthMode - `fixed` uses equal columns capped at the default gallery width.
+ *   `auto` grows each column from that minimum to fit text previews and labels.
  * @prop previewFallback - Fallback preview text when an item has no preview.
  *
  * @event select - Emitted with selected gallery item id.
@@ -49,9 +52,10 @@ const props = withDefaults(
     modelValue?: string
     collapsed?: boolean
     inlineItemLimit?: number
+    inlineItemWidthMode?: 'fixed' | 'auto'
     previewFallback?: string
   }>(),
-  { disabled: false, collapsed: false, inlineItemLimit: 4 },
+  { disabled: false, collapsed: false, inlineItemLimit: 4, inlineItemWidthMode: 'fixed' },
 )
 
 const emit = defineEmits<{ (e: 'select', id: string): void }>()
@@ -85,30 +89,44 @@ const normalizedInlineItemLimit = computed(() => {
   if (!Number.isFinite(props.inlineItemLimit) || props.inlineItemLimit <= 0) return 4
   return Math.floor(props.inlineItemLimit)
 })
-const inlineRowCount = computed(() => Math.max(1, Math.ceil(galleryItems.value.length / normalizedInlineItemLimit.value)))
+const effectiveInlineItemLimit = computed(() => {
+  const limit = normalizedInlineItemLimit.value
+  const total = galleryItems.value.length
+  if (total === 0) return Math.min(limit, 1)
+  return Math.min(limit, total)
+})
+const inlineRowCount = computed(() => Math.max(1, Math.ceil(galleryItems.value.length / effectiveInlineItemLimit.value)))
 const normalizedInlineRowIndex = computed(() => Math.min(inlineRowIndex.value, inlineRowCount.value - 1))
 const canShowPreviousInlineRow = computed(() => hasInlineOverflow.value && normalizedInlineRowIndex.value > 0)
 const canShowNextInlineRow = computed(
   () => hasInlineOverflow.value && normalizedInlineRowIndex.value < inlineRowCount.value - 1,
 )
 const visibleInlineItems = computed(() => {
-  const start = normalizedInlineRowIndex.value * normalizedInlineItemLimit.value
-  return galleryItems.value.slice(start, start + normalizedInlineItemLimit.value)
+  const start = normalizedInlineRowIndex.value * effectiveInlineItemLimit.value
+  return galleryItems.value.slice(start, start + effectiveInlineItemLimit.value)
 })
 const visibleInlineIds = computed(() => new Set(visibleInlineItems.value.map((item) => item.id)))
-const hasInlineOverflow = computed(() => galleryItems.value.length > normalizedInlineItemLimit.value)
-const panelPopperClass = computed(
-  () =>
-    `ml-ribbon-gallery-panel ml-ribbon-gallery-panel--${props.collapsed ? 'collapsed' : 'inline'} ml-ribbon-gallery-panel--size-${resolvedSize.value}`,
-)
+const hasInlineOverflow = computed(() => galleryItems.value.length > effectiveInlineItemLimit.value)
+const panelPopperClass = computed(() => {
+  const parts = [
+    'ml-ribbon-gallery-panel',
+    `ml-ribbon-gallery-panel--${props.collapsed ? 'collapsed' : 'inline'}`,
+    `ml-ribbon-gallery-panel--size-${resolvedSize.value}`,
+  ]
+  if (props.inlineItemWidthMode === 'auto') {
+    parts.push('ml-ribbon-gallery-panel--item-width-auto')
+  }
+  return parts.join(' ')
+})
 const panelGridStyle = computed(() => ({
-  '--ml-ribbon-gallery-panel-columns': String(normalizedInlineItemLimit.value),
+  '--ml-ribbon-gallery-panel-columns': String(effectiveInlineItemLimit.value),
   '--ml-ribbon-gallery-panel-item-width': `${panelItemWidth.value}px`,
 }))
 const panelWidth = computed(() => {
+  if (props.inlineItemWidthMode === 'auto') return 'fit-content'
   return (
-    normalizedInlineItemLimit.value * panelItemWidth.value +
-    Math.max(0, normalizedInlineItemLimit.value - 1) * panelGridGap +
+    effectiveInlineItemLimit.value * panelItemWidth.value +
+    Math.max(0, effectiveInlineItemLimit.value - 1) * panelGridGap +
     panelPadding * 2 +
     (props.collapsed ? panelScrollbarWidth : panelControlsGap + panelControlsWidth.value)
   )
@@ -135,7 +153,12 @@ watch(
 )
 
 watch(
-  () => [galleryItems.value.map((item) => item.id).join('\u0000'), normalizedInlineItemLimit.value, selected.value] as const,
+  () =>
+    [
+      galleryItems.value.map((item) => item.id).join('\u0000'),
+      effectiveInlineItemLimit.value,
+      selected.value,
+    ] as const,
   () => {
     if (!syncInlineRowToSelectedItem()) {
       inlineRowIndex.value = Math.min(inlineRowIndex.value, inlineRowCount.value - 1)
@@ -203,7 +226,7 @@ function moveInlineRow(direction: -1 | 1) {
 function galleryItemRowIndex(item: RibbonGalleryItemModel) {
   const itemIndex = galleryItems.value.findIndex((candidate) => candidate.id === item.id)
   if (itemIndex < 0) return 0
-  return Math.floor(itemIndex / normalizedInlineItemLimit.value)
+  return Math.floor(itemIndex / effectiveInlineItemLimit.value)
 }
 
 /**
@@ -340,7 +363,12 @@ function selectItem(item: RibbonGalleryItemModel) {
   <div
     ref="galleryRef"
     class="ml-ribbon-gallery"
-    :class="{ 'is-disabled': disabled, 'is-collapsed': collapsed, 'is-unlabeled': !collapsed && !galleryLabel }"
+    :class="{
+      'is-disabled': disabled,
+      'is-collapsed': collapsed,
+      'is-unlabeled': !collapsed && !galleryLabel,
+      'is-inline-item-width-auto': !collapsed && inlineItemWidthMode === 'auto',
+    }"
   >
     <ElPopover
       v-if="collapsed && collapsedItem"
@@ -485,7 +513,7 @@ function selectItem(item: RibbonGalleryItemModel) {
         </h4>
         <div
           class="ml-ribbon-gallery__grid"
-          :style="{ '--ml-ribbon-gallery-inline-columns': String(normalizedInlineItemLimit) }"
+          :style="{ '--ml-ribbon-gallery-inline-columns': String(effectiveInlineItemLimit) }"
         >
           <button
             v-for="item in inlineCategoryItems(category)"
