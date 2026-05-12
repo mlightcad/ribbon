@@ -78,6 +78,8 @@ export interface RibbonDropdownOption {
   tooltip?: string
   icon?: string | Component
   disabled?: boolean
+  /** When true, renders a divider line above this item (Element Plus `divided`). */
+  divided?: boolean
 }
 
 export type RibbonGalleryPreview = string | Component

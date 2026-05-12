@@ -255,6 +255,7 @@ function humanizeItemId(value: string): string {
           :key="String(optionValue(option))"
           :command="optionCommand(option)"
           :disabled="option.disabled === true"
+          :divided="option.divided === true"
         >
           <ElTooltip
             :content="optionTooltip(option)"

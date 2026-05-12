@@ -976,15 +976,18 @@ html.dark {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  min-width: 238px;
+  min-width: 0;
   max-width: 100%;
   height: 100%;
   padding: 2px 0;
   overflow: hidden;
 }
 
+.ml-ribbon-gallery:not(.is-collapsed) {
+  width: fit-content;
+}
+
 .ml-ribbon-gallery.is-collapsed {
-  min-width: 0;
   width: auto;
   height: 100%;
   padding: 0;
@@ -1016,7 +1019,7 @@ html.dark {
 
 .ml-ribbon-gallery__category {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
@@ -1039,6 +1042,9 @@ html.dark {
 .ml-ribbon-gallery__grid {
   display: grid;
   flex: 1 1 auto;
+  align-self: start;
+  width: fit-content;
+  max-width: 100%;
   grid-template-columns: repeat(var(--ml-ribbon-gallery-inline-columns, 4), minmax(0, var(--ml-ribbon-gallery-item-width)));
   grid-auto-rows: minmax(0, 1fr);
   gap: 4px;
@@ -1048,6 +1054,25 @@ html.dark {
 .ml-ribbon-gallery.is-unlabeled .ml-ribbon-gallery__grid {
   flex: 0 0 auto;
   grid-auto-rows: var(--ml-ribbon-gallery-item-height);
+}
+
+.ml-ribbon-gallery.is-inline-item-width-auto {
+  min-width: 0;
+  overflow-x: visible;
+  overflow-y: hidden;
+}
+
+.ml-ribbon-gallery.is-inline-item-width-auto .ml-ribbon-gallery__categories,
+.ml-ribbon-gallery.is-inline-item-width-auto .ml-ribbon-gallery__category {
+  overflow: visible;
+  min-width: 0;
+}
+
+.ml-ribbon-gallery.is-inline-item-width-auto .ml-ribbon-gallery__grid {
+  grid-template-columns: repeat(
+    var(--ml-ribbon-gallery-inline-columns, 4),
+    minmax(var(--ml-ribbon-gallery-item-width), max-content)
+  );
 }
 
 .ml-ribbon-gallery__item {
@@ -1226,6 +1251,23 @@ html.dark {
   overflow-wrap: anywhere;
 }
 
+.ml-ribbon-gallery.is-inline-item-width-auto .ml-ribbon-gallery__item {
+  min-width: min-content;
+  overflow: visible;
+}
+
+.ml-ribbon-gallery.is-inline-item-width-auto .ml-ribbon-gallery__label {
+  min-width: min-content;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.ml-ribbon-gallery.is-inline-item-width-auto
+  .ml-ribbon-gallery__preview:not(.ml-ribbon-gallery__preview--icon):not(.ml-ribbon-gallery__preview--svg) {
+  min-width: min-content;
+  white-space: nowrap;
+}
+
 .ml-ribbon-gallery-panel {
   --ml-rb-scale: 1;
   --ml-rb-font-xs: calc(var(--el-font-size-extra-small) * var(--ml-rb-scale));
@@ -1277,6 +1319,23 @@ html.dark {
 .ml-ribbon-gallery__panel-item {
   width: var(--ml-ribbon-gallery-panel-item-width);
   min-height: var(--ml-ribbon-gallery-panel-item-height);
+}
+
+.ml-ribbon-gallery-panel--item-width-auto .ml-ribbon-gallery__panel {
+  overflow-x: auto;
+  max-width: min(100vw - 24px, 960px);
+}
+
+.ml-ribbon-gallery-panel--item-width-auto .ml-ribbon-gallery__panel-grid {
+  grid-template-columns: repeat(
+    var(--ml-ribbon-gallery-panel-columns, 4),
+    minmax(var(--ml-ribbon-gallery-panel-item-width), max-content)
+  );
+}
+
+.ml-ribbon-gallery-panel--item-width-auto .ml-ribbon-gallery__panel-item {
+  width: auto;
+  min-width: var(--ml-ribbon-gallery-panel-item-width);
 }
 
 .ml-ribbon-group__footer {
