@@ -889,8 +889,52 @@ const baseTabs: RibbonTabModel[] = [
         collections: [
           {
             id: 'chart-c1',
+            layout: 'row',
             items: [
-              { id: 'color-scheme', type: 'colorPicker', label: 'Colors' },
+              {
+                id: 'chart-add-element',
+                type: 'button',
+                label: 'Add Chart Element',
+                size: 'large',
+                props: {
+                  icon: CirclePlus,
+                  labelWrapLines: 2,
+                  labelWrapWidth: 90,
+                },
+              },
+              {
+                id: 'chart-quick-layout',
+                type: 'button',
+                label: 'Quick Layout',
+                size: 'large',
+                props: {
+                  icon: MagicStick,
+                  labelWrapLines: 2,
+                  labelWrapWidth: 90,
+                },
+              },
+              {
+                id: 'chart-switch-row-column',
+                type: 'button',
+                label: 'Switch Row/Column',
+                size: 'large',
+                props: {
+                  icon: Operation,
+                  labelWrapLines: 2,
+                  labelWrapWidth: 90,
+                },
+              },
+              {
+                id: 'chart-select-data',
+                type: 'button',
+                label: 'Select Data',
+                size: 'large',
+                props: {
+                  icon: Files,
+                  labelWrapLines: 2,
+                  labelWrapWidth: 90,
+                },
+              },
             ],
           },
         ],
@@ -941,8 +985,18 @@ const baseTabs: RibbonTabModel[] = [
                 hideLabel: true,
                 props: {
                   options: [
-                    { label: 'Light', value: 'theme-light', icon: Sunny },
-                    { label: 'Dark', value: 'theme-dark', icon: Moon },
+                    {
+                      label: 'Light',
+                      value: 'theme-light',
+                      icon: Sunny,
+                      tooltip: 'Use light color theme',
+                    },
+                    {
+                      label: 'Dark',
+                      value: 'theme-dark',
+                      icon: Moon,
+                      tooltip: 'Use dark color theme',
+                    },
                   ],
                 },
               },
@@ -953,9 +1007,21 @@ const baseTabs: RibbonTabModel[] = [
                 hideLabel: true,
                 props: {
                   options: [
-                    { label: 'Large', value: 'size-large' },
-                    { label: 'Default', value: 'size-default' },
-                    { label: 'Small', value: 'size-small' },
+                    {
+                      label: 'Large',
+                      value: 'size-large',
+                      tooltip: 'Large ribbon controls and labels',
+                    },
+                    {
+                      label: 'Default',
+                      value: 'size-default',
+                      tooltip: 'Default ribbon control size',
+                    },
+                    {
+                      label: 'Small',
+                      value: 'size-small',
+                      tooltip: 'Compact ribbon controls and labels',
+                    },
                   ],
                 },
               },
@@ -1006,6 +1072,10 @@ const zhCNMap: Record<string, string> = {
   'Layer Properties': '图层特性',
   'Entity Properties': '对象属性',
   'Chart Style': '图表样式',
+  'Add Chart Element': '添加图表元素',
+  'Quick Layout': '快速布局',
+  'Switch Row/Column': '切换行/列',
+  'Select Data': '选择数据',
   'Create Options': '创建选项',
   Close: '关闭',
   Ortho: '正交',
@@ -1080,6 +1150,11 @@ const zhCNMap: Record<string, string> = {
   Large: '大',
   Default: '默认',
   Small: '小',
+  'Use light color theme': '使用浅色主题',
+  'Use dark color theme': '使用深色主题',
+  'Large ribbon controls and labels': '大号 Ribbon 控件与标签',
+  'Default ribbon control size': '默认 Ribbon 控件尺寸',
+  'Compact ribbon controls and labels': '紧凑 Ribbon 控件与标签',
   'Press Alt to show Key Tips.': '按 Alt 显示快捷提示。',
   'Try V / X / C / F then P on Home tab.':
     '在“开始”页签尝试 V / X / C / F 再按 P。',

@@ -1,33 +1,29 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElIcon, ElSegmented } from 'element-plus'
+import { ElIcon, ElSegmented, ElTooltip } from 'element-plus'
 import type { Component } from 'vue'
+import type { RibbonSegmentedOption } from '../types'
 
 type RibbonSegmentedValue = string | number | boolean
-
-interface RibbonSegmentedOption {
-  label?: string
-  value: RibbonSegmentedValue
-  disabled?: boolean
-  icon?: Component | null
-  iconClass?: string | null
-}
 
 /**
  * @component MlRibbonSegmented
  * @description
  * Controlled segmented selector for ribbon items. It reuses Element Plus
  * `ElSegmented` and renders options icon-first, falling back to visible text
- * only when an option has no icon.
+ * only when an option has no icon. Each segment can have its own tooltip
+ * (`option.tooltip`), with the same fallback chain as ribbon button groups.
  *
  * @prop id - Component identifier.
  * @prop label - Optional caption shown above the segmented control.
- * @prop options - Selectable options with optional icon metadata.
+ * @prop options - Selectable options with optional icon metadata and per-segment tooltips.
  * @prop modelValue - Controlled selected option value.
  * @prop direction - Layout direction passed through to `ElSegmented`.
  * @prop block - Whether the segmented control should fill the parent width.
  * @prop disabled - Disables interaction.
  * @prop hideLabel - Hides the segmented caption above the control.
+ * @prop tooltipShowAfter - Delay before showing segment tooltips (ms).
+ * @prop tooltipHideAfter - Delay before hiding segment tooltips (ms).
  *
  * @event change - Emitted with the selected option value.
  *
@@ -38,8 +34,8 @@ interface RibbonSegmentedOption {
  *   label="Theme"
  *   :model-value="theme"
  *   :options="[
- *     { label: 'Light', value: 'light', icon: Sunny },
- *     { label: 'Dark', value: 'dark', icon: Moon },
+ *     { label: 'Light', value: 'light', icon: Sunny, tooltip: 'Use light theme' },
+ *     { label: 'Dark', value: 'dark', icon: Moon, tooltip: 'Use dark theme' },
  *   ]"
  *   @change="setTheme"
  * />
@@ -55,6 +51,8 @@ const props = withDefaults(
     block?: boolean
     disabled?: boolean
     hideLabel?: boolean
+    tooltipShowAfter?: number
+    tooltipHideAfter?: number
   }>(),
   {
     label: '',
@@ -63,6 +61,8 @@ const props = withDefaults(
     block: false,
     disabled: false,
     hideLabel: false,
+    tooltipShowAfter: 1000,
+    tooltipHideAfter: 0,
   },
 )
 
@@ -77,17 +77,52 @@ function toOption(option: unknown): RibbonSegmentedOption {
   return option as RibbonSegmentedOption
 }
 
+function optionText(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
+
+function humanizeOptionValue(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    const normalized = value
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .trim()
+    if (!normalized) return undefined
+    return normalized.replace(/\b\w/g, (char) => char.toUpperCase())
+  }
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value)
+  return undefined
+}
+
 function optionLabel(option: unknown): string {
   const normalized = toOption(option)
   return normalized.label?.trim() || String(normalized.value)
 }
 
+function resolveOptionTooltip(option: unknown): string | undefined {
+  const normalized = toOption(option)
+  return (
+    optionText(normalized.tooltip) ??
+    optionText(normalized.label) ??
+    humanizeOptionValue(normalized.value)
+  )
+}
+
 function optionIcon(option: unknown): Component | null {
-  return toOption(option).icon ?? null
+  const raw = toOption(option).icon
+  if (raw && typeof raw !== 'string') return raw as Component
+  return null
 }
 
 function optionIconClass(option: unknown): string | null {
-  return toOption(option).iconClass ?? null
+  const raw = toOption(option).iconClass
+  if (typeof raw === 'string' && raw.trim()) return raw
+  const icon = toOption(option).icon
+  if (typeof icon === 'string' && icon.trim()) return icon.trim()
+  return null
 }
 
 function showOptionLabel(option: unknown): boolean {
@@ -96,6 +131,10 @@ function showOptionLabel(option: unknown): boolean {
 
 function optionKey(option: unknown): string {
   return String(toOption(option).value)
+}
+
+function segmentAriaLabel(option: unknown): string {
+  return resolveOptionTooltip(option) ?? optionKey(option)
 }
 
 function handleChange(value: RibbonSegmentedValue) {
@@ -119,33 +158,43 @@ function handleChange(value: RibbonSegmentedValue) {
       @change="handleChange"
     >
       <template #default="{ item }">
-        <span
-          class="ml-ribbon-segmented__option"
-          :data-option-value="optionKey(item)"
+        <ElTooltip
+          :content="resolveOptionTooltip(item)"
+          :disabled="!resolveOptionTooltip(item)"
+          :show-after="tooltipShowAfter"
+          :hide-after="tooltipHideAfter"
+          placement="top"
+          effect="dark"
         >
-          <ElIcon
-            v-if="optionIcon(item)"
-            class="ml-ribbon-segmented__option-icon"
-            aria-hidden="true"
-          >
-            <component :is="optionIcon(item)" />
-          </ElIcon>
-          <i
-            v-else-if="optionIconClass(item)"
-            class="ml-ribbon-segmented__option-icon ml-ribbon-item-host__icon--class"
-            :class="optionIconClass(item)"
-            aria-hidden="true"
-          />
           <span
-            v-if="showOptionLabel(item)"
-            class="ml-ribbon-segmented__option-label"
+            class="ml-ribbon-segmented__option"
+            :data-option-value="optionKey(item)"
+            :aria-label="segmentAriaLabel(item)"
           >
-            {{ optionLabel(item) }}
+            <ElIcon
+              v-if="optionIcon(item)"
+              class="ml-ribbon-segmented__option-icon"
+              aria-hidden="true"
+            >
+              <component :is="optionIcon(item)" />
+            </ElIcon>
+            <i
+              v-else-if="optionIconClass(item)"
+              class="ml-ribbon-segmented__option-icon ml-ribbon-item-host__icon--class"
+              :class="optionIconClass(item)"
+              aria-hidden="true"
+            />
+            <span
+              v-if="showOptionLabel(item)"
+              class="ml-ribbon-segmented__option-label"
+            >
+              {{ optionLabel(item) }}
+            </span>
+            <span v-else class="ml-ribbon-segmented__option-sr-label">
+              {{ optionLabel(item) }}
+            </span>
           </span>
-          <span v-else class="ml-ribbon-segmented__option-sr-label">
-            {{ optionLabel(item) }}
-          </span>
-        </span>
+        </ElTooltip>
       </template>
     </ElSegmented>
   </div>

@@ -34,7 +34,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - `comboBox` width configuration via `props.width`/`props.comboWidth` (supports `'full'`), plus optional `props.emitValueOnChange` payload mode
 - `MlRibbonInputNumber` / `inputNumber` items based on Element Plus Input Number, with `props.width`/`props.inputNumberWidth`, native `min`/`max`/`step`/`controlsPosition` props, optional `props.emitValueOnChange`, and compact `props.prefixLabel`/`props.prefixIcon`
 - Large button multi-line label support via `props.labelWrapLines` and optional `props.labelWrapWidth`
-- Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists
+- Controlled segmented selectors via `segmented` items with `props.modelValue`; options render icon-first and fall back to text only when no icon exists; each option supports its own tooltip via `option.tooltip` (with label/value fallbacks like `buttonGroup`)
 - Gallery items support standard text previews, Vue/CSS icon previews, SVG preview references, per-item custom Vue components or the `MlRibbonGallery` `#item` slot, plus a picker panel for overflow items and collapsed large-button mode for tight ribbon widths; schema `gallery` items accept `props.inlineItemLimit` (inline slots before overflow) and `props.inlineItemWidthMode: 'fixed' | 'auto'` (`auto` widens columns from the default minimum to fit labels and text previews; default `fixed`)
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Group width is auto-sized when `RibbonGroupModel.width` is omitted; provide `width` for a fixed pixel width

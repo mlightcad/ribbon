@@ -37,7 +37,7 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonButton`: shared command button renderer for built-in button items and custom ribbon controls that need consistent icon/label/size behavior.
 - `MlRibbonButtonGroup`: grouped command buttons with no persistent selected item state.
 - `MlRibbonDropdown`: shared dropdown command renderer for built-in dropdown items and custom ribbon controls that need consistent trigger/menu styling.
-- `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`.
+- `MlRibbonSegmented`: controlled segmented selector built on top of Element Plus `ElSegmented`; each segment may set `tooltip` on its option (fallbacks: label, humanized value).
 - `MlRibbonInputNumber`: ribbon numeric input built on top of Element Plus `ElInputNumber`, with optional prefix label/icon.
 - `MlRibbonToggleButton`: two-state toggle command with optional active/inactive icon mapping.
 - `MlRibbonGallery`: categorized gallery with preview and select behavior.

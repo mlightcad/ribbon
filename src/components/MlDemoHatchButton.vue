@@ -246,10 +246,9 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 
 .ml-demo-hatch-button__option {
   display: grid;
-  grid-template-columns: calc(28px * var(--ml-demo-hatch-scale)) minmax(
-      0,
-      1fr
-    ) 8px;
+  grid-template-columns:
+    calc(28px * var(--ml-demo-hatch-scale)) minmax(0, 1fr)
+    8px;
   align-items: center;
   gap: 8px;
   min-height: calc(var(--ml-demo-hatch-compact-height) + 8px);
@@ -329,10 +328,9 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 
 :global(.ml-demo-hatch-button-popper .ml-demo-hatch-button__option) {
   display: grid;
-  grid-template-columns: calc(28px * var(--ml-demo-hatch-scale)) minmax(
-      0,
-      1fr
-    ) 8px;
+  grid-template-columns:
+    calc(28px * var(--ml-demo-hatch-scale)) minmax(0, 1fr)
+    8px;
   align-items: center;
   gap: 8px;
   min-height: calc(var(--ml-demo-hatch-compact-height) + 8px);

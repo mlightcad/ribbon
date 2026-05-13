@@ -10,6 +10,7 @@ import MlRibbonButton from '../ribbon/items/RibbonButton.vue'
 import MlRibbonDropdown from '../ribbon/items/RibbonDropdown.vue'
 import MlRibbonGallery from '../ribbon/items/RibbonGallery.vue'
 import MlRibbonInputNumber from '../ribbon/items/RibbonInputNumber.vue'
+import MlRibbonSegmented from '../ribbon/items/RibbonSegmented.vue'
 import MlRibbonBackstage from '../ribbon/modules/RibbonBackstage.vue'
 import MlRibbonFileMenu from '../ribbon/modules/RibbonFileMenu.vue'
 import MlDemoColorDropdown from '../components/MlDemoColorDropdown.vue'
@@ -3556,6 +3557,39 @@ describe('MlRibbon', () => {
       )
       expect(host.findAll('.el-segmented__item.is-selected')).toHaveLength(1)
       expect(host.find('.ml-ribbon-segmented__label').text()).toBe('Theme')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('exposes per-segment tooltips on segmented options with explicit tooltip strings', () => {
+    const wrapper = mount(MlRibbonSegmented, {
+      props: {
+        id: 'align',
+        label: 'Align',
+        modelValue: 'left',
+        options: [
+          { label: 'Left', value: 'left', tooltip: 'Align left edge' },
+          { label: 'Right', value: 'right', tooltip: 'Align right edge' },
+        ],
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content', 'disabled'],
+            template:
+              '<div class="ml-test-segmented-tip" :data-content="content" :data-disabled="String(disabled)"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      const tips = wrapper.findAll('.ml-test-segmented-tip')
+      expect(tips).toHaveLength(2)
+      expect(tips[0].attributes('data-content')).toBe('Align left edge')
+      expect(tips[1].attributes('data-content')).toBe('Align right edge')
+      expect(tips[0].attributes('data-disabled')).toBe('false')
     } finally {
       wrapper.unmount()
     }
