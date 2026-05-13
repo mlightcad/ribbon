@@ -10,7 +10,7 @@
  * @prop visible - Controls tab visibility. Defaults to `true`.
  * @prop contextual - Marks the tab as contextual.
  * @prop contextualColor - Accent color used by contextual tab blocks.
- * @prop contextualTitle - Group label shown above contextual tabs.
+ * @prop contextualTitle - Optional group label shown above contextual tabs when set.
  *
  * @slot default - Optional declarative content for custom tab authoring workflows.
  *
@@ -40,5 +40,3 @@ defineProps<{
     <slot />
   </div>
 </template>
-
-

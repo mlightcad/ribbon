@@ -50,7 +50,6 @@ export interface RibbonLocaleTexts {
   backstageDescription?: string
   keyTipsSequencePrefix?: string
   keyTipsEmptySequence?: string
-  contextualTabDefaultTitle?: string
   galleryPreviewFallback?: string
 }
 
@@ -163,9 +162,19 @@ export interface RibbonDynamicApi {
   /** Marks a group as hidden. */
   hideGroup: (tabId: string, groupId: string) => void
   /** Adds an item to a target collection. */
-  addItem: (tabId: string, groupId: string, collectionId: string, item: RibbonItemModel) => void
+  addItem: (
+    tabId: string,
+    groupId: string,
+    collectionId: string,
+    item: RibbonItemModel,
+  ) => void
   /** Removes an item from a target collection by id. */
-  removeItem: (tabId: string, groupId: string, collectionId: string, itemId: string) => void
+  removeItem: (
+    tabId: string,
+    groupId: string,
+    collectionId: string,
+    itemId: string,
+  ) => void
   /** Applies a partial patch to an existing item. */
   updateItem: (
     tabId: string,
@@ -175,9 +184,19 @@ export interface RibbonDynamicApi {
     patch: Partial<RibbonItemModel>,
   ) => void
   /** Enables a target item. */
-  enableItem: (tabId: string, groupId: string, collectionId: string, itemId: string) => void
+  enableItem: (
+    tabId: string,
+    groupId: string,
+    collectionId: string,
+    itemId: string,
+  ) => void
   /** Disables a target item. */
-  disableItem: (tabId: string, groupId: string, collectionId: string, itemId: string) => void
+  disableItem: (
+    tabId: string,
+    groupId: string,
+    collectionId: string,
+    itemId: string,
+  ) => void
   /** Requests a layout refresh pass. */
   refreshLayout: () => void
   /** Sets minimized state explicitly. */

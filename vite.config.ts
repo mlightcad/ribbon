@@ -17,7 +17,11 @@ export default defineConfig(({ mode }) => {
             cssFileName: 'ml-ribbon',
           },
           rollupOptions: {
-            external: [/^vue(\/.*)?$/, /^element-plus(\/.*)?$/, /^@element-plus\/icons-vue(\/.*)?$/],
+            external: [
+              /^vue(\/.*)?$/,
+              /^element-plus(\/.*)?$/,
+              /^@element-plus\/icons-vue(\/.*)?$/,
+            ],
             output: {
               globals: {
                 vue: 'Vue',

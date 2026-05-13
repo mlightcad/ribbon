@@ -40,12 +40,20 @@ watch(
 )
 
 const isActive = computed(() => localValue.value)
-const currentIcon = computed(() => (isActive.value ? props.activeIcon ?? props.inactiveIcon : props.inactiveIcon ?? props.activeIcon))
+const currentIcon = computed(() =>
+  isActive.value
+    ? (props.activeIcon ?? props.inactiveIcon)
+    : (props.inactiveIcon ?? props.activeIcon),
+)
 const resolvedLabel = computed(() => {
-  const stateLabel = isActive.value ? props.activeLabel?.trim() : props.inactiveLabel?.trim()
+  const stateLabel = isActive.value
+    ? props.activeLabel?.trim()
+    : props.inactiveLabel?.trim()
   return stateLabel || props.label?.trim() || props.id
 })
-const shouldShowLabel = computed(() => !props.hideLabel && resolvedLabel.value.length > 0)
+const shouldShowLabel = computed(
+  () => !props.hideLabel && resolvedLabel.value.length > 0,
+)
 
 function handleClick() {
   if (props.disabled) return

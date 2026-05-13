@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
-import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElTooltip, useGlobalConfig } from 'element-plus'
+import {
+  ElButton,
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
+  ElIcon,
+  ElTooltip,
+  useGlobalConfig,
+} from 'element-plus'
 import type { Component } from 'vue'
 import type { RibbonDropdownOption, RibbonItemSize } from '../types'
 
@@ -73,9 +81,14 @@ const resolvedSize = computed(() => globalSize.value || 'default')
 const isOpen = ref(false)
 const selectedValue = ref<unknown>(undefined)
 
-const normalizedOptions = computed(() => (Array.isArray(props.options) ? props.options : []))
+const normalizedOptions = computed(() =>
+  Array.isArray(props.options) ? props.options : [],
+)
 const selectedOption = computed(
-  () => normalizedOptions.value.find((option) => optionValue(option) === selectedValue.value) ?? null,
+  () =>
+    normalizedOptions.value.find(
+      (option) => optionValue(option) === selectedValue.value,
+    ) ?? null,
 )
 const resolvedLabel = computed(() => {
   if (selectedOption.value && props.syncLabelWithSelection) {
@@ -84,7 +97,9 @@ const resolvedLabel = computed(() => {
   }
   return itemText(props.label) ?? props.id
 })
-const shouldShowLabel = computed(() => !props.hideLabel && resolvedLabel.value.length > 0)
+const shouldShowLabel = computed(
+  () => !props.hideLabel && resolvedLabel.value.length > 0,
+)
 const iconComponent = computed<Component | null>(() => {
   if (selectedOption.value) {
     const fromOption = optionIconAsComponent(selectedOption.value)
@@ -102,7 +117,9 @@ const iconClass = computed<string | null>(() => {
   const normalized = props.icon.trim()
   return normalized.length > 0 ? normalized : null
 })
-const hasTriggerIcon = computed(() => Boolean(iconComponent.value || iconClass.value))
+const hasTriggerIcon = computed(() =>
+  Boolean(iconComponent.value || iconClass.value),
+)
 const buttonAriaLabel = computed(
   () =>
     optionTooltip(selectedOption.value) ??
@@ -138,7 +155,10 @@ function toggleOpen() {
 function handleCommand(command: unknown) {
   if (props.disabled) return
   selectedValue.value = command
-  emit('tooltip-change', optionTooltip(selectedOption.value) ?? buttonAriaLabel.value)
+  emit(
+    'tooltip-change',
+    optionTooltip(selectedOption.value) ?? buttonAriaLabel.value,
+  )
   emit('command', command)
   isOpen.value = false
 }
@@ -172,10 +192,13 @@ function optionValue(option: unknown): unknown {
   return (option as { value?: unknown }).value
 }
 
-function optionCommand(option: unknown): string | number | Record<string, unknown> | undefined {
+function optionCommand(
+  option: unknown,
+): string | number | Record<string, unknown> | undefined {
   const value = optionValue(option)
   if (typeof value === 'string' || typeof value === 'number') return value
-  if (value && typeof value === 'object') return value as Record<string, unknown>
+  if (value && typeof value === 'object')
+    return value as Record<string, unknown>
   return undefined
 }
 
@@ -187,14 +210,19 @@ function optionLabel(option: unknown): string | undefined {
 
 function humanizeOptionValue(value: unknown): string | undefined {
   if (typeof value === 'string') return humanizeItemId(value)
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value)
   return undefined
 }
 
 function optionTooltip(option: unknown): string | undefined {
   if (!option || typeof option !== 'object') return undefined
   const explicitTooltip = itemText((option as { tooltip?: unknown }).tooltip)
-  return explicitTooltip ?? optionLabel(option) ?? humanizeOptionValue(optionValue(option))
+  return (
+    explicitTooltip ??
+    optionLabel(option) ??
+    humanizeOptionValue(optionValue(option))
+  )
 }
 
 function itemText(value: unknown): string | undefined {
@@ -216,19 +244,30 @@ function humanizeItemId(value: string): string {
 <template>
   <ElDropdown
     class="ml-ribbon-dropdown"
-    :class="[`ml-ribbon-dropdown--item-${itemSize}`, { 'is-label-hidden': hideLabel }]"
+    :class="[
+      `ml-ribbon-dropdown--item-${itemSize}`,
+      { 'is-label-hidden': hideLabel },
+    ]"
     trigger="click"
     :disabled="disabled"
     :popper-class="dropdownPopperClass"
     @visible-change="setOpen"
     @command="handleCommand"
   >
-    <ElButton type="default" :disabled="disabled" :aria-label="buttonAriaLabel" @click="toggleOpen">
+    <ElButton
+      type="default"
+      :disabled="disabled"
+      :aria-label="buttonAriaLabel"
+      @click="toggleOpen"
+    >
       <span class="ml-ribbon-item-host__content ml-ribbon-dropdown__content">
         <span
           v-if="$slots.icon || hasTriggerIcon"
           class="ml-ribbon-item-host__icon ml-ribbon-item-host__icon--dropdown-primary ml-ribbon-dropdown__icon"
-          :class="{ 'ml-ribbon-item-host__icon--class': iconClass && !iconComponent && !$slots.icon }"
+          :class="{
+            'ml-ribbon-item-host__icon--class':
+              iconClass && !iconComponent && !$slots.icon,
+          }"
           @click.stop="handlePrimaryClick"
         >
           <slot name="icon" :selected-option="selectedOption">
@@ -238,11 +277,24 @@ function humanizeItemId(value: string): string {
             <i v-else-if="iconClass" :class="iconClass" aria-hidden="true" />
           </slot>
         </span>
-        <span class="ml-ribbon-item-host__text-row ml-ribbon-dropdown__text-row">
-          <span v-if="shouldShowLabel" class="ml-ribbon-item-host__label ml-ribbon-dropdown__label">
-            <slot name="label" :selected-option="selectedOption" :label="resolvedLabel">{{ resolvedLabel }}</slot>
+        <span
+          class="ml-ribbon-item-host__text-row ml-ribbon-dropdown__text-row"
+        >
+          <span
+            v-if="shouldShowLabel"
+            class="ml-ribbon-item-host__label ml-ribbon-dropdown__label"
+          >
+            <slot
+              name="label"
+              :selected-option="selectedOption"
+              :label="resolvedLabel"
+              >{{ resolvedLabel }}</slot
+            >
           </span>
-          <ElIcon class="ml-ribbon-item-host__dropdown-arrow ml-ribbon-dropdown__arrow" :class="{ 'is-open': isOpen }">
+          <ElIcon
+            class="ml-ribbon-item-host__dropdown-arrow ml-ribbon-dropdown__arrow"
+            :class="{ 'is-open': isOpen }"
+          >
             <component :is="isOpen ? ArrowUp : ArrowDown" />
           </ElIcon>
         </span>
@@ -267,7 +319,10 @@ function humanizeItemId(value: string): string {
           >
             <span class="ml-ribbon-dropdown-item__content">
               <slot name="option" :option="option">
-                <ElIcon v-if="optionIconAsComponent(option)" class="ml-ribbon-dropdown-item__icon">
+                <ElIcon
+                  v-if="optionIconAsComponent(option)"
+                  class="ml-ribbon-dropdown-item__icon"
+                >
                   <component :is="optionIconAsComponent(option)" />
                 </ElIcon>
                 <i
@@ -276,7 +331,9 @@ function humanizeItemId(value: string): string {
                   :class="optionIconAsClass(option)"
                   aria-hidden="true"
                 />
-                <span class="ml-ribbon-dropdown-item__label">{{ optionLabel(option) }}</span>
+                <span class="ml-ribbon-dropdown-item__label">{{
+                  optionLabel(option)
+                }}</span>
               </slot>
             </span>
           </ElTooltip>

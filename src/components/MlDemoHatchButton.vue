@@ -26,12 +26,42 @@ const props = withDefaults(defineProps<MlDemoHatchButtonProps>(), {
   title: 'Hatch',
   modelValue: '',
   options: () => [
-    { value: 'solid', label: 'Solid', pattern: 'solid', command: 'hatch-pattern-solid' },
-    { value: 'ansi31', label: 'ANSI31', pattern: 'ansi31', command: 'hatch-pattern-ansi31' },
-    { value: 'ansi37', label: 'ANSI37', pattern: 'ansi37', command: 'hatch-pattern-ansi37' },
-    { value: 'grid', label: 'Grid', pattern: 'grid', command: 'hatch-pattern-grid' },
-    { value: 'cross', label: 'Cross', pattern: 'cross', command: 'hatch-pattern-cross' },
-    { value: 'brick', label: 'Brick', pattern: 'brick', command: 'hatch-pattern-brick' },
+    {
+      value: 'solid',
+      label: 'Solid',
+      pattern: 'solid',
+      command: 'hatch-pattern-solid',
+    },
+    {
+      value: 'ansi31',
+      label: 'ANSI31',
+      pattern: 'ansi31',
+      command: 'hatch-pattern-ansi31',
+    },
+    {
+      value: 'ansi37',
+      label: 'ANSI37',
+      pattern: 'ansi37',
+      command: 'hatch-pattern-ansi37',
+    },
+    {
+      value: 'grid',
+      label: 'Grid',
+      pattern: 'grid',
+      command: 'hatch-pattern-grid',
+    },
+    {
+      value: 'cross',
+      label: 'Cross',
+      pattern: 'cross',
+      command: 'hatch-pattern-cross',
+    },
+    {
+      value: 'brick',
+      label: 'Brick',
+      pattern: 'brick',
+      command: 'hatch-pattern-brick',
+    },
   ],
   popoverWidth: 236,
 })
@@ -40,11 +70,19 @@ const popoverVisible = ref(false)
 const localValue = ref(props.modelValue)
 const globalSize = useGlobalConfig('size', '')
 const resolvedRibbonSize = computed(() => globalSize.value || 'default')
-const popoverClass = computed(() => `ml-demo-hatch-button-popper ml-demo-hatch-button-popper--${resolvedRibbonSize.value}`)
-const selectedOption = computed(
-  () => props.options.find((option) => option.value === localValue.value) ?? props.options[0] ?? null,
+const popoverClass = computed(
+  () =>
+    `ml-demo-hatch-button-popper ml-demo-hatch-button-popper--${resolvedRibbonSize.value}`,
 )
-const accessibleLabel = computed(() => props.title || props.item.label || props.item.id)
+const selectedOption = computed(
+  () =>
+    props.options.find((option) => option.value === localValue.value) ??
+    props.options[0] ??
+    null,
+)
+const accessibleLabel = computed(
+  () => props.title || props.item.label || props.item.id,
+)
 
 watch(
   () => props.modelValue,
@@ -139,8 +177,14 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
           :disabled="disabled"
           @click="selectPattern(option)"
         >
-          <span class="ml-demo-hatch-button__option-pattern" :style="patternStyle(option)" aria-hidden="true" />
-          <span class="ml-demo-hatch-button__option-label">{{ option.label }}</span>
+          <span
+            class="ml-demo-hatch-button__option-pattern"
+            :style="patternStyle(option)"
+            aria-hidden="true"
+          />
+          <span class="ml-demo-hatch-button__option-label">{{
+            option.label
+          }}</span>
           <span
             v-if="option.value === selectedOption?.value"
             class="ml-demo-hatch-button__selected-mark"
@@ -159,7 +203,10 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
     --ml-rb-compact-height,
     calc(var(--el-component-size-small) * var(--ml-demo-hatch-scale))
   );
-  --ml-demo-hatch-font-sm: var(--ml-rb-font-sm, calc(var(--el-font-size-small) * var(--ml-demo-hatch-scale)));
+  --ml-demo-hatch-font-sm: var(
+    --ml-rb-font-sm,
+    calc(var(--el-font-size-small) * var(--ml-demo-hatch-scale))
+  );
   display: inline-flex;
   align-items: stretch;
   height: 100%;
@@ -175,12 +222,14 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 
 .ml-demo-hatch-button__icon-pattern,
 .ml-demo-hatch-button__option-pattern {
-  --ml-demo-hatch-pattern-bg: repeating-linear-gradient(45deg, #39424e 0 1px, transparent 1px 8px);
+  --ml-demo-hatch-pattern-bg: repeating-linear-gradient(
+    45deg,
+    #39424e 0 1px,
+    transparent 1px 8px
+  );
   display: inline-block;
   border: 1px solid var(--el-border-color);
-  background:
-    var(--ml-demo-hatch-pattern-bg),
-    var(--el-fill-color-blank);
+  background: var(--ml-demo-hatch-pattern-bg), var(--el-fill-color-blank);
   box-sizing: border-box;
 }
 
@@ -197,7 +246,10 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 
 .ml-demo-hatch-button__option {
   display: grid;
-  grid-template-columns: calc(28px * var(--ml-demo-hatch-scale)) minmax(0, 1fr) 8px;
+  grid-template-columns: calc(28px * var(--ml-demo-hatch-scale)) minmax(
+      0,
+      1fr
+    ) 8px;
   align-items: center;
   gap: 8px;
   min-height: calc(var(--ml-demo-hatch-compact-height) + 8px);
@@ -219,8 +271,16 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 }
 
 .ml-demo-hatch-button__option.is-selected {
-  border-color: color-mix(in oklab, var(--el-color-primary) 45%, var(--el-border-color));
-  background: color-mix(in oklab, var(--el-color-primary) 10%, var(--el-fill-color-blank));
+  border-color: color-mix(
+    in oklab,
+    var(--el-color-primary) 45%,
+    var(--el-border-color)
+  );
+  background: color-mix(
+    in oklab,
+    var(--el-color-primary) 10%,
+    var(--el-fill-color-blank)
+  );
 }
 
 .ml-demo-hatch-button__option:disabled {
@@ -251,8 +311,12 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 
 :global(.ml-demo-hatch-button-popper) {
   --ml-demo-hatch-scale: var(--ml-demo-hatch-popper-scale, 1);
-  --ml-demo-hatch-compact-height: calc(var(--el-component-size-small) * var(--ml-demo-hatch-scale));
-  --ml-demo-hatch-font-sm: calc(var(--el-font-size-small) * var(--ml-demo-hatch-scale));
+  --ml-demo-hatch-compact-height: calc(
+    var(--el-component-size-small) * var(--ml-demo-hatch-scale)
+  );
+  --ml-demo-hatch-font-sm: calc(
+    var(--el-font-size-small) * var(--ml-demo-hatch-scale)
+  );
   padding: 4px;
   border-radius: 6px;
 }
@@ -265,7 +329,10 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 
 :global(.ml-demo-hatch-button-popper .ml-demo-hatch-button__option) {
   display: grid;
-  grid-template-columns: calc(28px * var(--ml-demo-hatch-scale)) minmax(0, 1fr) 8px;
+  grid-template-columns: calc(28px * var(--ml-demo-hatch-scale)) minmax(
+      0,
+      1fr
+    ) 8px;
   align-items: center;
   gap: 8px;
   min-height: calc(var(--ml-demo-hatch-compact-height) + 8px);
@@ -286,9 +353,19 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
   background: var(--el-fill-color-blank);
 }
 
-:global(.ml-demo-hatch-button-popper .ml-demo-hatch-button__option.is-selected) {
-  border-color: color-mix(in oklab, var(--el-color-primary) 45%, var(--el-border-color));
-  background: color-mix(in oklab, var(--el-color-primary) 10%, var(--el-fill-color-blank));
+:global(
+  .ml-demo-hatch-button-popper .ml-demo-hatch-button__option.is-selected
+) {
+  border-color: color-mix(
+    in oklab,
+    var(--el-color-primary) 45%,
+    var(--el-border-color)
+  );
+  background: color-mix(
+    in oklab,
+    var(--el-color-primary) 10%,
+    var(--el-fill-color-blank)
+  );
 }
 
 :global(.ml-demo-hatch-button-popper .ml-demo-hatch-button__option:disabled) {
@@ -297,14 +374,16 @@ function patternStyle(option: MlDemoHatchPatternOption | null) {
 }
 
 :global(.ml-demo-hatch-button-popper .ml-demo-hatch-button__option-pattern) {
-  --ml-demo-hatch-pattern-bg: repeating-linear-gradient(45deg, #39424e 0 1px, transparent 1px 8px);
+  --ml-demo-hatch-pattern-bg: repeating-linear-gradient(
+    45deg,
+    #39424e 0 1px,
+    transparent 1px 8px
+  );
   display: inline-block;
   width: calc(28px * var(--ml-demo-hatch-scale));
   height: calc(22px * var(--ml-demo-hatch-scale));
   border: 1px solid var(--el-border-color);
-  background:
-    var(--ml-demo-hatch-pattern-bg),
-    var(--el-fill-color-blank);
+  background: var(--ml-demo-hatch-pattern-bg), var(--el-fill-color-blank);
   box-sizing: border-box;
 }
 

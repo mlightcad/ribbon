@@ -33,19 +33,26 @@ const props = withDefaults(
   {},
 )
 
-const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId: string }): void }>()
+const emit = defineEmits<{
+  (e: 'item-click', payload: { groupId: string; itemId: string }): void
+}>()
 </script>
 
 <template>
   <div
     class="ml-ribbon-group__content"
-    :class="[`ml-ribbon-group__content--${props.group.orientation ?? 'column'}`]"
+    :class="[
+      `ml-ribbon-group__content--${props.group.orientation ?? 'column'}`,
+    ]"
   >
     <MlRibbonCollection
       v-for="collection in props.group.collections ?? []"
       :id="collection.id"
       :key="collection.id"
-      :layout="collection.layout ?? (props.group.orientation === 'row' ? 'row' : 'column')"
+      :layout="
+        collection.layout ??
+        (props.group.orientation === 'row' ? 'row' : 'column')
+      "
       :rows="collection.rows"
     >
       <MlRibbonItemHost
@@ -56,7 +63,9 @@ const emit = defineEmits<{ (e: 'item-click', payload: { groupId: string; itemId:
         :group-id="props.group.id"
         :gallery-preview-fallback="props.galleryPreviewFallback"
         :disabled="props.disabled"
-        @item-click="emit('item-click', { groupId: props.group.id, itemId: $event })"
+        @item-click="
+          emit('item-click', { groupId: props.group.id, itemId: $event })
+        "
       />
     </MlRibbonCollection>
   </div>

@@ -1,14 +1,17 @@
 # Vue3 + Element Plus Ribbon Component Library Requirements (V1)
 
 ## 1. Summary
+
 Build a Vue3 + Element Plus Ribbon UI component library aligned with the behavior and information architecture of Syncfusion Vue Ribbon.
 
 Constraints:
+
 - Do not rebuild components that already exist in Element Plus.
 - Only implement Ribbon-specific structural, orchestration, and interaction layers missing from Element Plus.
 - Provide adapters to compose/drive Element Plus components.
 
 V1 scope (full alignment target):
+
 - Core Ribbon container and tab/group/collection structure
 - Advanced item types (group button, segmented, toggle, gallery, custom, template)
 - Layout modes and overflow/simplified behavior
@@ -18,9 +21,11 @@ V1 scope (full alignment target):
 - Customizable tab-right extension slot for host applications
 
 ## 2. Core Capabilities and Components
+
 Only components not provided by Element Plus should be newly implemented.
 
 ### 2.1 Structure Components
+
 - `MlRibbon`: top-level state container, layout/minimize/active-tab manager, event hub, runtime API entry.
 - `MlRibbonTabs` / `MlRibbonTab`: tab system, including normal and contextual tabs.
 - `MlRibbonGroup`: group shell with title, icon, priority, launcher support.
@@ -28,6 +33,7 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonItemHost`: unified host for item size mode, disabled status, key tip, and overflow mounting.
 
 ### 2.2 Advanced Items
+
 - `MlRibbonButton`: shared command button renderer for built-in button items and custom ribbon controls that need consistent icon/label/size behavior.
 - `MlRibbonButtonGroup`: grouped command buttons with no persistent selected item state.
 - `MlRibbonDropdown`: shared dropdown command renderer for built-in dropdown items and custom ribbon controls that need consistent trigger/menu styling.
@@ -39,13 +45,16 @@ Only components not provided by Element Plus should be newly implemented.
 - `MlRibbonTemplateItem`: slot-driven template item integrated with Ribbon context.
 
 ### 2.3 Modules
+
 - `MlRibbonFileMenu`: file entry menu model and actions.
 - `MlRibbonBackstage`: full-screen backstage shell (navigation + content).
 - `MlRibbonKeyTips`: key tip overlay with key sequence handling.
 - `MlRibbonContextualTabs`: contextual tab groups with show/hide and style marker.
 
 ### 2.4 Runtime API
+
 Expose runtime methods from `MlRibbon` instance:
+
 - `addTab/removeTab/showTab/hideTab/selectTab`
 - `addGroup/removeGroup/showGroup/hideGroup`
 - `addItem/removeItem/updateItem`
@@ -53,12 +62,14 @@ Expose runtime methods from `MlRibbon` instance:
 - `refreshLayout/minimize/toggleSimplified`
 
 Events:
+
 - `tabChange`, `layoutChange`, `itemClick`
 - `overflowOpen`, `overflowClose`
 - `backstageOpen`, `backstageClose`
 - `fileMenuSelect`
 
 ## 3. Public Interfaces and Models
+
 - `RibbonLayout = 'classic' | 'simplified'`
 - `RibbonItemSize = 'large' | 'medium' | 'small'`
 - `RibbonComponentSize = 'large' | 'default' | 'small'`
@@ -91,6 +102,7 @@ Events:
 - `MlRibbonGallery` supports per-item custom rendering with the `#item` slot or schema-driven gallery item `component`.
 
 Controlled props:
+
 - `v-model:activeTab`
 - `v-model:layout`
 - `v-model:minimized`
@@ -103,15 +115,18 @@ Controlled props:
 - `tooltipHideAfter?: number` (default `0`)
 
 Slots:
+
 - `tabs-extra`: host-provided custom content rendered at the right side of ribbon tab area
 - `backstage`: host-provided custom backstage content rendered inside backstage shell
 
 ## 4. Boundaries with Element Plus
+
 - Reuse Element Plus base controls directly (`ElButton`, `ElDropdown`, `ElCheckbox`, `ElColorPicker`, `ElSelect`, etc.).
 - Implement only Ribbon-only behavior in this project (layout orchestration, contextual orchestration, key tip system, backstage shell, gallery semantics).
 - Keep an adapter layer for mapping Ribbon model props/events into Element Plus controls.
 
 ## 5. Behavioral Acceptance
+
 - Support classic/simplified layout and runtime switching.
 - Support temporarily disabling the full ribbon during async host workflows such as opening files.
 - Support Element Plus light/dark theme switching without Ribbon-specific remount.
@@ -127,11 +142,13 @@ Slots:
 - Runtime API mutations keep internal state and UI consistent.
 
 ## 6. Testing Plan
+
 - Unit tests (Vitest): state machine, runtime API, overflow strategy, key tip matching.
 - Component tests (Vue Test Utils): rendering consistency across layouts/overflow and event propagation.
 - E2E tests (Playwright): key user workflows, key tips pathing, dynamic tab/group/item operations.
 
 ## 7. Naming and Style Rules
+
 - All public component names must use the `Ml` prefix.
 - All CSS classes/selectors must use the `ml-` prefix.
 - Ribbon component visible UI text must support internationalization:

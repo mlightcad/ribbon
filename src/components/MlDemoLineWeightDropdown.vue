@@ -35,12 +35,42 @@ interface MlDemoLineWeightDropdownProps extends RibbonCustomItemBindings {
  * Default line-weight presets shown when the host ribbon item does not provide its own list.
  */
 const fallbackOptions: MlDemoCadDropdownOption[] = [
-  { value: 'default', label: 'Default', weight: 2, command: 'entity-line-weight-default' },
-  { value: '0.13', label: '0.13 mm', weight: 1, command: 'entity-line-weight-0.13' },
-  { value: '0.25', label: '0.25 mm', weight: 2, command: 'entity-line-weight-0.25' },
-  { value: '0.35', label: '0.35 mm', weight: 3, command: 'entity-line-weight-0.35' },
-  { value: '0.50', label: '0.50 mm', weight: 4, command: 'entity-line-weight-0.50' },
-  { value: '0.70', label: '0.70 mm', weight: 5, command: 'entity-line-weight-0.70' },
+  {
+    value: 'default',
+    label: 'Default',
+    weight: 2,
+    command: 'entity-line-weight-default',
+  },
+  {
+    value: '0.13',
+    label: '0.13 mm',
+    weight: 1,
+    command: 'entity-line-weight-0.13',
+  },
+  {
+    value: '0.25',
+    label: '0.25 mm',
+    weight: 2,
+    command: 'entity-line-weight-0.25',
+  },
+  {
+    value: '0.35',
+    label: '0.35 mm',
+    weight: 3,
+    command: 'entity-line-weight-0.35',
+  },
+  {
+    value: '0.50',
+    label: '0.50 mm',
+    weight: 4,
+    command: 'entity-line-weight-0.50',
+  },
+  {
+    value: '0.70',
+    label: '0.70 mm',
+    weight: 5,
+    command: 'entity-line-weight-0.70',
+  },
 ]
 
 defineProps<MlDemoLineWeightDropdownProps>()

@@ -33,7 +33,9 @@ function normalizeComponentCandidate<T>(value: T): T {
  * @param props Raw item props from schema.
  * @returns Normalized props clone.
  */
-function normalizeItemProps(props?: Record<string, unknown>): Record<string, unknown> | undefined {
+function normalizeItemProps(
+  props?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
   if (!props) return undefined
   const nextProps: Record<string, unknown> = { ...props }
   if ('component' in nextProps) {
@@ -67,13 +69,16 @@ function normalizeItemProps(props?: Record<string, unknown>): Record<string, unk
         ...categoryRecord,
         items: Array.isArray(categoryRecord.items)
           ? categoryRecord.items.map((galleryItem) => {
-              if (!galleryItem || typeof galleryItem !== 'object') return galleryItem
+              if (!galleryItem || typeof galleryItem !== 'object')
+                return galleryItem
               const galleryItemRecord = galleryItem as Record<string, unknown>
               return {
                 ...galleryItemRecord,
                 preview: normalizeComponentCandidate(galleryItemRecord.preview),
                 icon: normalizeComponentCandidate(galleryItemRecord.icon),
-                component: normalizeComponentCandidate(galleryItemRecord.component),
+                component: normalizeComponentCandidate(
+                  galleryItemRecord.component,
+                ),
               }
             })
           : categoryRecord.items,
@@ -200,7 +205,9 @@ export function useRibbonState(
   const tooltipShowAfter = ref(initialTooltipShowAfter)
   const tooltipHideAfter = ref(initialTooltipHideAfter)
 
-  const visibleTabs = computed(() => tabs.value.filter((tab) => tab.visible !== false))
+  const visibleTabs = computed(() =>
+    tabs.value.filter((tab) => tab.visible !== false),
+  )
 
   const api: RibbonDynamicApi = {
     addTab(tab) {
@@ -247,7 +254,9 @@ export function useRibbonState(
       if (group) group.visible = false
     },
     addItem(tabId, groupId, collectionId, item) {
-      mutateItem(tabs.value, tabId, groupId, collectionId, (items) => items.push(cloneItem(item)))
+      mutateItem(tabs.value, tabId, groupId, collectionId, (items) =>
+        items.push(cloneItem(item)),
+      )
     },
     removeItem(tabId, groupId, collectionId, itemId) {
       mutateItem(tabs.value, tabId, groupId, collectionId, (items) => {

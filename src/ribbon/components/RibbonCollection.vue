@@ -47,5 +47,3 @@ const collectionStyle = computed(() => ({
     <slot />
   </div>
 </template>
-
-

@@ -35,11 +35,36 @@ interface MlDemoLineTypeDropdownProps extends RibbonCustomItemBindings {
  * Default line-type choices shown when no custom options are supplied.
  */
 const fallbackOptions: MlDemoCadDropdownOption[] = [
-  { value: 'bylayer', label: 'ByLayer', pattern: 'solid', command: 'entity-line-type-bylayer' },
-  { value: 'continuous', label: 'Continuous', pattern: 'solid', command: 'entity-line-type-continuous' },
-  { value: 'dashed', label: 'Dashed', pattern: 'dashed', command: 'entity-line-type-dashed' },
-  { value: 'hidden', label: 'Hidden', pattern: 'hidden', command: 'entity-line-type-hidden' },
-  { value: 'center', label: 'Center', pattern: 'center', command: 'entity-line-type-center' },
+  {
+    value: 'bylayer',
+    label: 'ByLayer',
+    pattern: 'solid',
+    command: 'entity-line-type-bylayer',
+  },
+  {
+    value: 'continuous',
+    label: 'Continuous',
+    pattern: 'solid',
+    command: 'entity-line-type-continuous',
+  },
+  {
+    value: 'dashed',
+    label: 'Dashed',
+    pattern: 'dashed',
+    command: 'entity-line-type-dashed',
+  },
+  {
+    value: 'hidden',
+    label: 'Hidden',
+    pattern: 'hidden',
+    command: 'entity-line-type-hidden',
+  },
+  {
+    value: 'center',
+    label: 'Center',
+    pattern: 'center',
+    command: 'entity-line-type-center',
+  },
 ]
 
 defineProps<MlDemoLineTypeDropdownProps>()

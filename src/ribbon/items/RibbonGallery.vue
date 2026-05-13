@@ -3,7 +3,10 @@ import { computed, markRaw, nextTick, ref, toRaw, watch } from 'vue'
 import { ArrowDown, ArrowUp, Bottom } from '@element-plus/icons-vue'
 import { ElIcon, ElPopover, useGlobalConfig } from 'element-plus'
 import type { Component } from 'vue'
-import type { RibbonGalleryCategoryModel, RibbonGalleryItemModel } from '../types'
+import type {
+  RibbonGalleryCategoryModel,
+  RibbonGalleryItemModel,
+} from '../types'
 
 defineOptions({
   name: 'MlRibbonGallery',
@@ -55,7 +58,12 @@ const props = withDefaults(
     inlineItemWidthMode?: 'fixed' | 'auto'
     previewFallback?: string
   }>(),
-  { disabled: false, collapsed: false, inlineItemLimit: 4, inlineItemWidthMode: 'fixed' },
+  {
+    disabled: false,
+    collapsed: false,
+    inlineItemLimit: 4,
+    inlineItemWidthMode: 'fixed',
+  },
 )
 
 const emit = defineEmits<{ (e: 'select', id: string): void }>()
@@ -79,14 +87,27 @@ const panelScale = computed(() => {
   if (resolvedSize.value === 'large') return 1.08
   return 1
 })
-const panelItemWidth = computed(() => Math.round(panelItemWidthBase * panelScale.value))
-const panelControlsWidth = computed(() => Math.round(panelControlsWidthBase * panelScale.value))
+const panelItemWidth = computed(() =>
+  Math.round(panelItemWidthBase * panelScale.value),
+)
+const panelControlsWidth = computed(() =>
+  Math.round(panelControlsWidthBase * panelScale.value),
+)
 const galleryLabel = computed(() => props.label?.trim() ?? '')
-const visibleCategoryCount = computed(() => props.categories.filter((category) => category.items.length > 0).length)
-const galleryItems = computed(() => props.categories.flatMap((category) => category.items))
-const collapsedItem = computed(() => galleryItems.value.find((item) => item.id === selected.value) ?? galleryItems.value[0])
+const visibleCategoryCount = computed(
+  () => props.categories.filter((category) => category.items.length > 0).length,
+)
+const galleryItems = computed(() =>
+  props.categories.flatMap((category) => category.items),
+)
+const collapsedItem = computed(
+  () =>
+    galleryItems.value.find((item) => item.id === selected.value) ??
+    galleryItems.value[0],
+)
 const normalizedInlineItemLimit = computed(() => {
-  if (!Number.isFinite(props.inlineItemLimit) || props.inlineItemLimit <= 0) return 4
+  if (!Number.isFinite(props.inlineItemLimit) || props.inlineItemLimit <= 0)
+    return 4
   return Math.floor(props.inlineItemLimit)
 })
 const effectiveInlineItemLimit = computed(() => {
@@ -95,18 +116,33 @@ const effectiveInlineItemLimit = computed(() => {
   if (total === 0) return Math.min(limit, 1)
   return Math.min(limit, total)
 })
-const inlineRowCount = computed(() => Math.max(1, Math.ceil(galleryItems.value.length / effectiveInlineItemLimit.value)))
-const normalizedInlineRowIndex = computed(() => Math.min(inlineRowIndex.value, inlineRowCount.value - 1))
-const canShowPreviousInlineRow = computed(() => hasInlineOverflow.value && normalizedInlineRowIndex.value > 0)
+const inlineRowCount = computed(() =>
+  Math.max(
+    1,
+    Math.ceil(galleryItems.value.length / effectiveInlineItemLimit.value),
+  ),
+)
+const normalizedInlineRowIndex = computed(() =>
+  Math.min(inlineRowIndex.value, inlineRowCount.value - 1),
+)
+const canShowPreviousInlineRow = computed(
+  () => hasInlineOverflow.value && normalizedInlineRowIndex.value > 0,
+)
 const canShowNextInlineRow = computed(
-  () => hasInlineOverflow.value && normalizedInlineRowIndex.value < inlineRowCount.value - 1,
+  () =>
+    hasInlineOverflow.value &&
+    normalizedInlineRowIndex.value < inlineRowCount.value - 1,
 )
 const visibleInlineItems = computed(() => {
   const start = normalizedInlineRowIndex.value * effectiveInlineItemLimit.value
   return galleryItems.value.slice(start, start + effectiveInlineItemLimit.value)
 })
-const visibleInlineIds = computed(() => new Set(visibleInlineItems.value.map((item) => item.id)))
-const hasInlineOverflow = computed(() => galleryItems.value.length > effectiveInlineItemLimit.value)
+const visibleInlineIds = computed(
+  () => new Set(visibleInlineItems.value.map((item) => item.id)),
+)
+const hasInlineOverflow = computed(
+  () => galleryItems.value.length > effectiveInlineItemLimit.value,
+)
 const panelPopperClass = computed(() => {
   const parts = [
     'ml-ribbon-gallery-panel',
@@ -128,7 +164,9 @@ const panelWidth = computed(() => {
     effectiveInlineItemLimit.value * panelItemWidth.value +
     Math.max(0, effectiveInlineItemLimit.value - 1) * panelGridGap +
     panelPadding * 2 +
-    (props.collapsed ? panelScrollbarWidth : panelControlsGap + panelControlsWidth.value)
+    (props.collapsed
+      ? panelScrollbarWidth
+      : panelControlsGap + panelControlsWidth.value)
   )
 })
 const inlinePanelPopperOptions = computed(() => ({
@@ -161,7 +199,10 @@ watch(
     ] as const,
   () => {
     if (!syncInlineRowToSelectedItem()) {
-      inlineRowIndex.value = Math.min(inlineRowIndex.value, inlineRowCount.value - 1)
+      inlineRowIndex.value = Math.min(
+        inlineRowIndex.value,
+        inlineRowCount.value - 1,
+      )
     }
   },
 )
@@ -215,7 +256,10 @@ function inlineCategoryItems(category: RibbonGalleryCategoryModel) {
 function moveInlineRow(direction: -1 | 1) {
   if (props.disabled || !hasInlineOverflow.value) return
   const nextIndex = normalizedInlineRowIndex.value + direction
-  inlineRowIndex.value = Math.min(Math.max(nextIndex, 0), inlineRowCount.value - 1)
+  inlineRowIndex.value = Math.min(
+    Math.max(nextIndex, 0),
+    inlineRowCount.value - 1,
+  )
 }
 
 /**
@@ -224,7 +268,9 @@ function moveInlineRow(direction: -1 | 1) {
  * @returns Zero-based inline row index.
  */
 function galleryItemRowIndex(item: RibbonGalleryItemModel) {
-  const itemIndex = galleryItems.value.findIndex((candidate) => candidate.id === item.id)
+  const itemIndex = galleryItems.value.findIndex(
+    (candidate) => candidate.id === item.id,
+  )
   if (itemIndex < 0) return 0
   return Math.floor(itemIndex / effectiveInlineItemLimit.value)
 }
@@ -251,9 +297,15 @@ function syncInlinePanelSkid() {
     inlinePanelSkid.value = 0
     return
   }
-  const firstInlineItem = gallery.querySelector<HTMLElement>('.ml-ribbon-gallery__grid .ml-ribbon-gallery__item')
-  const targetLeft = firstInlineItem?.getBoundingClientRect().left ?? gallery.getBoundingClientRect().left
-  inlinePanelSkid.value = Math.round(targetLeft - button.getBoundingClientRect().left - panelPadding)
+  const firstInlineItem = gallery.querySelector<HTMLElement>(
+    '.ml-ribbon-gallery__grid .ml-ribbon-gallery__item',
+  )
+  const targetLeft =
+    firstInlineItem?.getBoundingClientRect().left ??
+    gallery.getBoundingClientRect().left
+  inlinePanelSkid.value = Math.round(
+    targetLeft - button.getBoundingClientRect().left - panelPadding,
+  )
 }
 
 /**
@@ -262,7 +314,9 @@ function syncInlinePanelSkid() {
 function scrollInlinePanelToCurrentRow() {
   const panel = inlinePanelRef.value
   if (!panel) return
-  const target = panel.querySelector<HTMLElement>(`[data-gallery-row-index="${normalizedInlineRowIndex.value}"]`)
+  const target = panel.querySelector<HTMLElement>(
+    `[data-gallery-row-index="${normalizedInlineRowIndex.value}"]`,
+  )
   target?.scrollIntoView?.({ block: 'start' })
 }
 
@@ -272,8 +326,10 @@ function scrollInlinePanelToCurrentRow() {
  * @returns Vue component preview, or `null` when no component preview exists.
  */
 function previewComponent(item: RibbonGalleryItemModel): Component | null {
-  if (item.preview && typeof item.preview !== 'string') return normalizeComponentCandidate(item.preview)
-  if (item.icon && typeof item.icon !== 'string') return normalizeComponentCandidate(item.icon)
+  if (item.preview && typeof item.preview !== 'string')
+    return normalizeComponentCandidate(item.preview)
+  if (item.icon && typeof item.icon !== 'string')
+    return normalizeComponentCandidate(item.icon)
   return null
 }
 
@@ -383,7 +439,10 @@ function selectItem(item: RibbonGalleryItemModel) {
         <button
           type="button"
           class="ml-ribbon-gallery__collapsed-button"
-          :class="{ 'is-selected': selected === collapsedItem.id, 'is-open': panelOpen }"
+          :class="{
+            'is-selected': selected === collapsedItem.id,
+            'is-open': panelOpen,
+          }"
           :disabled="isItemDisabled(collapsedItem)"
         >
           <component
@@ -398,11 +457,16 @@ function selectItem(item: RibbonGalleryItemModel) {
             <div
               class="ml-ribbon-gallery__preview ml-ribbon-gallery__collapsed-preview"
               :class="{
-                'ml-ribbon-gallery__preview--icon': previewComponent(collapsedItem) || previewIconClass(collapsedItem),
+                'ml-ribbon-gallery__preview--icon':
+                  previewComponent(collapsedItem) ||
+                  previewIconClass(collapsedItem),
                 'ml-ribbon-gallery__preview--svg': previewSvg(collapsedItem),
               }"
             >
-              <ElIcon v-if="previewComponent(collapsedItem)" class="ml-ribbon-gallery__preview-icon">
+              <ElIcon
+                v-if="previewComponent(collapsedItem)"
+                class="ml-ribbon-gallery__preview-icon"
+              >
                 <component :is="previewComponent(collapsedItem)" />
               </ElIcon>
               <i
@@ -412,7 +476,9 @@ function selectItem(item: RibbonGalleryItemModel) {
                 aria-hidden="true"
               />
               <img
-                v-else-if="previewSvg(collapsedItem) && isSvgImagePreview(collapsedItem)"
+                v-else-if="
+                  previewSvg(collapsedItem) && isSvgImagePreview(collapsedItem)
+                "
                 class="ml-ribbon-gallery__preview-svg"
                 :src="previewSvg(collapsedItem) ?? ''"
                 alt=""
@@ -427,13 +493,24 @@ function selectItem(item: RibbonGalleryItemModel) {
               </svg>
               <template v-else>{{ previewText(collapsedItem) }}</template>
             </div>
-            <div class="ml-ribbon-gallery__label ml-ribbon-gallery__collapsed-label">{{ collapsedItem.label }}</div>
+            <div
+              class="ml-ribbon-gallery__label ml-ribbon-gallery__collapsed-label"
+            >
+              {{ collapsedItem.label }}
+            </div>
           </template>
         </button>
       </template>
       <div class="ml-ribbon-gallery__panel">
-        <section v-for="category in categories" :key="category.id" class="ml-ribbon-gallery__panel-category">
-          <h4 v-if="shouldShowCategoryTitle(category)" class="ml-ribbon-gallery__panel-category-title">
+        <section
+          v-for="category in categories"
+          :key="category.id"
+          class="ml-ribbon-gallery__panel-category"
+        >
+          <h4
+            v-if="shouldShowCategoryTitle(category)"
+            class="ml-ribbon-gallery__panel-category-title"
+          >
             {{ category.title }}
           </h4>
           <div class="ml-ribbon-gallery__panel-grid" :style="panelGridStyle">
@@ -467,11 +544,15 @@ function selectItem(item: RibbonGalleryItemModel) {
                   <div
                     class="ml-ribbon-gallery__preview"
                     :class="{
-                      'ml-ribbon-gallery__preview--icon': previewComponent(item) || previewIconClass(item),
+                      'ml-ribbon-gallery__preview--icon':
+                        previewComponent(item) || previewIconClass(item),
                       'ml-ribbon-gallery__preview--svg': previewSvg(item),
                     }"
                   >
-                    <ElIcon v-if="previewComponent(item)" class="ml-ribbon-gallery__preview-icon">
+                    <ElIcon
+                      v-if="previewComponent(item)"
+                      class="ml-ribbon-gallery__preview-icon"
+                    >
                       <component :is="previewComponent(item)" />
                     </ElIcon>
                     <i
@@ -505,15 +586,28 @@ function selectItem(item: RibbonGalleryItemModel) {
       </div>
     </ElPopover>
 
-    <div v-if="!collapsed && galleryLabel" class="ml-ribbon-gallery__title">{{ galleryLabel }}</div>
+    <div v-if="!collapsed && galleryLabel" class="ml-ribbon-gallery__title">
+      {{ galleryLabel }}
+    </div>
     <div v-if="!collapsed" class="ml-ribbon-gallery__categories">
-      <section v-for="category in categories" :key="category.id" class="ml-ribbon-gallery__category">
-        <h4 v-if="galleryLabel && shouldShowCategoryTitle(category)" class="ml-ribbon-gallery__category-title">
+      <section
+        v-for="category in categories"
+        :key="category.id"
+        class="ml-ribbon-gallery__category"
+      >
+        <h4
+          v-if="galleryLabel && shouldShowCategoryTitle(category)"
+          class="ml-ribbon-gallery__category-title"
+        >
           {{ category.title }}
         </h4>
         <div
           class="ml-ribbon-gallery__grid"
-          :style="{ '--ml-ribbon-gallery-inline-columns': String(effectiveInlineItemLimit) }"
+          :style="{
+            '--ml-ribbon-gallery-inline-columns': String(
+              effectiveInlineItemLimit,
+            ),
+          }"
         >
           <button
             v-for="item in inlineCategoryItems(category)"
@@ -545,11 +639,15 @@ function selectItem(item: RibbonGalleryItemModel) {
                 <div
                   class="ml-ribbon-gallery__preview"
                   :class="{
-                    'ml-ribbon-gallery__preview--icon': previewComponent(item) || previewIconClass(item),
+                    'ml-ribbon-gallery__preview--icon':
+                      previewComponent(item) || previewIconClass(item),
                     'ml-ribbon-gallery__preview--svg': previewSvg(item),
                   }"
                 >
-                  <ElIcon v-if="previewComponent(item)" class="ml-ribbon-gallery__preview-icon">
+                  <ElIcon
+                    v-if="previewComponent(item)"
+                    class="ml-ribbon-gallery__preview-icon"
+                  >
                     <component :is="previewComponent(item)" />
                   </ElIcon>
                   <i
@@ -580,7 +678,11 @@ function selectItem(item: RibbonGalleryItemModel) {
           </button>
         </div>
       </section>
-      <div v-if="hasInlineOverflow" class="ml-ribbon-gallery__controls" aria-label="Gallery navigation">
+      <div
+        v-if="hasInlineOverflow"
+        class="ml-ribbon-gallery__controls"
+        aria-label="Gallery navigation"
+      >
         <button
           type="button"
           class="ml-ribbon-gallery__control-button"
@@ -622,11 +724,21 @@ function selectItem(item: RibbonGalleryItemModel) {
             </button>
           </template>
           <div ref="inlinePanelRef" class="ml-ribbon-gallery__panel">
-            <section v-for="category in categories" :key="category.id" class="ml-ribbon-gallery__panel-category">
-              <h4 v-if="shouldShowCategoryTitle(category)" class="ml-ribbon-gallery__panel-category-title">
+            <section
+              v-for="category in categories"
+              :key="category.id"
+              class="ml-ribbon-gallery__panel-category"
+            >
+              <h4
+                v-if="shouldShowCategoryTitle(category)"
+                class="ml-ribbon-gallery__panel-category-title"
+              >
                 {{ category.title }}
               </h4>
-              <div class="ml-ribbon-gallery__panel-grid" :style="panelGridStyle">
+              <div
+                class="ml-ribbon-gallery__panel-grid"
+                :style="panelGridStyle"
+              >
                 <button
                   v-for="item in category.items"
                   :key="item.id"
@@ -658,11 +770,15 @@ function selectItem(item: RibbonGalleryItemModel) {
                       <div
                         class="ml-ribbon-gallery__preview"
                         :class="{
-                          'ml-ribbon-gallery__preview--icon': previewComponent(item) || previewIconClass(item),
+                          'ml-ribbon-gallery__preview--icon':
+                            previewComponent(item) || previewIconClass(item),
                           'ml-ribbon-gallery__preview--svg': previewSvg(item),
                         }"
                       >
-                        <ElIcon v-if="previewComponent(item)" class="ml-ribbon-gallery__preview-icon">
+                        <ElIcon
+                          v-if="previewComponent(item)"
+                          class="ml-ribbon-gallery__preview-icon"
+                        >
                           <component :is="previewComponent(item)" />
                         </ElIcon>
                         <i
@@ -672,7 +788,9 @@ function selectItem(item: RibbonGalleryItemModel) {
                           aria-hidden="true"
                         />
                         <img
-                          v-else-if="previewSvg(item) && isSvgImagePreview(item)"
+                          v-else-if="
+                            previewSvg(item) && isSvgImagePreview(item)
+                          "
                           class="ml-ribbon-gallery__preview-svg"
                           :src="previewSvg(item) ?? ''"
                           alt=""
@@ -687,7 +805,9 @@ function selectItem(item: RibbonGalleryItemModel) {
                         </svg>
                         <template v-else>{{ previewText(item) }}</template>
                       </div>
-                      <div class="ml-ribbon-gallery__label">{{ item.label }}</div>
+                      <div class="ml-ribbon-gallery__label">
+                        {{ item.label }}
+                      </div>
                     </template>
                   </slot>
                 </button>
