@@ -1027,7 +1027,16 @@ html.dark {
   min-height: calc(var(--ml-rb-compact-height) - 4px);
 }
 
+.ml-ribbon-segmented__control .el-segmented__item-label .el-tooltip__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: calc(var(--ml-rb-compact-height) - 6px);
+}
+
 .ml-ribbon-segmented__option {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;

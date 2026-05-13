@@ -81,6 +81,17 @@ export interface RibbonDropdownOption {
   divided?: boolean
 }
 
+/** Options for `RibbonItemModel` with `type: 'segmented'` (`props.options`). */
+export interface RibbonSegmentedOption {
+  label?: string
+  value: string | number | boolean
+  disabled?: boolean
+  icon?: string | Component
+  iconClass?: string
+  /** Tooltip for this segment; falls back to label then a humanized `value` string. */
+  tooltip?: string
+}
+
 export type RibbonGalleryPreview = string | Component
 
 export interface RibbonGalleryItemModel {

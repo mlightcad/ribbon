@@ -91,7 +91,9 @@ const resolvedTooltip = computed(() => {
     humanizeItemId(props.item.id)
   )
 })
-const shouldUseHostTooltip = computed(() => props.item.type !== 'buttonGroup')
+const shouldUseHostTooltip = computed(
+  () => props.item.type !== 'buttonGroup' && props.item.type !== 'segmented',
+)
 const shouldDisableHostTooltip = computed(
   () => !shouldUseHostTooltip.value || !resolvedTooltip.value,
 )
@@ -552,6 +554,8 @@ function humanizeItemId(value: string): string {
         :block="item.props?.block === true"
         :disabled="isDisabled"
         :hide-label="item.hideLabel === true"
+        :tooltip-show-after="resolvedTooltipShowAfter"
+        :tooltip-hide-after="resolvedTooltipHideAfter"
         @change="handleSegmentedChange"
       />
 
