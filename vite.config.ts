@@ -1,12 +1,19 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import ElementPlus from 'unplugin-element-plus/vite'
 
 export default defineConfig(({ mode }) => {
   const isLibBuild = mode === 'lib'
+  // Vitest imports transformed modules without resolving injected `.css` the same
+  // way as the Vite app pipeline; keep on-demand styles for dev / demo build only.
+  const useElementPlusOnDemand = !isLibBuild && !process.env.VITEST
 
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      ...(useElementPlusOnDemand ? [ElementPlus({})] : []),
+    ],
     build: isLibBuild
       ? {
           lib: {
@@ -35,7 +42,6 @@ export default defineConfig(({ mode }) => {
     test: {
       environment: 'jsdom',
       globals: true,
-      setupFiles: ['./src/tests/setup.ts'],
       include: ['src/tests/**/*.spec.ts'],
       exclude: ['playwright/**', 'node_modules/**'],
     },
