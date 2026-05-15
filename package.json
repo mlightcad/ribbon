@@ -1,6 +1,6 @@
 {
   "name": "@mlightcad/ribbon",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "packageManager": "pnpm@10.33.0",
   "type": "module",
   "main": "./dist/ml-ribbon.es.js",
@@ -62,6 +62,7 @@
     "prettier": "^3.8.3",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.1",
+    "unplugin-element-plus": "^0.11.2",
     "vite": "^8.0.4",
     "vitest": "^4.1.4",
     "vue": "^3.4.21",

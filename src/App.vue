@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ElOption, ElSelect } from 'element-plus'
-import { ElMessage } from 'element-plus'
+import { ElButton, ElMessage, ElOption, ElSelect } from 'element-plus'
 import {
   Aim,
   Brush,
