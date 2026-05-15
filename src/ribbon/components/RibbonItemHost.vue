@@ -616,6 +616,7 @@ function humanizeItemId(value: string): string {
         :tooltip="item.tooltip"
         :icon="buttonIcon"
         :options="(item.props?.options as any[]) ?? []"
+        :model-value="(item.props as { modelValue?: unknown } | undefined)?.modelValue"
         :disabled="isDisabled"
         :hide-label="item.hideLabel === true"
         :item-size="item.size ?? 'medium'"

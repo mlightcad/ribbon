@@ -143,6 +143,122 @@ describe('MlRibbonDropdown', () => {
       wrapper.unmount()
     }
   })
+
+  it('syncs selection from modelValue for controlled dropdowns', async () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'justify',
+        label: 'Justify',
+        itemSize: 'small',
+        modelValue: 'mtext-attachment:MC',
+        options: [
+          { label: 'Top Left', value: 'mtext-attachment:TL' },
+          { label: 'Middle Center', value: 'mtext-attachment:MC' },
+        ],
+      },
+    })
+
+    try {
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Middle Center',
+      )
+
+      await wrapper.setProps({ modelValue: 'mtext-attachment:TL' })
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Top Left',
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  const dropdownMenuStubs = {
+    ElDropdown: {
+      template:
+        '<div class="ml-test-dropdown"><slot /><slot name="dropdown" /></div>',
+    },
+    ElDropdownMenu: {
+      template: '<div class="ml-test-dropdown-menu"><slot /></div>',
+    },
+    ElDropdownItem: {
+      template: '<div class="ml-test-dropdown-item"><slot /></div>',
+    },
+    ElTooltip: {
+      template: '<div class="ml-test-tooltip"><slot /></div>',
+    },
+  }
+
+  it('does not reserve a leading check column without modelValue or syncLabelWithSelection', () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'line-type',
+        label: 'Line Type',
+        options: [
+          { label: 'Continuous', value: 'continuous' },
+          { label: 'Dashed', value: 'dashed' },
+        ],
+      },
+      global: { stubs: dropdownMenuStubs },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-dropdown-item__check').exists()).toBe(
+        false,
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('reserves a leading check column when modelValue is bound', () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'line-type',
+        label: 'Line Type',
+        modelValue: 'continuous',
+        options: [
+          { label: 'Continuous', value: 'continuous' },
+          { label: 'Dashed', value: 'dashed' },
+        ],
+      },
+      global: { stubs: dropdownMenuStubs },
+    })
+
+    try {
+      const checks = wrapper.findAll('.ml-ribbon-dropdown-item__check')
+      expect(checks).toHaveLength(2)
+      expect(checks[0]?.find('.ml-ribbon-dropdown-item__check-icon').exists()).toBe(
+        true,
+      )
+      expect(checks[1]?.find('.ml-ribbon-dropdown-item__check-icon').exists()).toBe(
+        false,
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('reserves a leading check column when syncLabelWithSelection is true', () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'line-type',
+        label: 'Line Type',
+        syncLabelWithSelection: true,
+        options: [
+          { label: 'Continuous', value: 'continuous' },
+          { label: 'Dashed', value: 'dashed' },
+        ],
+      },
+      global: { stubs: dropdownMenuStubs },
+    })
+
+    try {
+      expect(wrapper.findAll('.ml-ribbon-dropdown-item__check')).toHaveLength(2)
+    } finally {
+      wrapper.unmount()
+    }
+  })
 })
 
 describe('MlDemoColorDropdown', () => {

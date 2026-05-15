@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
-import { computed, ref } from 'vue'
+import { ArrowDown, ArrowUp, Check } from '@element-plus/icons-vue'
+import { computed, ref, watch } from 'vue'
 import {
   ElButton,
   ElDropdown,
@@ -31,7 +31,8 @@ defineOptions({
  * @prop options - Dropdown command options.
  * @prop disabled - Disables trigger and options.
  * @prop hideLabel - Hides trigger label while preserving arrow/icon affordance.
- * @prop syncLabelWithSelection - Uses the selected option label as trigger label.
+ * @prop syncLabelWithSelection - Uses the selected option label as trigger label; enables the menu check column.
+ * @prop modelValue - When not `undefined`, keeps the trigger/menu selection in sync (controlled mode) and enables the menu check column.
  *
  * @event command - Emitted with the selected/current option value.
  * @event click - Emitted when the primary icon is clicked before an option is selected.
@@ -54,6 +55,7 @@ const props = withDefaults(
     tooltipShowAfter?: number
     tooltipHideAfter?: number
     popperClass?: string
+    modelValue?: unknown
   }>(),
   {
     label: undefined,
@@ -67,6 +69,7 @@ const props = withDefaults(
     tooltipShowAfter: 1000,
     tooltipHideAfter: 0,
     popperClass: undefined,
+    modelValue: undefined,
   },
 )
 
@@ -80,6 +83,16 @@ const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
 const isOpen = ref(false)
 const selectedValue = ref<unknown>(undefined)
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val !== undefined) {
+      selectedValue.value = val
+    }
+  },
+  { immediate: true },
+)
 
 const normalizedOptions = computed(() =>
   Array.isArray(props.options) ? props.options : [],
@@ -99,6 +112,10 @@ const resolvedLabel = computed(() => {
 })
 const shouldShowLabel = computed(
   () => !props.hideLabel && resolvedLabel.value.length > 0,
+)
+/** Reserve leading check column only when selection is surfaced (controlled value or label sync). */
+const showSelectionCheckColumn = computed(
+  () => props.modelValue !== undefined || props.syncLabelWithSelection,
 )
 const iconComponent = computed<Component | null>(() => {
   if (selectedOption.value) {
@@ -239,6 +256,10 @@ function humanizeItemId(value: string): string {
   if (!normalized) return value
   return normalized.replace(/\b\w/g, (char) => char.toUpperCase())
 }
+
+function isOptionSelected(option: unknown): boolean {
+  return optionValue(option) === selectedValue.value
+}
 </script>
 
 <template>
@@ -308,6 +329,10 @@ function humanizeItemId(value: string): string {
           :command="optionCommand(option)"
           :disabled="option.disabled === true"
           :divided="option.divided === true"
+          :aria-current="isOptionSelected(option) ? 'true' : undefined"
+          :class="{
+            'ml-ribbon-dropdown-item--selected': isOptionSelected(option),
+          }"
         >
           <ElTooltip
             :content="optionTooltip(option)"
@@ -319,21 +344,37 @@ function humanizeItemId(value: string): string {
           >
             <span class="ml-ribbon-dropdown-item__content">
               <slot name="option" :option="option">
-                <ElIcon
-                  v-if="optionIconAsComponent(option)"
-                  class="ml-ribbon-dropdown-item__icon"
-                >
-                  <component :is="optionIconAsComponent(option)" />
-                </ElIcon>
-                <i
-                  v-else-if="optionIconAsClass(option)"
-                  class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
-                  :class="optionIconAsClass(option)"
-                  aria-hidden="true"
-                />
-                <span class="ml-ribbon-dropdown-item__label">{{
-                  optionLabel(option)
-                }}</span>
+                <span class="ml-ribbon-dropdown-item__row">
+                  <span
+                    v-if="showSelectionCheckColumn"
+                    class="ml-ribbon-dropdown-item__check"
+                    aria-hidden="true"
+                  >
+                    <ElIcon
+                      v-if="isOptionSelected(option)"
+                      class="ml-ribbon-dropdown-item__check-icon"
+                    >
+                      <Check />
+                    </ElIcon>
+                  </span>
+                  <span class="ml-ribbon-dropdown-item__main">
+                    <ElIcon
+                      v-if="optionIconAsComponent(option)"
+                      class="ml-ribbon-dropdown-item__icon"
+                    >
+                      <component :is="optionIconAsComponent(option)" />
+                    </ElIcon>
+                    <i
+                      v-else-if="optionIconAsClass(option)"
+                      class="ml-ribbon-dropdown-item__icon ml-ribbon-dropdown-item__icon--class"
+                      :class="optionIconAsClass(option)"
+                      aria-hidden="true"
+                    />
+                    <span class="ml-ribbon-dropdown-item__label">{{
+                      optionLabel(option)
+                    }}</span>
+                  </span>
+                </span>
               </slot>
             </span>
           </ElTooltip>
@@ -342,3 +383,43 @@ function humanizeItemId(value: string): string {
     </template>
   </ElDropdown>
 </template>
+
+<style scoped>
+.ml-ribbon-dropdown-item__row {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 0;
+}
+
+.ml-ribbon-dropdown-item__check {
+  display: inline-flex;
+  width: 1em;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.ml-ribbon-dropdown-item__check-icon {
+  font-size: 1em;
+  color: var(--el-color-primary);
+}
+
+.ml-ribbon-dropdown-item__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 0;
+  flex: 1;
+}
+
+.ml-ribbon-dropdown-item--selected {
+  font-weight: 600;
+  color: var(--el-color-primary);
+  background-color: var(--el-dropdown-menuItem-hover-fill);
+}
+
+.ml-ribbon-dropdown-item--selected .ml-ribbon-dropdown-item__label {
+  color: inherit;
+}
+</style>
