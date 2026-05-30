@@ -46,7 +46,7 @@ Only components not provided by Element Plus should be newly implemented.
 
 ### 2.3 Modules
 
-- `MlRibbonFileMenu`: file entry menu model and actions.
+- `MlRibbonFileMenu`: file entry menu model and actions; supports nested `FileMenuItemModel.children` hover submenus (right-start placement).
 - `MlRibbonBackstage`: full-screen backstage shell (navigation + content).
 - `MlRibbonKeyTips`: key tip overlay with key sequence handling.
 - `MlRibbonContextualTabs`: contextual tab groups with show/hide and style marker.
@@ -76,6 +76,7 @@ Events:
 - `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'inputNumber' | 'gallery' | 'custom' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
+- `FileMenuItemModel`: `id`, `label`, optional `disabled`, optional recursive `children`; parent rows with `children` open a hover submenu; `fileMenuSelect` emits the leaf command `id`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
 - `RibbonItemModel.tooltip?: string` for per-item tooltip text; falls back to `label` when omitted
 - `MlRibbon.tooltipShowAfter?: number` for global tooltip show delay in milliseconds

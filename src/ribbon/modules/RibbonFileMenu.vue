@@ -7,6 +7,9 @@ import {
   useGlobalConfig,
 } from 'element-plus'
 
+import type { FileMenuItemModel } from '../types'
+import RibbonFileMenuItem from './RibbonFileMenuItem.vue'
+
 /**
  * @component MlRibbonFileMenu
  * @description
@@ -33,7 +36,7 @@ import {
  * ```
  */
 const props = defineProps<{
-  items: { id: string; label: string; disabled?: boolean }[]
+  items: FileMenuItemModel[]
   label?: string
   openBackstageLabel?: string
   showOpenBackstage?: boolean
@@ -103,15 +106,14 @@ watch(
         >
           {{ props.openBackstageLabel }}
         </ElDropdownItem>
-        <ElDropdownItem
+        <RibbonFileMenuItem
           v-for="(item, index) in props.items"
           :key="item.id"
+          :item="item"
           :divided="props.showOpenBackstage !== false && index === 0"
-          :command="item.id"
-          :disabled="item.disabled"
-        >
-          {{ item.label }}
-        </ElDropdownItem>
+          :popper-class="popperClass"
+          @select="onCommand"
+        />
       </ElDropdownMenu>
     </template>
   </ElDropdown>

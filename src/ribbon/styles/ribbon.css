@@ -175,6 +175,34 @@ html.dark {
   min-height: 20px;
 }
 
+.ml-ribbon-file-menu-submenu.el-dropdown-menu__item {
+  padding: 0;
+}
+
+.ml-ribbon-file-menu-submenu .el-dropdown {
+  display: block;
+  width: 100%;
+}
+
+.ml-ribbon-file-menu-submenu__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 16px;
+  line-height: 20px;
+  min-height: 20px;
+  cursor: pointer;
+}
+
+.ml-ribbon-file-menu-submenu__arrow {
+  font-size: 12px;
+  color: var(--ml-rb-tab-text);
+  opacity: 0.65;
+}
+
 .ml-ribbon-dropdown-menu .el-dropdown-menu__item,
 .ml-ribbon-select-dropdown .el-select-dropdown__item {
   font-size: calc(var(--el-font-size-small) * var(--ml-rb-popper-scale, 1));

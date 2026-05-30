@@ -19,7 +19,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
   - `MlRibbonGallery`
   - Schema-driven `custom` items for embedding host Vue components in groups
   - `MlRibbonTemplateItem`
-- File menu and backstage shells
+- File menu and backstage shells; file menu items support optional nested `children` (hover right-start submenus; `@file-menu-select` emits the chosen leaf item `id`)
 - Contextual tabs and key tips overlays
 - Runtime dynamic API for tab/group/item mutations
 - Size unification with Element Plus (`large/default/small`) via `MlRibbon` `size` prop or global `ElConfigProvider`
@@ -168,7 +168,7 @@ function handleItemClick(payload: {
 - `hide-key-tips-toggle` whether to hide key tips toggle, default `false`
 - `show-file-menu` whether to show file menu, default `true`
 - `show-open-backstage` whether to show `Open backstage` command in File menu, default `true`
-- `file-menu-items` file menu item list
+- `file-menu-items` `FileMenuItemModel[]` — each item has `id`, `label`, optional `disabled`, and optional recursive `children` for hover submenus (see §4.5)
 - `texts` localized UI text overrides
 - `tooltip-show-after` global tooltip show delay in milliseconds, default `1000`
 - `tooltip-hide-after` global tooltip hide delay in milliseconds, default `0`
@@ -289,6 +289,31 @@ const tabs = [
     ],
   },
 }
+```
+
+### 4.5 Nested file menu items
+
+Pass `file-menu-items` as `FileMenuItemModel[]`. Items with a non-empty `children` array render as hover submenus to the right; leaf items without `children` behave like plain commands. `@file-menu-select` always receives the selected leaf command `id` (parents with children do not emit on their own).
+
+```ts
+import type { FileMenuItemModel } from '@mlightcad/ribbon'
+
+const fileMenuItems: FileMenuItemModel[] = [
+  { id: 'new', label: 'New' },
+  { id: 'open', label: 'Open' },
+  {
+    id: 'export',
+    label: 'Export',
+    children: [
+      { id: 'export-dxf', label: 'Export to DXF' },
+      { id: 'export-pdf', label: 'Export to PDF' },
+    ],
+  },
+]
+```
+
+```vue
+<MlRibbon :tabs="tabs" :file-menu-items="fileMenuItems" @file-menu-select="onFileMenuSelect" />
 ```
 
 ### 5. Dynamic Runtime API (Component Ref)
