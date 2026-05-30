@@ -228,12 +228,12 @@ describe('MlRibbonDropdown', () => {
     try {
       const checks = wrapper.findAll('.ml-ribbon-dropdown-item__check')
       expect(checks).toHaveLength(2)
-      expect(checks[0]?.find('.ml-ribbon-dropdown-item__check-icon').exists()).toBe(
-        true,
-      )
-      expect(checks[1]?.find('.ml-ribbon-dropdown-item__check-icon').exists()).toBe(
-        false,
-      )
+      expect(
+        checks[0]?.find('.ml-ribbon-dropdown-item__check-icon').exists(),
+      ).toBe(true)
+      expect(
+        checks[1]?.find('.ml-ribbon-dropdown-item__check-icon').exists(),
+      ).toBe(false)
     } finally {
       wrapper.unmount()
     }
@@ -2319,6 +2319,41 @@ describe('MlRibbon', () => {
       groupId: 'grp',
       itemId: 'btn1',
     })
+  })
+
+  it('renders nested file menu commands in a submenu', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: {
+        tabs,
+        showOpenBackstage: false,
+        fileMenuItems: [
+          {
+            id: 'export',
+            label: 'Export',
+            children: [
+              { id: 'export-dxf', label: 'Export to DXF' },
+              { id: 'export-pdf', label: 'Export to PDF' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const fileTab = wrapper.find('.ml-ribbon-tab--file')
+      expect(fileTab.exists()).toBe(true)
+      await fileTab.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(
+        document.body.querySelector('.ml-ribbon-file-menu-submenu__trigger')
+          ?.textContent,
+      ).toContain('Export')
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('hides open backstage menu command when showOpenBackstage is false', async () => {

@@ -35,6 +35,7 @@ export interface FileMenuItemModel {
   id: string
   label: string
   disabled?: boolean
+  children?: FileMenuItemModel[]
 }
 
 export interface RibbonLocaleTexts {

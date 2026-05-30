@@ -10,10 +10,7 @@ export default defineConfig(({ mode }) => {
   const useElementPlusOnDemand = !isLibBuild && !process.env.VITEST
 
   return {
-    plugins: [
-      vue(),
-      ...(useElementPlusOnDemand ? [ElementPlus({})] : []),
-    ],
+    plugins: [vue(), ...(useElementPlusOnDemand ? [ElementPlus({})] : [])],
     build: isLibBuild
       ? {
           lib: {

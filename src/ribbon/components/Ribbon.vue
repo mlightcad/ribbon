@@ -25,6 +25,7 @@ import type { ComponentSize } from 'element-plus'
 import { ribbonKey } from '../context'
 import { useRibbonState } from '../composables/useRibbonState'
 import type {
+  FileMenuItemModel,
   RibbonDynamicApi,
   RibbonGroupModel,
   RibbonItemModel,
@@ -255,7 +256,7 @@ const props = withDefaults(
     hideKeyTipsToggle?: boolean
     showFileMenu?: boolean
     showOpenBackstage?: boolean
-    fileMenuItems?: { id: string; label: string; disabled?: boolean }[]
+    fileMenuItems?: FileMenuItemModel[]
     texts?: RibbonLocaleTexts
     tooltipShowAfter?: number
     tooltipHideAfter?: number
