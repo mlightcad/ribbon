@@ -2356,6 +2356,86 @@ describe('MlRibbon', () => {
     }
   })
 
+  it('renders file menu item dividers from model', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: {
+        tabs,
+        showOpenBackstage: false,
+        fileMenuItems: [
+          { id: 'new', label: 'New' },
+          { id: 'save', label: 'Save', divided: true },
+          {
+            id: 'export',
+            label: 'Export',
+            divided: true,
+            children: [
+              { id: 'export-dxf', label: 'Export to DXF' },
+              { id: 'export-pdf', label: 'Export to PDF', divided: true },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const fileTab = wrapper.find('.ml-ribbon-tab--file')
+      expect(fileTab.exists()).toBe(true)
+      await fileTab.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const menuItems = Array.from(
+        document.body.querySelectorAll(
+          '.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item',
+        ),
+      )
+      const saveItem = menuItems.find((item) =>
+        item.textContent?.includes('Save'),
+      )
+      const exportItem = menuItems.find((item) =>
+        item.textContent?.includes('Export'),
+      )
+      // Element Plus renders `divided` as a preceding separator <li>, not a class on the item.
+      expect(
+        saveItem?.previousElementSibling?.classList.contains(
+          'el-dropdown-menu__item--divided',
+        ),
+      ).toBe(true)
+      expect(
+        exportItem?.previousElementSibling?.classList.contains(
+          'el-dropdown-menu__item--divided',
+        ),
+      ).toBe(true)
+
+      const submenuTrigger = document.body.querySelector(
+        '.ml-ribbon-file-menu-submenu__trigger',
+      ) as HTMLElement | null
+      expect(submenuTrigger).toBeTruthy()
+      submenuTrigger?.dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: true }),
+      )
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const nestedItems = Array.from(
+        document.body.querySelectorAll(
+          '.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item',
+        ),
+      )
+      const exportPdfItem = nestedItems.find((item) =>
+        item.textContent?.includes('Export to PDF'),
+      )
+      expect(
+        exportPdfItem?.previousElementSibling?.classList.contains(
+          'el-dropdown-menu__item--divided',
+        ),
+      ).toBe(true)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('hides open backstage menu command when showOpenBackstage is false', async () => {
     const wrapper = mount(MlRibbon, {
       attachTo: document.body,

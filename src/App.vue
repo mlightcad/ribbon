@@ -1171,6 +1171,10 @@ const zhCNMap: Record<string, string> = {
   New: '新建',
   Open: '打开',
   Save: '保存',
+  Export: '导出',
+  'Export to DXF': '导出为 DXF',
+  'Export to PDF': '导出为 PDF',
+  Exit: '退出',
   Info: '信息',
   Print: '打印',
   Share: '共享',
@@ -1551,6 +1555,29 @@ const fileMenuItems = computed(() => [
   { id: 'new', label: translate('New') ?? 'New' },
   { id: 'open', label: translate('Open') ?? 'Open' },
   { id: 'save', label: translate('Save') ?? 'Save' },
+  {
+    id: 'export',
+    label: translate('Export') ?? 'Export',
+    divided: true,
+    children: [
+      { id: 'export-dxf', label: translate('Export to DXF') ?? 'Export to DXF' },
+      {
+        id: 'export-pdf',
+        label: translate('Export to PDF') ?? 'Export to PDF',
+        divided: true,
+      },
+    ],
+  },
+  {
+    id: 'print',
+    label: translate('Print') ?? 'Print',
+    divided: true,
+  },
+  {
+    id: 'exit',
+    label: translate('Exit') ?? 'Exit',
+    divided: true,
+  },
 ])
 
 const backstageItems = computed(() => [

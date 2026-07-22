@@ -55,6 +55,7 @@ function onCommand(value: string) {
             v-for="child in props.item.children"
             :key="child.id"
             :item="child"
+            :divided="child.divided === true"
             :popper-class="props.popperClass"
             @select="onCommand"
           />

@@ -110,7 +110,10 @@ watch(
           v-for="(item, index) in props.items"
           :key="item.id"
           :item="item"
-          :divided="props.showOpenBackstage !== false && index === 0"
+          :divided="
+            item.divided === true ||
+            (props.showOpenBackstage !== false && index === 0)
+          "
           :popper-class="popperClass"
           @select="onCommand"
         />
