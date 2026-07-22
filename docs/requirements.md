@@ -76,7 +76,7 @@ Events:
 - `RibbonItemType = 'button' | 'toggle' | 'segmented' | 'dropdown' | 'splitButton' | 'buttonGroup' | 'checkbox' | 'colorPicker' | 'comboBox' | 'inputNumber' | 'gallery' | 'custom' | 'template'`
 - `RibbonTabModel`, `RibbonGroupModel`, `RibbonCollectionModel`, `RibbonItemModel`
 - `KeyTipModel`, `FileMenuItemModel`
-- `FileMenuItemModel`: `id`, `label`, optional `disabled`, optional recursive `children`; parent rows with `children` open a hover submenu; `fileMenuSelect` emits the leaf command `id`
+- `FileMenuItemModel`: `id`, `label`, optional `disabled`, optional `divided` (divider line above the item, including nested `children`), optional recursive `children`; parent rows with `children` open a hover submenu; `fileMenuSelect` emits the leaf command `id`
 - `RibbonItemModel.hideLabel?: boolean` for icon-only command display
 - `RibbonItemModel.tooltip?: string` for per-item tooltip text; falls back to `label` when omitted
 - `MlRibbon.tooltipShowAfter?: number` for global tooltip show delay in milliseconds

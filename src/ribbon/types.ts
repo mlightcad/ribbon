@@ -35,6 +35,11 @@ export interface FileMenuItemModel {
   id: string
   label: string
   disabled?: boolean
+  /**
+   * When true, renders a divider line above this item (Element Plus `divided`).
+   * Also applies to nested `children` entries.
+   */
+  divided?: boolean
   children?: FileMenuItemModel[]
 }
 
