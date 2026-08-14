@@ -40,6 +40,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Group width is auto-sized when `RibbonGroupModel.width` is omitted; provide `width` for a fixed pixel width
 - Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
 - Dropdown menu separators: per-option `divided: true` on `RibbonDropdownOption` maps to Element Plus `ElDropdownItem` `divided`, drawing a horizontal rule **above** that row (for example before a trailing “Other…” / character-map entry)
+- Customizable after-minimize extension area via `MlRibbon` `#tabs-after` slot
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot
 - Custom Vue components can be mounted directly from the ribbon schema with `type: 'custom'`, `props.component`, and `props.componentProps`
 - Custom ribbon controls can reuse `MlRibbonButton` and `MlRibbonDropdown` for consistent icon, label, dropdown, theme, and size behavior.
@@ -182,13 +183,17 @@ function handleItemClick(payload: {
 - `@overflow-open` / `@overflow-close`
 - `@backstage-open` / `@backstage-close`
 
-### 4.1 Tab-Right Custom Slot
+### 4.1 Header Custom Slots
 
-Use `#tabs-extra` to render custom controls at the far-right side of the ribbon header (for example language switchers).
+Use `#tabs-after` to render custom controls after the last ribbon tab and the minimize/expand button (for example undo/redo).
+Use `#tabs-extra` to render custom controls at the far-right side of the ribbon header (for example language switchers). `#tabs-extra` is always pinned to the far right; it cannot be placed next to the tab strip or minimize button.
 Slot props include `activeTab`, `layout`, `minimized`, and `disabled`.
 
 ```vue
 <MlRibbon :tabs="tabs">
+  <template #tabs-after="{ disabled }">
+    <MyUndoRedoBar :disabled="disabled" />
+  </template>
   <template #tabs-extra="{ disabled }">
     <MyLanguageSwitcher :disabled="disabled" />
   </template>
