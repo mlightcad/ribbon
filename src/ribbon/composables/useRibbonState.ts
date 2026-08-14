@@ -139,6 +139,16 @@ function cloneTabs(tabs: RibbonTabModel[]): RibbonTabModel[] {
   return tabs.map(cloneTab)
 }
 
+/** Whether a tab should appear in the tab strip (`visible` defaults to true). */
+export function isRibbonTabShown(tab: RibbonTabModel | undefined): boolean {
+  return tab != null && tab.visible !== false
+}
+
+/** Id of the first tab that is not explicitly hidden. */
+export function firstVisibleRibbonTabId(tabs: RibbonTabModel[]): string {
+  return tabs.find(isRibbonTabShown)?.id ?? ''
+}
+
 /**
  * Ensures group has at least one collection for item insertion.
  * @param group Group model that may miss collections.
@@ -195,7 +205,11 @@ export function useRibbonState(
   const disabled = ref(initialDisabled)
   const layout = ref<RibbonLayout>(initialLayout)
   const minimized = ref(initialMinimized)
-  const activeTab = ref(initialActiveTab)
+  const activeTab = ref(
+    isRibbonTabShown(initialTabs.find(tab => tab.id === initialActiveTab))
+      ? initialActiveTab
+      : firstVisibleRibbonTabId(initialTabs)
+  )
   const tabs = ref<RibbonTabModel[]>(cloneTabs(initialTabs))
   const overflowOpen = ref(false)
   const backdropOpen = ref(false)
@@ -227,6 +241,9 @@ export function useRibbonState(
     hideTab(tabId) {
       const tab = tabs.value.find((x) => x.id === tabId)
       if (tab) tab.visible = false
+      if (activeTab.value === tabId) {
+        activeTab.value = firstVisibleRibbonTabId(tabs.value)
+      }
     },
     selectTab(tabId) {
       activeTab.value = tabId

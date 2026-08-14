@@ -1920,6 +1920,50 @@ describe('MlRibbon', () => {
     expect(wrapper.text()).toContain('Run')
   })
 
+  it('hides tabs with visible false and selects the first visible tab', async () => {
+    const wrapper = mount(MlRibbon, {
+      props: {
+        activeTab: 'home',
+        tabs: [
+          {
+            id: 'home',
+            title: 'Home',
+            visible: false,
+            groups: tabs[0].groups,
+          },
+          {
+            id: 'measurement',
+            title: 'Measure',
+            groups: [
+              {
+                id: 'measure-group',
+                title: 'Measure',
+                collections: [
+                  {
+                    id: 'measure-collection',
+                    items: [
+                      { id: 'distance', type: 'button', label: 'Distance' },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    })
+    await waitForRibbonLayout(wrapper)
+    expect(
+      wrapper
+        .findAll('.ml-ribbon-tabs .ml-ribbon-tab')
+        .map(button => button.text()),
+    ).toEqual(['Measure'])
+    expect(wrapper.find('.ml-ribbon-tabs .ml-ribbon-tab.is-active').text()).toBe(
+      'Measure',
+    )
+    wrapper.unmount()
+  })
+
   it('supports layout updates', async () => {
     const wrapper = mount(MlRibbon, { props: { tabs, activeTab: 'home' } })
     await wrapper.setProps({ layout: 'simplified' })
@@ -2512,6 +2556,32 @@ describe('MlRibbon', () => {
     expect(slotHost.exists()).toBe(true)
     expect(slotHost.find('.ml-test-tabs-extra').exists()).toBe(true)
     expect(wrapper.text()).toContain('Language')
+  })
+
+  it('renders custom tabs-after slot content after the minimize button', () => {
+    const wrapper = mount(MlRibbon, {
+      props: { tabs },
+      slots: {
+        'tabs-after': '<button class="ml-test-tabs-after">Undo</button>',
+      },
+    })
+
+    const left = wrapper.find('.ml-ribbon__head-left')
+    const slotHost = left.find('.ml-ribbon__tabs-after')
+    expect(slotHost.exists()).toBe(true)
+    expect(slotHost.find('.ml-test-tabs-after').exists()).toBe(true)
+    expect(
+      wrapper.find('.ml-ribbon__head-right .ml-ribbon__tabs-after').exists(),
+    ).toBe(false)
+
+    const leftHtml = left.element.innerHTML
+    expect(leftHtml.indexOf('ml-ribbon-contextual-tabs')).toBeGreaterThan(-1)
+    expect(leftHtml.indexOf('ml-ribbon__control--minimize')).toBeGreaterThan(
+      leftHtml.indexOf('ml-ribbon-contextual-tabs'),
+    )
+    expect(leftHtml.indexOf('ml-ribbon__tabs-after')).toBeGreaterThan(
+      leftHtml.indexOf('ml-ribbon__control--minimize'),
+    )
   })
 
   it('renders schema-driven custom components inside ribbon groups and forwards emitted item ids', async () => {

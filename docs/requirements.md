@@ -18,7 +18,7 @@ V1 scope (full alignment target):
 - File menu and backstage
 - Contextual tabs and key tips
 - Runtime dynamic API (add/remove/show/hide/update)
-- Customizable tab-right extension slot for host applications
+- Customizable after-tab and tab-right extension slots for host applications
 
 ## 2. Core Capabilities and Components
 
@@ -117,7 +117,8 @@ Controlled props:
 
 Slots:
 
-- `tabs-extra`: host-provided custom content rendered at the right side of ribbon tab area
+- `tabs-after`: host-provided custom content rendered after the last ribbon tab and the minimize/expand button
+- `tabs-extra`: host-provided custom content rendered at the far-right side of ribbon header; position is not configurable
 - `backstage`: host-provided custom backstage content rendered inside backstage shell
 
 ## 4. Boundaries with Element Plus

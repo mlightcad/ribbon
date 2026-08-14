@@ -133,10 +133,15 @@ html.dark {
   gap: 4px;
 }
 
+.ml-ribbon__tabs-after,
 .ml-ribbon__tabs-extra {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.ml-ribbon__tabs-after .el-button + .el-button {
+  margin-left: 0;
 }
 
 .ml-ribbon__control--minimize.el-button {

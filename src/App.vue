@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ElButton, ElMessage, ElOption, ElSelect } from 'element-plus'
+import {
+  ElButton,
+  ElMessage,
+  ElOption,
+  ElSelect,
+  ElTooltip,
+} from 'element-plus'
 import {
   Aim,
   Brush,
@@ -19,6 +25,8 @@ import {
   Operation,
   Pointer,
   Position,
+  RefreshLeft,
+  RefreshRight,
   Scissor,
   Search,
   Sunny,
@@ -47,7 +55,7 @@ import type { MlDemoCadDropdownOption } from './components/demoCadDropdown'
  * 1. Build a `RibbonTabModel[]` with groups/collections/items.
  * 2. Bind ribbon state through `v-model:active-tab`, `v-model:layout`, and `v-model:minimized`.
  * 3. Provide optional text overrides and file commands.
- * 4. Optionally customize backstage entirely via `#backstage` slot.
+ * 4. Optionally customize header extras via `#tabs-after` / `#tabs-extra`, and backstage via `#backstage`.
  * 5. Embed schema-driven custom Vue components inside ribbon groups with `type: 'custom'`.
  *
  * @example
@@ -1183,6 +1191,8 @@ const zhCNMap: Record<string, string> = {
   'Sharing options': '共享选项',
   English: '英文',
   中文: '中文',
+  Undo: '撤销',
+  Redo: '重做',
   Defpoints: '定义点',
   Walls: '墙体',
   Doors: '门',
@@ -1646,6 +1656,8 @@ const uiTexts = computed(() => ({
   backstageMeta:
     translate('This whole area is rendered from the `#backstage` slot.') ??
     'This whole area is rendered from the `#backstage` slot.',
+  undo: translate('Undo') ?? 'Undo',
+  redo: translate('Redo') ?? 'Redo',
 }))
 
 function syncViewportWidth() {
@@ -1811,6 +1823,16 @@ function setRibbonDisabled(value: boolean) {
   ribbonDisabled.value = value
 }
 
+function onHeaderCommand(commandId: string) {
+  lastCommand.value = commandId
+  ElMessage({
+    type: 'success',
+    message: `${uiTexts.value.commandLabel}: ${lastCommand.value}`,
+    duration: 1500,
+    showClose: true,
+  })
+}
+
 function setGalleryCurrentForDemo() {
   const currentIndex = visualStyleDemoTargets.indexOf(visualStyle.value)
   const nextValue =
@@ -1899,6 +1921,26 @@ function closeContextualTab(tabId = activeTab.value) {
       :tooltip-hide-after="0"
       @item-click="onRibbonItemClick"
     >
+      <template #tabs-after="{ disabled }">
+        <div class="ml-demo-tabs-after">
+          <ElTooltip :content="uiTexts.undo" :show-after="1000" :hide-after="0">
+            <ElButton
+              class="ml-demo-tabs-after__button"
+              :icon="RefreshLeft"
+              :disabled="disabled"
+              @click="onHeaderCommand('undo')"
+            />
+          </ElTooltip>
+          <ElTooltip :content="uiTexts.redo" :show-after="1000" :hide-after="0">
+            <ElButton
+              class="ml-demo-tabs-after__button"
+              :icon="RefreshRight"
+              :disabled="disabled"
+              @click="onHeaderCommand('redo')"
+            />
+          </ElTooltip>
+        </div>
+      </template>
       <template #tabs-extra="{ disabled }">
         <div class="ml-demo-language-switch">
           <ElSelect
@@ -1982,6 +2024,20 @@ function closeContextualTab(tabId = activeTab.value) {
 
 .ml-demo-status__value {
   color: var(--el-text-color-primary);
+}
+
+.ml-demo-tabs-after {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ml-demo-tabs-after__button {
+  min-height: 24px;
+  height: 24px;
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
 }
 
 .ml-demo-language-switch {

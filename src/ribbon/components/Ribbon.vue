@@ -23,7 +23,7 @@ import { ArrowDownBold, ArrowUpBold, Grid, Menu } from '@element-plus/icons-vue'
 import type { Component } from 'vue'
 import type { ComponentSize } from 'element-plus'
 import { ribbonKey } from '../context'
-import { useRibbonState } from '../composables/useRibbonState'
+import { firstVisibleRibbonTabId, isRibbonTabShown, useRibbonState } from '../composables/useRibbonState'
 import type {
   FileMenuItemModel,
   RibbonDynamicApi,
@@ -64,7 +64,9 @@ import MlRibbonGroup from './RibbonGroup.vue'
  * @prop tooltipShowAfter - Global tooltip show delay in milliseconds.
  * @prop tooltipHideAfter - Global tooltip hide delay in milliseconds.
  *
- * @slot tabs-extra - Custom content rendered on the right side of the tab area.
+ * @slot tabs-after - Custom content rendered after the last ribbon tab and the
+ * minimize/expand button. Slot props: `{ activeTab, layout, minimized, disabled }`.
+ * @slot tabs-extra - Custom content rendered on the far-right side of the ribbon header.
  * Slot props: `{ activeTab, layout, minimized, disabled }`.
  * @slot backstage - Fully custom backstage content.
  * Slot props: `{ close, open, size, backLabel, title, description, disabled }`.
@@ -320,8 +322,10 @@ watch(
   (tabs) => {
     // Keep internal mutable state in sync with controlled tabs prop.
     context.tabs.value = cloneTabs(tabs)
-    if (!context.tabs.value.some((x) => x.id === context.activeTab.value)) {
-      context.activeTab.value = context.tabs.value[0]?.id || ''
+    if (!isRibbonTabShown(
+      context.tabs.value.find(tab => tab.id === context.activeTab.value),
+    )) {
+      context.activeTab.value = firstVisibleRibbonTabId(context.tabs.value)
     }
   },
   { deep: true },
@@ -1124,6 +1128,15 @@ defineExpose<RibbonDynamicApi>(context.api)
               @click="toggleMinimize"
             />
           </ElTooltip>
+          <div v-if="$slots['tabs-after']" class="ml-ribbon__tabs-after">
+            <slot
+              name="tabs-after"
+              :active-tab="context.activeTab.value"
+              :layout="context.layout.value"
+              :minimized="context.minimized.value"
+              :disabled="context.disabled.value"
+            />
+          </div>
         </div>
         <div class="ml-ribbon__head-right">
           <ElTooltip
