@@ -3,6 +3,10 @@
   "version": "0.1.13",
   "packageManager": "pnpm@10.33.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mlightcad/ribbon"
+  },
   "main": "./dist/ml-ribbon.es.js",
   "module": "./dist/ml-ribbon.es.js",
   "types": "./dist/index.d.ts",
@@ -38,6 +42,7 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "prepublishOnly": "pnpm build && pnpm test",
+    "publish:package": "pnpm publish --access public --no-git-checks",
     "preview": "vite preview"
   },
   "peerDependencies": {
