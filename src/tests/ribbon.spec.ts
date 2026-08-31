@@ -1448,6 +1448,21 @@ describe('MlRibbonGallery', () => {
     }
   })
 
+  it('lets classic overflow group content grow instead of clipping into the next section', () => {
+    const styles = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
+
+    expect(styles).toMatch(
+      /\.ml-ribbon-overflow-popover\s+\.ml-ribbon-group__content\s*\{[\s\S]*height:\s*auto;/,
+    )
+    expect(styles).toMatch(
+      /\.ml-ribbon-overflow-popover\s+\.ml-ribbon-collection--column\s*\{[\s\S]*grid-auto-flow:\s*row;/,
+    )
+    expect(styles).toContain('max-height: min(70vh, 560px)')
+  })
+
   it('limits gallery panels to four visible rows before scrolling', () => {
     const styles = readFileSync(
       resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
@@ -3248,6 +3263,75 @@ describe('MlRibbon', () => {
         .findAll('.ml-ribbon__panel .ml-ribbon-group[data-group-id]')
         .map((group) => group.attributes('data-group-id'))
       expect(inlineGroups).toEqual(['g1'])
+      expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(true)
+    } finally {
+      rectSpy.mockRestore()
+    }
+  })
+
+  it('overflows rightmost equal-priority groups before leftmost groups', async () => {
+    // Budget fits the leftmost group plus the overflow trigger only.
+    const panelWidth = 175
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, 130, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
+
+    const overflowTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'draw',
+            title: 'Draw',
+            collections: [
+              {
+                id: 'c-draw',
+                items: [{ id: 'line', type: 'button', label: 'Line' }],
+              },
+            ],
+          },
+          {
+            id: 'modify',
+            title: 'Modify',
+            collections: [
+              {
+                id: 'c-modify',
+                items: [{ id: 'move', type: 'button', label: 'Move' }],
+              },
+            ],
+          },
+          {
+            id: 'layer',
+            title: 'Layer',
+            collections: [
+              {
+                id: 'c-layer',
+                items: [{ id: 'layers', type: 'button', label: 'Layers' }],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    try {
+      const wrapper = mount(MlRibbon, { props: { tabs: overflowTabs } })
+      await waitForRibbonLayout(wrapper)
+
+      const inlineGroups = wrapper
+        .findAll('.ml-ribbon__panel .ml-ribbon-group[data-group-id]')
+        .map((group) => group.attributes('data-group-id'))
+      // Equal priority: hide from the right. Leftmost Draw must remain inline.
+      expect(inlineGroups).toEqual(['draw'])
       expect(wrapper.find('.ml-ribbon-overflow-trigger').exists()).toBe(true)
     } finally {
       rectSpy.mockRestore()

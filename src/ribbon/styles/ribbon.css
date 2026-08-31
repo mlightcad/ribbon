@@ -1831,7 +1831,44 @@ html.dark {
 }
 
 .ml-ribbon-overflow-popover .ml-ribbon-group__content {
+  /* Classic overflow stacks groups vertically; let content grow instead of
+     clipping/overlapping into the next overflow section. */
   overflow: visible;
+  height: auto;
+  min-height: 0;
+  width: max-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.ml-ribbon-overflow-popover .ml-ribbon-collection--column {
+  grid-auto-flow: row;
+  grid-template-columns: minmax(98px, max-content);
+  grid-template-rows: none;
+  grid-auto-columns: auto;
+}
+
+.ml-ribbon-overflow-popover
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host,
+.ml-ribbon-overflow-popover
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host
+  > .el-button,
+.ml-ribbon-overflow-popover
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host
+  > .el-select,
+.ml-ribbon-overflow-popover
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host
+  > .el-input-number,
+.ml-ribbon-overflow-popover
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host
+  > .ml-ribbon-input-number {
+  width: auto;
 }
 
 .ml-ribbon-overflow-popover .ml-ribbon__panel .el-button:hover,
@@ -1852,7 +1889,7 @@ html.dark {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 320px;
+  max-height: min(70vh, 560px);
   overflow: auto;
 }
 
@@ -1861,6 +1898,7 @@ html.dark {
   border-radius: 6px;
   padding: 6px;
   background: var(--ml-rb-surface-soft);
+  overflow: hidden;
 }
 
 .ml-ribbon-overflow-group__header {
