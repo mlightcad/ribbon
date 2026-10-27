@@ -93,7 +93,7 @@ Events:
 - Large button label-wrap options: `RibbonItemModel.props.labelWrapLines?: number` enables multi-line labels for `size: 'large'` button items, and `RibbonItemModel.props.labelWrapWidth?: number | string` controls wrap width
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands
 - `RibbonGroupModel.width?: number` for fixed group width in pixels; omitted width means the group auto-sizes to its content
-- Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` controls whether selected option label replaces trigger label (default `false`)
+- Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` mirrors the current command on the trigger (icon + label), falling back to the first option before any selection; does not enable the menu check column (default `false`). Controlled `modelValue` keeps selection in sync and enables the check column.
 - Custom item option: `RibbonItemModel.props.component?: Component` mounts a host-supplied Vue component
 - Custom item option: `RibbonItemModel.props.componentProps?: Record<string, unknown>` forwards extra props into that mounted component
 - Custom item bindings: mounted components receive `item`, `groupId`, `disabled`, and `emitItemClick(payload?)`

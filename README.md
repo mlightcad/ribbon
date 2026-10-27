@@ -38,7 +38,7 @@ A Vue 3 + TypeScript Ribbon UI component library aligned with Syncfusion Ribbon 
 - Gallery items support standard text previews, Vue/CSS icon previews, SVG preview references, per-item custom Vue components or the `MlRibbonGallery` `#item` slot, plus a picker panel for overflow items and collapsed large-button mode for tight ribbon widths; schema `gallery` items accept `props.inlineItemLimit` (inline slots before overflow) and `props.inlineItemWidthMode: 'fixed' | 'auto'` (`auto` widens columns from the default minimum to fit labels and text previews; default `fixed`)
 - Group footer command popover via `RibbonGroupModel.footerMenuItems`
 - Group width is auto-sized when `RibbonGroupModel.width` is omitted; provide `width` for a fixed pixel width
-- Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to also update label
+- Dropdown command memory: selected option updates trigger icon, icon click executes current option command, label/arrow opens menu; set `props.syncLabelWithSelection = true` to mirror the current command on the trigger (icon + label), defaulting to the first option before any selection (check column stays reserved for controlled `modelValue`)
 - Dropdown menu separators: per-option `divided: true` on `RibbonDropdownOption` maps to Element Plus `ElDropdownItem` `divided`, drawing a horizontal rule **above** that row (for example before a trailing “Other…” / character-map entry)
 - Customizable after-minimize extension area via `MlRibbon` `#tabs-after` slot
 - Customizable tab-right extension area via `MlRibbon` `#tabs-extra` slot

@@ -239,22 +239,52 @@ describe('MlRibbonDropdown', () => {
     }
   })
 
-  it('reserves a leading check column when syncLabelWithSelection is true', () => {
+  it('hides the check column with syncLabelWithSelection and defaults the trigger to the first option', async () => {
     const wrapper = mount(MlRibbonDropdown, {
       props: {
         id: 'line-type',
         label: 'Line Type',
         syncLabelWithSelection: true,
         options: [
-          { label: 'Continuous', value: 'continuous' },
-          { label: 'Dashed', value: 'dashed' },
+          { label: 'Continuous', value: 'continuous', tooltip: 'Continuous line' },
+          { label: 'Dashed', value: 'dashed', tooltip: 'Dashed line' },
         ],
       },
       global: { stubs: dropdownMenuStubs },
     })
 
     try {
-      expect(wrapper.findAll('.ml-ribbon-dropdown-item__check')).toHaveLength(2)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.findAll('.ml-ribbon-dropdown-item__check')).toHaveLength(0)
+      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe(
+        'Continuous',
+      )
+      expect(wrapper.find('.el-button').attributes('aria-label')).toBe(
+        'Continuous line',
+      )
+      expect(wrapper.emitted('tooltip-change')?.[0]?.[0]).toBe(
+        'Continuous line',
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps the item label on the trigger when syncLabelWithSelection has no options', () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'line-type',
+        label: 'Line Type',
+        syncLabelWithSelection: true,
+        options: [],
+      },
+      global: { stubs: dropdownMenuStubs },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-dropdown__label').text()).toBe(
+        'Line Type',
+      )
     } finally {
       wrapper.unmount()
     }
@@ -5255,7 +5285,9 @@ describe('MlRibbon', () => {
       const host = wrapper.find(
         '.ml-ribbon-item-host[data-item-id="draw-circle"]',
       )
-      expect(host.find('.ml-ribbon-item-host__label').text()).toBe('Circle')
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe(
+        'Center, Radius',
+      )
 
       const dropdown = host.findComponent({ name: 'ElDropdown' })
       dropdown.vm.$emit('command', 'circle-two-point')
@@ -5263,6 +5295,57 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
 
       expect(host.find('.ml-ribbon-item-host__label').text()).toBe('2-Point')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('syncs host tooltip to the first option when syncLabelWithSelection is enabled', async () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'draw-circle',
+        groupId: 'draw',
+        item: {
+          id: 'draw-circle',
+          type: 'dropdown',
+          label: 'Circle',
+          props: {
+            syncLabelWithSelection: true,
+            options: [
+              {
+                label: 'Center, Radius',
+                value: 'circle-center-radius',
+                tooltip: 'Draw by center and radius',
+              },
+              {
+                label: '2-Point',
+                value: 'circle-two-point',
+                tooltip: 'Draw by two points',
+              },
+            ],
+          },
+        },
+      },
+    })
+
+    try {
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe(
+        'Center, Radius',
+      )
+      expect(
+        wrapper.findComponent({ name: 'ElTooltip' }).props('content'),
+      ).toBe('Draw by center and radius')
+
+      const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
+      dropdown.vm.$emit('command', 'circle-two-point')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.ml-ribbon-item-host__label').text()).toBe('2-Point')
+      expect(
+        wrapper.findComponent({ name: 'ElTooltip' }).props('content'),
+      ).toBe('Draw by two points')
     } finally {
       wrapper.unmount()
     }

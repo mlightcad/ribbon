@@ -31,7 +31,7 @@ defineOptions({
  * @prop options - Dropdown command options.
  * @prop disabled - Disables trigger and options.
  * @prop hideLabel - Hides trigger label while preserving arrow/icon affordance.
- * @prop syncLabelWithSelection - Uses the selected option label as trigger label; enables the menu check column.
+ * @prop syncLabelWithSelection - Mirrors the current command on the trigger (icon + label). Falls back to the first option before any selection; does not render the menu check column.
  * @prop modelValue - When not `undefined`, keeps the trigger/menu selection in sync (controlled mode) and enables the menu check column.
  *
  * @event command - Emitted with the selected/current option value.
@@ -97,12 +97,18 @@ watch(
 const normalizedOptions = computed(() =>
   Array.isArray(props.options) ? props.options : [],
 )
-const selectedOption = computed(
-  () =>
-    normalizedOptions.value.find(
-      (option) => optionValue(option) === selectedValue.value,
-    ) ?? null,
-)
+const selectedOption = computed(() => {
+  const match = normalizedOptions.value.find(
+    (option) => optionValue(option) === selectedValue.value,
+  )
+  if (match) return match
+  // Command-memory dropdowns mirror the first option on the trigger before
+  // the user picks one, so the button always advertises a runnable command.
+  if (props.syncLabelWithSelection && selectedValue.value === undefined) {
+    return normalizedOptions.value[0] ?? null
+  }
+  return null
+})
 const resolvedLabel = computed(() => {
   if (selectedOption.value && props.syncLabelWithSelection) {
     const label = optionLabel(selectedOption.value)
@@ -113,10 +119,8 @@ const resolvedLabel = computed(() => {
 const shouldShowLabel = computed(
   () => !props.hideLabel && resolvedLabel.value.length > 0,
 )
-/** Reserve leading check column only when selection is surfaced (controlled value or label sync). */
-const showSelectionCheckColumn = computed(
-  () => props.modelValue !== undefined || props.syncLabelWithSelection,
-)
+/** Reserve leading check column only for controlled selection (bound modelValue). */
+const showSelectionCheckColumn = computed(() => props.modelValue !== undefined)
 const iconComponent = computed<Component | null>(() => {
   if (selectedOption.value) {
     const fromOption = optionIconAsComponent(selectedOption.value)
@@ -260,6 +264,18 @@ function humanizeItemId(value: string): string {
 function isOptionSelected(option: unknown): boolean {
   return optionValue(option) === selectedValue.value
 }
+
+// Keep the host tooltip aligned with the mirrored command (including the
+// first-option fallback before the user has picked from the menu).
+// flush:'post' so the initial emit runs after the parent binds @tooltip-change.
+watch(
+  [() => props.syncLabelWithSelection, buttonAriaLabel],
+  () => {
+    if (!props.syncLabelWithSelection) return
+    emit('tooltip-change', buttonAriaLabel.value)
+  },
+  { immediate: true, flush: 'post' },
+)
 </script>
 
 <template>
