@@ -12,6 +12,10 @@ import {
 } from 'element-plus'
 import type { Component } from 'vue'
 import type { RibbonDropdownOption, RibbonItemSize } from '../types'
+import {
+  flattenRibbonLabel,
+  splitRibbonLabelLines,
+} from '../utils/labelLines'
 
 defineOptions({
   name: 'MlRibbonDropdown',
@@ -119,6 +123,7 @@ const resolvedLabel = computed(() => {
 const shouldShowLabel = computed(
   () => !props.hideLabel && resolvedLabel.value.length > 0,
 )
+const labelLines = computed(() => splitRibbonLabelLines(resolvedLabel.value))
 /** Reserve leading check column only for controlled selection (bound modelValue). */
 const showSelectionCheckColumn = computed(() => props.modelValue !== undefined)
 const iconComponent = computed<Component | null>(() => {
@@ -141,13 +146,14 @@ const iconClass = computed<string | null>(() => {
 const hasTriggerIcon = computed(() =>
   Boolean(iconComponent.value || iconClass.value),
 )
-const buttonAriaLabel = computed(
-  () =>
+const buttonAriaLabel = computed(() =>
+  flattenRibbonLabel(
     optionTooltip(selectedOption.value) ??
-    itemText(props.tooltip) ??
-    itemText(resolvedLabel.value) ??
-    itemText(props.label) ??
-    humanizeItemId(props.id),
+      itemText(props.tooltip) ??
+      itemText(resolvedLabel.value) ??
+      itemText(props.label) ??
+      humanizeItemId(props.id),
+  ),
 )
 const dropdownPopperClass = computed(() =>
   [
@@ -325,8 +331,12 @@ watch(
               name="label"
               :selected-option="selectedOption"
               :label="resolvedLabel"
-              >{{ resolvedLabel }}</slot
+              :lines="labelLines"
             >
+              <template v-for="(line, index) in labelLines" :key="index">
+                <br v-if="index > 0" />{{ line }}
+              </template>
+            </slot>
           </span>
           <ElIcon
             class="ml-ribbon-item-host__dropdown-arrow ml-ribbon-dropdown__arrow"

@@ -19,6 +19,7 @@ import MlRibbonInputNumber from '../items/RibbonInputNumber.vue'
 import MlRibbonSegmented from '../items/RibbonSegmented.vue'
 import MlRibbonToggleButton from '../items/RibbonToggleButton.vue'
 import MlRibbonTemplateItem from '../items/RibbonTemplateItem.vue'
+import { flattenRibbonLabel } from '../utils/labelLines'
 
 /**
  * @component MlRibbonItemHost
@@ -83,13 +84,13 @@ const shouldShowLabel = computed(() => props.item.hideLabel !== true)
 const dropdownTriggerTooltip = ref<string | undefined>(undefined)
 const resolvedTooltip = computed(() => {
   if (props.item.type === 'dropdown' && dropdownTriggerTooltip.value)
-    return dropdownTriggerTooltip.value
-  return (
+    return flattenRibbonLabel(dropdownTriggerTooltip.value)
+  const raw =
     itemText(props.item.tooltip) ??
     itemText(props.item.label) ??
     optionTooltipText(props.item) ??
     humanizeItemId(props.item.id)
-  )
+  return raw ? flattenRibbonLabel(raw) : raw
 })
 const shouldUseHostTooltip = computed(
   () => props.item.type !== 'buttonGroup' && props.item.type !== 'segmented',
@@ -202,15 +203,15 @@ const labelWrapLines = computed(() =>
 const labelWrapWidth = computed(() =>
   normalizeOptionalCssSize(props.item.props?.labelWrapWidth),
 )
-const shouldWrapLargeButtonLabel = computed(
+const shouldWrapLargeItemLabel = computed(
   () =>
-    props.item.type === 'button' &&
+    (props.item.type === 'button' || props.item.type === 'dropdown') &&
     props.item.size === 'large' &&
     shouldShowLabel.value &&
     (labelWrapLines.value ?? 0) > 1,
 )
 const labelWrapInlineStyle = computed<Record<string, string>>(() => {
-  if (!shouldWrapLargeButtonLabel.value) return {}
+  if (!shouldWrapLargeItemLabel.value) return {}
   const style: Record<string, string> = {
     '--ml-rb-item-label-max-lines': String(labelWrapLines.value ?? 2),
   }
@@ -517,7 +518,7 @@ function humanizeItemId(value: string): string {
         `type-${item.type}`,
         {
           'is-label-hidden': item.hideLabel === true,
-          'is-label-wrap': shouldWrapLargeButtonLabel,
+          'is-label-wrap': shouldWrapLargeItemLabel,
         },
       ]"
       :style="labelWrapInlineStyle"

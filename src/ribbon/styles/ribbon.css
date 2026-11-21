@@ -620,25 +620,52 @@ html.dark {
   margin-left: 0;
 }
 
-.ml-ribbon-item-host.is-large.type-button.is-label-wrap .el-button {
+.ml-ribbon-item-host.is-large.type-button.is-label-wrap .el-button,
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap .el-button {
   width: var(--ml-rb-item-label-wrap-width, 74px);
   max-width: 100%;
 }
 
-.ml-ribbon-item-host.is-large.type-button.is-label-wrap .el-button > span {
+.ml-ribbon-item-host.is-large.type-button.is-label-wrap .el-button > span,
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap .el-button > span {
   width: 100%;
 }
 
+/* Dropdown labels sit in an inline-flex text row beside the chevron; force the
+   row to consume the wrapped button width so line-clamp / soft-wrap can apply. */
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap
+  .ml-ribbon-item-host__content,
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap
+  .ml-ribbon-item-host__text-row {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap
+  .ml-ribbon-item-host__text-row {
+  justify-content: center;
+}
+
 .ml-ribbon-item-host.is-large.type-button.is-label-wrap
+  .ml-ribbon-item-host__label,
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap
   .ml-ribbon-item-host__label {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--ml-rb-item-label-max-lines, 2);
   overflow: hidden;
-  white-space: normal;
+  /* Honor intentional `\n` breaks from host i18n (e.g. Recover\nText). */
+  white-space: pre-line;
   text-align: center;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.ml-ribbon-item-host.is-large.type-dropdown.is-label-wrap
+  .ml-ribbon-item-host__label {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .ml-ribbon-item-host.is-large.type-dropdown .ml-ribbon-item-host__content {

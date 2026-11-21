@@ -1928,17 +1928,20 @@ describe('MlRibbon', () => {
     )
   })
 
-  it('supports wrapped large button labels through dedicated host css rules', () => {
+  it('supports wrapped large button and dropdown labels through dedicated host css rules', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
       'utf-8',
     )
 
     expect(css).toMatch(
-      /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.el-button\s*\{[\s\S]*width:\s*var\(--ml-rb-item-label-wrap-width,\s*74px\);/,
+      /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.el-button,\s*\.ml-ribbon-item-host\.is-large\.type-dropdown\.is-label-wrap\s+\.el-button\s*\{[\s\S]*width:\s*var\(--ml-rb-item-label-wrap-width,\s*74px\);/,
     )
     expect(css).toMatch(
-      /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.ml-ribbon-item-host__label\s*\{[\s\S]*-webkit-line-clamp:\s*var\(--ml-rb-item-label-max-lines,\s*2\);/,
+      /\.ml-ribbon-item-host\.is-large\.type-button\.is-label-wrap\s+\.ml-ribbon-item-host__label,\s*\.ml-ribbon-item-host\.is-large\.type-dropdown\.is-label-wrap\s+\.ml-ribbon-item-host__label\s*\{[\s\S]*-webkit-line-clamp:\s*var\(--ml-rb-item-label-max-lines,\s*2\);[\s\S]*white-space:\s*pre-line;/,
+    )
+    expect(css).toMatch(
+      /\.ml-ribbon-item-host\.is-large\.type-dropdown\.is-label-wrap\s+\.ml-ribbon-item-host__text-row\s*\{[\s\S]*width:\s*100%;/,
     )
   })
 
@@ -4076,6 +4079,139 @@ describe('MlRibbon', () => {
       expect(style).toContain('--ml-rb-item-label-wrap-width: 74px')
       expect(host.find('.ml-ribbon-item-host__label').text()).toBe(
         'Layer Properties',
+      )
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('preserves explicit newline breaks in large button labels', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'pdf-text',
+        groupId: 'pdf',
+        item: {
+          id: 'pdf-text',
+          type: 'button',
+          label: '识别\n文字',
+          size: 'large',
+          props: {
+            labelWrapLines: 2,
+            labelWrapWidth: 'max-content',
+          },
+        },
+      },
+    })
+
+    try {
+      const label = wrapper.find('.ml-ribbon-item-host__label')
+      expect(label.findAll('br')).toHaveLength(1)
+      expect(label.text()).toBe('识别文字')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports wrapped labels for large dropdown items via schema props', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'layer-properties',
+        groupId: 'layer',
+        item: {
+          id: 'layer-properties',
+          type: 'dropdown',
+          label: 'Layer Properties',
+          size: 'large',
+          props: {
+            labelWrapLines: 2,
+            labelWrapWidth: 74,
+            options: [{ label: 'Auto', value: 'auto' }],
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find(
+        '.ml-ribbon-item-host[data-item-id="layer-properties"]',
+      )
+      const style = host.attributes('style') ?? ''
+
+      expect(host.classes()).toContain('is-label-wrap')
+      expect(style).toContain('--ml-rb-item-label-max-lines: 2')
+      expect(style).toContain('--ml-rb-item-label-wrap-width: 74px')
+      expect(host.find('.ml-ribbon-item-host__label').text()).toBe(
+        'Layer Properties',
+      )
+      expect(host.find('.ml-ribbon-item-host__text-row').exists()).toBe(true)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('supports wrapped labels with explicit newlines for large dropdown items', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'pdf-text',
+        groupId: 'pdf',
+        item: {
+          id: 'pdf-text',
+          type: 'dropdown',
+          label: '识别\n文字',
+          size: 'large',
+          props: {
+            labelWrapLines: 2,
+            labelWrapWidth: 'max-content',
+            options: [{ label: 'Auto', value: 'auto' }],
+          },
+        },
+      },
+    })
+
+    try {
+      const host = wrapper.find('.ml-ribbon-item-host[data-item-id="pdf-text"]')
+      const style = host.attributes('style') ?? ''
+      const label = host.find('.ml-ribbon-item-host__label')
+
+      expect(host.classes()).toContain('is-label-wrap')
+      expect(style).toContain('--ml-rb-item-label-max-lines: 2')
+      expect(style).toContain('--ml-rb-item-label-wrap-width: max-content')
+      expect(label.findAll('br')).toHaveLength(1)
+      expect(label.text()).toBe('识别文字')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('flattens multiline labels in host tooltip content', () => {
+    const wrapper = mount(MlRibbonItemHost, {
+      props: {
+        id: 'pdf-text',
+        groupId: 'pdf',
+        item: {
+          id: 'pdf-text',
+          type: 'button',
+          label: '识别\n文字',
+          size: 'large',
+          props: {
+            labelWrapLines: 2,
+          },
+        },
+      },
+      global: {
+        stubs: {
+          ElTooltip: {
+            props: ['content'],
+            template:
+              '<div class="tooltip-stub" :data-content="content"><slot /></div>',
+          },
+        },
+      },
+    })
+
+    try {
+      expect(wrapper.find('.tooltip-stub').attributes('data-content')).toBe(
+        '识别 文字',
       )
     } finally {
       wrapper.unmount()
