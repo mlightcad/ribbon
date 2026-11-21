@@ -2,6 +2,10 @@
 import { computed } from 'vue'
 import { ElButton, ElIcon } from 'element-plus'
 import type { Component } from 'vue'
+import {
+  flattenRibbonLabel,
+  splitRibbonLabelLines,
+} from '../utils/labelLines'
 
 defineOptions({
   name: 'MlRibbonButton',
@@ -70,8 +74,12 @@ const resolvedLabel = computed(() => {
 const shouldShowLabel = computed(
   () => !props.hideLabel && resolvedLabel.value.length > 0,
 )
+const labelLines = computed(() => splitRibbonLabelLines(resolvedLabel.value))
 const resolvedAriaLabel = computed(
-  () => props.ariaLabel?.trim() || resolvedLabel.value || props.id,
+  () =>
+    props.ariaLabel?.trim() ||
+    flattenRibbonLabel(resolvedLabel.value) ||
+    props.id,
 )
 const iconComponent = computed<Component | null>(() => {
   if (!props.icon || typeof props.icon === 'string') return null
@@ -137,7 +145,11 @@ function handleClick(event: MouseEvent) {
       v-if="shouldShowLabel"
       class="ml-ribbon-item-host__label ml-ribbon-button__label"
     >
-      <slot name="label">{{ resolvedLabel }}</slot>
+      <slot name="label" :label="resolvedLabel" :lines="labelLines">
+        <template v-for="(line, index) in labelLines" :key="index">
+          <br v-if="index > 0" />{{ line }}
+        </template>
+      </slot>
     </span>
     <slot />
   </ElButton>
