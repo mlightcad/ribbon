@@ -1478,19 +1478,29 @@ describe('MlRibbonGallery', () => {
     }
   })
 
-  it('lets classic overflow group content grow instead of clipping into the next section', () => {
+  it('uses Office-style classic flyouts for overflow groups', () => {
     const styles = readFileSync(
       resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
       'utf-8',
     )
 
+    expect(styles).toContain('.ml-ribbon-overflow-group-flyout')
+    expect(styles).toContain('.ml-ribbon-overflow-group-flyout__footer')
     expect(styles).toMatch(
-      /\.ml-ribbon-overflow-popover\s+\.ml-ribbon-group__content\s*\{[\s\S]*height:\s*auto;/,
+      /\.ml-ribbon-overflow-group-flyout__footer\s*\{[\s\S]*box-sizing:\s*border-box;/,
     )
     expect(styles).toMatch(
-      /\.ml-ribbon-overflow-popover\s+\.ml-ribbon-collection--column\s*\{[\s\S]*grid-auto-flow:\s*row;/,
+      /\.ml-ribbon-overflow-group-flyout\s+\.ml-ribbon-group__content\s*\{[\s\S]*height:\s*auto;/,
+    )
+    // Keep classic 3-row column flow in the flyout (do not reflow to a tall stack).
+    expect(styles).toMatch(
+      /\.ml-ribbon-overflow-group-flyout\s+\.ml-ribbon-collection--column\s*\{[\s\S]*grid-auto-flow:\s*column;/,
     )
     expect(styles).toContain('max-height: min(70vh, 560px)')
+    // Host apps may cap all role=tooltip poppers; overflow panels must stay wide.
+    expect(styles).toMatch(
+      /\.ml-ribbon-overflow-popover\s*\{[\s\S]*max-width:\s*min\(720px,\s*calc\(100vw - 24px\)\)\s*!important;/,
+    )
   })
 
   it('limits gallery panels to four visible rows before scrolling', () => {
@@ -3154,9 +3164,22 @@ describe('MlRibbon', () => {
       await waitForRibbonLayout(wrapper)
 
       // Overflow popover is teleported to body by Element Plus.
+      const overflowFlyouts = Array.from(
+        document.body.querySelectorAll<HTMLElement>(
+          '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout',
+        ),
+      )
+      expect(overflowFlyouts.length).toBeGreaterThan(0)
+      const insertFlyout = overflowFlyouts.find((flyout) =>
+        flyout
+          .querySelector('.ml-ribbon-overflow-group-flyout__footer')
+          ?.textContent?.includes('Insert'),
+      )
+      expect(insertFlyout).toBeTruthy()
+
       const hiddenButton = Array.from(
         document.body.querySelectorAll<HTMLButtonElement>(
-          '.ml-ribbon-overflow-popover .el-button',
+          '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout .el-button',
         ),
       ).find((button) => button.textContent?.includes('Hidden Action'))
       expect(hiddenButton).toBeTruthy()

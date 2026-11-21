@@ -1620,6 +1620,12 @@ html.dark {
   color: var(--ml-rb-tab-text);
 }
 
+.ml-ribbon-group__overflow-popover,
+.ml-ribbon-group-popover,
+.ml-ribbon-tab-panel-popover {
+  max-width: min(720px, calc(100vw - 24px)) !important;
+}
+
 .ml-ribbon-group__overflow-popover {
   --ml-rb-scale: 1;
   --ml-rb-font-xs: calc(var(--el-font-size-extra-small) * var(--ml-rb-scale));
@@ -1842,9 +1848,25 @@ html.dark {
   --ml-rb-compact-height: calc(
     var(--el-component-size-small) * var(--ml-rb-scale)
   );
+  --ml-rb-content-rows: 3;
+  --ml-rb-content-row-gap: 2px;
+  --ml-rb-footer-line-height: calc(14px * var(--ml-rb-scale));
+  --ml-rb-footer-pad-top: calc(4px * var(--ml-rb-scale));
+  --ml-rb-footer-pad-bottom: calc(2px * var(--ml-rb-scale));
+  --ml-rb-footer-height: calc(
+    var(--ml-rb-footer-line-height) + var(--ml-rb-footer-pad-top) +
+      var(--ml-rb-footer-pad-bottom)
+  );
+  --ml-rb-panel-content-height: calc(
+    (var(--ml-rb-compact-height) * var(--ml-rb-content-rows)) +
+      (var(--ml-rb-content-row-gap) * (var(--ml-rb-content-rows) - 1))
+  );
   --ml-rb-select-padding-x: 6px;
   --ml-rb-select-font-size: calc(13px * var(--ml-rb-scale));
-  padding: 8px !important;
+  /* Host apps sometimes cap all role=tooltip poppers (ElPopover shares that
+     role). Keep overflow panels free to use the width Ribbon computes. */
+  max-width: min(720px, calc(100vw - 24px)) !important;
+  padding: 6px !important;
 }
 
 .ml-ribbon-overflow-popover.ml-ribbon-overflow-popover--size-small {
@@ -1857,61 +1879,7 @@ html.dark {
   --ml-rb-select-padding-x: 7px;
 }
 
-.ml-ribbon-overflow-popover .ml-ribbon-group__content {
-  /* Classic overflow stacks groups vertically; let content grow instead of
-     clipping/overlapping into the next overflow section. */
-  overflow: visible;
-  height: auto;
-  min-height: 0;
-  width: max-content;
-  max-width: 100%;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-.ml-ribbon-overflow-popover .ml-ribbon-collection--column {
-  grid-auto-flow: row;
-  grid-template-columns: minmax(98px, max-content);
-  grid-template-rows: none;
-  grid-auto-columns: auto;
-}
-
-.ml-ribbon-overflow-popover
-  .ml-ribbon-collection--column
-  .ml-ribbon-item-host,
-.ml-ribbon-overflow-popover
-  .ml-ribbon-collection--column
-  .ml-ribbon-item-host
-  > .el-button,
-.ml-ribbon-overflow-popover
-  .ml-ribbon-collection--column
-  .ml-ribbon-item-host
-  > .el-select,
-.ml-ribbon-overflow-popover
-  .ml-ribbon-collection--column
-  .ml-ribbon-item-host
-  > .el-input-number,
-.ml-ribbon-overflow-popover
-  .ml-ribbon-collection--column
-  .ml-ribbon-item-host
-  > .ml-ribbon-input-number {
-  width: auto;
-}
-
-.ml-ribbon-overflow-popover .ml-ribbon__panel .el-button:hover,
-.ml-ribbon-overflow-popover .ml-ribbon__panel .el-button:focus-visible,
-.ml-ribbon-overflow-popover .el-button:hover,
-.ml-ribbon-overflow-popover .el-button:focus-visible {
-  background: var(--ml-rb-hover-bg);
-  border-color: var(--ml-rb-hover-border);
-}
-
-.ml-ribbon-overflow-popover .ml-ribbon__panel .el-button:active,
-.ml-ribbon-overflow-popover .el-button:active {
-  background: var(--ml-rb-active-bg);
-  border-color: var(--ml-rb-active-border);
-}
-
+/* Office / AutoCAD: each overflowed group as its largest classic variant. */
 .ml-ribbon-overflow-list {
   display: flex;
   flex-direction: column;
@@ -1920,19 +1888,74 @@ html.dark {
   overflow: auto;
 }
 
-.ml-ribbon-overflow-group {
+.ml-ribbon-overflow-group-flyout {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  min-width: 140px;
+  padding: 2px 6px 0;
   border: 1px solid var(--ml-rb-border);
-  border-radius: 6px;
-  padding: 6px;
-  background: var(--ml-rb-surface-soft);
+  border-radius: 4px;
+  background: var(--ml-rb-panel-bg);
+  overflow: visible;
+}
+
+.ml-ribbon-overflow-group-flyout .ml-ribbon-group__content {
+  /* Keep the on-ribbon classic layout; grow if labels wrap. */
+  overflow: visible;
+  height: auto;
+  min-height: var(--ml-rb-panel-content-height);
+  width: max-content;
+  max-width: 100%;
+  align-items: flex-start;
+}
+
+.ml-ribbon-overflow-group-flyout .ml-ribbon-collection--column {
+  /* Preserve classic 3-row column flow (do not reflow into a tall stack). */
+  grid-auto-flow: column;
+  grid-template-rows: repeat(
+    var(--ml-ribbon-collection-rows, 3),
+    minmax(var(--ml-rb-compact-height), auto)
+  );
+  grid-auto-columns: minmax(98px, max-content);
+  align-items: start;
+}
+
+.ml-ribbon-overflow-group-flyout__footer {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: var(--ml-rb-footer-height);
+  height: var(--ml-rb-footer-height);
+  margin-top: 2px;
+  padding: var(--ml-rb-footer-pad-top) 4px var(--ml-rb-footer-pad-bottom);
+  border-top: 1px solid var(--ml-rb-border);
+  font-size: var(--ml-rb-font-xs);
+  line-height: var(--ml-rb-footer-line-height);
+  color: var(--ml-rb-muted);
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   overflow: hidden;
 }
 
-.ml-ribbon-overflow-group__header {
-  margin-bottom: 6px;
-  font-size: var(--ml-rb-font-sm);
-  font-weight: 600;
-  color: var(--ml-rb-tab-text);
+.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout .el-button:hover,
+.ml-ribbon-overflow-popover
+  .ml-ribbon-overflow-group-flyout
+  .el-button:focus-visible {
+  background: var(--ml-rb-hover-bg);
+  border-color: var(--ml-rb-hover-border);
+}
+
+.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout .el-button:active {
+  background: var(--ml-rb-active-bg);
+  border-color: var(--ml-rb-active-border);
 }
 
 .ml-ribbon-backstage {

@@ -36,6 +36,7 @@ import type {
 import MlRibbonBackstage from '../modules/RibbonBackstage.vue'
 import MlRibbonContextualTabs from '../modules/RibbonContextualTabs.vue'
 import MlRibbonFileMenu from '../modules/RibbonFileMenu.vue'
+import MlRibbonClassicOverflow from './RibbonClassicOverflow.vue'
 import MlRibbonGroupContent from './RibbonGroupContent.vue'
 import MlRibbonGroup from './RibbonGroup.vue'
 
@@ -510,7 +511,7 @@ const classicOverflowPopoverWidth = computed(() => {
   }, 0)
 
   // Account for popover/container paddings so group content is not clipped.
-  const calculated = Math.ceil(widestGroupWidth + 40)
+  const calculated = Math.ceil(widestGroupWidth + 28)
   return Math.max(220, Math.min(720, calculated))
 })
 
@@ -1235,46 +1236,21 @@ defineExpose<RibbonDynamicApi>(context.api)
               <div
                 class="ml-ribbon-group__body ml-ribbon-group__body--overflow"
               >
-                <ElPopover
-                  trigger="click"
-                  placement="bottom-end"
-                  :width="classicOverflowPopoverWidth"
+                <MlRibbonClassicOverflow
+                  :groups="classicOverflowGroups"
+                  :popover-class="classicOverflowPopoverClass"
+                  :popover-width="classicOverflowPopoverWidth"
+                  :trigger-aria-label="
+                    ribbonTexts.overflowTriggerAriaLabel ?? ''
+                  "
+                  :gallery-preview-fallback="
+                    ribbonTexts.galleryPreviewFallback ?? ''
+                  "
                   :disabled="isActiveTabContentDisabled"
-                  :show-arrow="false"
-                  :popper-class="classicOverflowPopoverClass"
-                  @show="context.overflowOpen.value = true"
-                  @hide="context.overflowOpen.value = false"
-                >
-                  <template #reference>
-                    <button
-                      type="button"
-                      class="ml-ribbon-overflow-trigger"
-                      :aria-label="ribbonTexts.overflowTriggerAriaLabel"
-                      :disabled="isActiveTabContentDisabled"
-                    >
-                      <span class="ml-ribbon-overflow-trigger__dots">...</span>
-                    </button>
-                  </template>
-                  <div class="ml-ribbon-overflow-list">
-                    <section
-                      v-for="group in classicOverflowGroups"
-                      :key="group.id"
-                      class="ml-ribbon-overflow-group"
-                    >
-                      <header class="ml-ribbon-overflow-group__header">
-                        {{ group.title }}
-                      </header>
-                      <MlRibbonGroupContent
-                        :group="group"
-                        :gallery-preview-fallback="
-                          ribbonTexts.galleryPreviewFallback
-                        "
-                        :disabled="isActiveTabContentDisabled"
-                        @item-click="onItemClick($event.groupId, $event.itemId)"
-                      />
-                    </section>
-                  </div>
-                </ElPopover>
+                  @open="context.overflowOpen.value = true"
+                  @close="context.overflowOpen.value = false"
+                  @item-click="onItemClick($event.groupId, $event.itemId)"
+                />
               </div>
               <footer
                 class="ml-ribbon-group__footer ml-ribbon-group__footer--overflow"
@@ -1369,45 +1345,19 @@ defineExpose<RibbonDynamicApi>(context.api)
           class="ml-ribbon-group ml-ribbon-group--overflow"
         >
           <div class="ml-ribbon-group__body ml-ribbon-group__body--overflow">
-            <ElPopover
-              trigger="click"
-              placement="bottom-end"
-              :width="classicOverflowPopoverWidth"
+            <MlRibbonClassicOverflow
+              :groups="classicOverflowGroups"
+              :popover-class="classicOverflowPopoverClass"
+              :popover-width="classicOverflowPopoverWidth"
+              :trigger-aria-label="ribbonTexts.overflowTriggerAriaLabel ?? ''"
+              :gallery-preview-fallback="
+                ribbonTexts.galleryPreviewFallback ?? ''
+              "
               :disabled="isActiveTabContentDisabled"
-              :popper-class="classicOverflowPopoverClass"
-              @show="context.overflowOpen.value = true"
-              @hide="context.overflowOpen.value = false"
-            >
-              <template #reference>
-                <button
-                  type="button"
-                  class="ml-ribbon-overflow-trigger"
-                  :aria-label="ribbonTexts.overflowTriggerAriaLabel"
-                  :disabled="isActiveTabContentDisabled"
-                >
-                  <span class="ml-ribbon-overflow-trigger__dots">...</span>
-                </button>
-              </template>
-              <div class="ml-ribbon-overflow-list">
-                <section
-                  v-for="group in classicOverflowGroups"
-                  :key="group.id"
-                  class="ml-ribbon-overflow-group"
-                >
-                  <header class="ml-ribbon-overflow-group__header">
-                    {{ group.title }}
-                  </header>
-                  <MlRibbonGroupContent
-                    :group="group"
-                    :gallery-preview-fallback="
-                      ribbonTexts.galleryPreviewFallback
-                    "
-                    :disabled="isActiveTabContentDisabled"
-                    @item-click="onItemClick($event.groupId, $event.itemId)"
-                  />
-                </section>
-              </div>
-            </ElPopover>
+              @open="context.overflowOpen.value = true"
+              @close="context.overflowOpen.value = false"
+              @item-click="onItemClick($event.groupId, $event.itemId)"
+            />
           </div>
           <footer
             class="ml-ribbon-group__footer ml-ribbon-group__footer--overflow"

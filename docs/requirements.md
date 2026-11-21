@@ -133,6 +133,7 @@ Slots:
 - Support temporarily disabling the full ribbon during async host workflows such as opening files.
 - Support Element Plus light/dark theme switching without Ribbon-specific remount.
 - Group priority impacts collapse/overflow behavior.
+- Classic overflow presents each overflowed group as an Office/AutoCAD-style flyout (classic 3-row layout + footer title), stacked in a scrollable popover.
 - Simplified mode keeps commands interactive via popup/overflow presentation.
 - Dropdown trigger supports split behavior: icon executes current option command; label/arrow opens option menu.
 - By default, dropdown trigger label remains unchanged after selection while trigger icon follows selected option; label sync is opt-in.
