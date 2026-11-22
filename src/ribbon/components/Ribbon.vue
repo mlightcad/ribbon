@@ -656,7 +656,9 @@ function recomputeClassicOverflow() {
   })
 
   const resolveGroupWidth = (group: RibbonGroupModel): number =>
-    renderedWidths[group.id] ?? estimateGroupWidth(group)
+    renderedWidths[group.id] ??
+    measuredGroupWidths.value[group.id] ??
+    estimateGroupWidth(group)
 
   const fixedWidth = fixedGroups.reduce(
     (sum, group) => sum + resolveGroupWidth(group),
@@ -687,21 +689,15 @@ function recomputeClassicOverflow() {
 
 /**
  * Schedules classic overflow recomputation after DOM/layout settles.
+ *
+ * Uses cached/estimated widths for groups that are currently hidden. Do not
+ * clear `hiddenGroupIds` to remount for measurement — that unmounts the
+ * overflow host (and any open popover) and races with ResizeObserver noise
+ * from the dormant minimized-panel copy.
  */
 function scheduleClassicOverflowRecompute() {
   nextTick(() => {
-    if (context.layout.value !== 'classic' || context.minimized.value) {
-      recomputeClassicOverflow()
-      return
-    }
-    if (hiddenGroupIds.value.size === 0) {
-      recomputeClassicOverflow()
-      return
-    }
-    hiddenGroupIds.value = new Set()
-    nextTick(() => {
-      recomputeClassicOverflow()
-    })
+    recomputeClassicOverflow()
   })
 }
 
@@ -1016,19 +1012,27 @@ watch(
     if (!minimized || !activeTab) closeMinimizedTabPanel()
   },
 )
+/**
+ * Observes only the classic panel that is actually laid out for overflow.
+ * The minimized floating copy must not drive remeasures while dormant.
+ */
+function syncClassicOverflowResizeTarget() {
+  if (!resizeObserver) return
+  const activePanel = context.minimized.value
+    ? minimizedClassicPanelRef.value
+    : classicPanelRef.value
+  const panels = [classicPanelRef.value, minimizedClassicPanelRef.value]
+  for (const panel of panels) {
+    if (panel && panel !== activePanel) resizeObserver.unobserve(panel)
+  }
+  if (activePanel) resizeObserver.observe(activePanel)
+}
+
 watch(
-  [classicPanelRef, minimizedClassicPanelRef],
-  (
-    [classicPanel, minimizedPanel],
-    [previousClassicPanel, previousMinimizedPanel],
-  ) => {
-    if (previousClassicPanel && resizeObserver)
-      resizeObserver.unobserve(previousClassicPanel)
-    if (previousMinimizedPanel && resizeObserver)
-      resizeObserver.unobserve(previousMinimizedPanel)
-    if (classicPanel && resizeObserver) resizeObserver.observe(classicPanel)
-    if (minimizedPanel && resizeObserver) resizeObserver.observe(minimizedPanel)
-    if (classicPanel || minimizedPanel) scheduleClassicOverflowRecompute()
+  [classicPanelRef, minimizedClassicPanelRef, () => context.minimized.value],
+  () => {
+    syncClassicOverflowResizeTarget()
+    scheduleClassicOverflowRecompute()
   },
   { flush: 'post' },
 )
@@ -1049,9 +1053,7 @@ onMounted(() => {
       syncMinimizedTabPanelAnchor()
       scheduleClassicOverflowRecompute()
     })
-    if (classicPanelRef.value) resizeObserver.observe(classicPanelRef.value)
-    if (minimizedClassicPanelRef.value)
-      resizeObserver.observe(minimizedClassicPanelRef.value)
+    syncClassicOverflowResizeTarget()
   }
   syncMinimizedTabPanelAnchor()
   scheduleClassicOverflowRecompute()
@@ -1195,7 +1197,9 @@ defineExpose<RibbonDynamicApi>(context.api)
           </template>
 
           <main
-            v-if="context.layout.value === 'classic'"
+            v-if="
+              context.minimized.value && context.layout.value === 'classic'
+            "
             ref="minimizedClassicPanelRef"
             class="ml-ribbon__panel ml-ribbon__panel--floating"
             :data-active-tab="activeTabModel.id"
@@ -1259,7 +1263,7 @@ defineExpose<RibbonDynamicApi>(context.api)
           </main>
 
           <main
-            v-else
+            v-else-if="context.minimized.value"
             class="ml-ribbon__panel ml-ribbon__panel--simplified ml-ribbon__panel--floating"
             :data-active-tab="activeTabModel.id"
           >

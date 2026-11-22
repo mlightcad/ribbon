@@ -3200,6 +3200,111 @@ describe('MlRibbon', () => {
     }
   })
 
+  it('keeps classic overflow popover mounted across layout remeasures while open', async () => {
+    // Measured group width is wider than estimateGroupWidth's 140 fallback so a
+    // cache miss would under-count and incorrectly release the overflowed group.
+    const panelWidth = 350
+    const groupWidth = 200
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, groupWidth, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
+
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains('ml-ribbon__panel')
+          ? panelWidth
+          : groupWidth
+      })
+
+    const overflowTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'g1',
+            title: 'Clipboard',
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
+          },
+          {
+            id: 'g2',
+            title: 'Insert',
+            collections: [
+              {
+                id: 'c2',
+                items: [
+                  {
+                    id: 'hidden-action',
+                    type: 'button',
+                    label: 'Hidden Action',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: { tabs: overflowTabs },
+    })
+
+    try {
+      await waitForRibbonLayout(wrapper)
+
+      // Non-minimized ribbon must not mount a second dormant overflow host.
+      expect(wrapper.findAll('.ml-ribbon-overflow-trigger')).toHaveLength(1)
+
+      const overflowTrigger = wrapper.find('.ml-ribbon-overflow-trigger')
+      expect(overflowTrigger.exists()).toBe(true)
+      await overflowTrigger.trigger('click')
+      await waitForRibbonLayout(wrapper)
+
+      const openBefore = document.body.querySelectorAll(
+        '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout',
+      ).length
+      expect(openBefore).toBeGreaterThan(0)
+
+      // Force a classic-overflow recompute while the flyout is open (same path as
+      // ResizeObserver / visibleGroups watches). Must keep the overflow host mounted.
+      await wrapper.setProps({
+        tabs: [
+          {
+            ...overflowTabs[0],
+            groups: overflowTabs[0].groups.map((group) => ({ ...group })),
+          },
+        ],
+      })
+      await waitForRibbonLayout(wrapper, 5)
+
+      expect(wrapper.findAll('.ml-ribbon-overflow-trigger')).toHaveLength(1)
+      const openAfter = document.body.querySelectorAll(
+        '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout',
+      ).length
+      expect(openAfter).toBeGreaterThan(0)
+    } finally {
+      wrapper.unmount()
+      rectSpy.mockRestore()
+      clientWidthSpy.mockRestore()
+    }
+  })
+
   it('uses visible panel width to decide classic overflow trigger', async () => {
     // getBoundingClientRect represents the true visible width even when clientWidth is stale/oversized.
     const rectSpy = vi
