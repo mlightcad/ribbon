@@ -36,6 +36,7 @@ import type {
 import MlRibbonBackstage from '../modules/RibbonBackstage.vue'
 import MlRibbonContextualTabs from '../modules/RibbonContextualTabs.vue'
 import MlRibbonFileMenu from '../modules/RibbonFileMenu.vue'
+import MlRibbonClassicOverflow from './RibbonClassicOverflow.vue'
 import MlRibbonGroupContent from './RibbonGroupContent.vue'
 import MlRibbonGroup from './RibbonGroup.vue'
 
@@ -510,7 +511,7 @@ const classicOverflowPopoverWidth = computed(() => {
   }, 0)
 
   // Account for popover/container paddings so group content is not clipped.
-  const calculated = Math.ceil(widestGroupWidth + 40)
+  const calculated = Math.ceil(widestGroupWidth + 28)
   return Math.max(220, Math.min(720, calculated))
 })
 
@@ -655,7 +656,9 @@ function recomputeClassicOverflow() {
   })
 
   const resolveGroupWidth = (group: RibbonGroupModel): number =>
-    renderedWidths[group.id] ?? estimateGroupWidth(group)
+    renderedWidths[group.id] ??
+    measuredGroupWidths.value[group.id] ??
+    estimateGroupWidth(group)
 
   const fixedWidth = fixedGroups.reduce(
     (sum, group) => sum + resolveGroupWidth(group),
@@ -686,21 +689,15 @@ function recomputeClassicOverflow() {
 
 /**
  * Schedules classic overflow recomputation after DOM/layout settles.
+ *
+ * Uses cached/estimated widths for groups that are currently hidden. Do not
+ * clear `hiddenGroupIds` to remount for measurement — that unmounts the
+ * overflow host (and any open popover) and races with ResizeObserver noise
+ * from the dormant minimized-panel copy.
  */
 function scheduleClassicOverflowRecompute() {
   nextTick(() => {
-    if (context.layout.value !== 'classic' || context.minimized.value) {
-      recomputeClassicOverflow()
-      return
-    }
-    if (hiddenGroupIds.value.size === 0) {
-      recomputeClassicOverflow()
-      return
-    }
-    hiddenGroupIds.value = new Set()
-    nextTick(() => {
-      recomputeClassicOverflow()
-    })
+    recomputeClassicOverflow()
   })
 }
 
@@ -1015,19 +1012,27 @@ watch(
     if (!minimized || !activeTab) closeMinimizedTabPanel()
   },
 )
+/**
+ * Observes only the classic panel that is actually laid out for overflow.
+ * The minimized floating copy must not drive remeasures while dormant.
+ */
+function syncClassicOverflowResizeTarget() {
+  if (!resizeObserver) return
+  const activePanel = context.minimized.value
+    ? minimizedClassicPanelRef.value
+    : classicPanelRef.value
+  const panels = [classicPanelRef.value, minimizedClassicPanelRef.value]
+  for (const panel of panels) {
+    if (panel && panel !== activePanel) resizeObserver.unobserve(panel)
+  }
+  if (activePanel) resizeObserver.observe(activePanel)
+}
+
 watch(
-  [classicPanelRef, minimizedClassicPanelRef],
-  (
-    [classicPanel, minimizedPanel],
-    [previousClassicPanel, previousMinimizedPanel],
-  ) => {
-    if (previousClassicPanel && resizeObserver)
-      resizeObserver.unobserve(previousClassicPanel)
-    if (previousMinimizedPanel && resizeObserver)
-      resizeObserver.unobserve(previousMinimizedPanel)
-    if (classicPanel && resizeObserver) resizeObserver.observe(classicPanel)
-    if (minimizedPanel && resizeObserver) resizeObserver.observe(minimizedPanel)
-    if (classicPanel || minimizedPanel) scheduleClassicOverflowRecompute()
+  [classicPanelRef, minimizedClassicPanelRef, () => context.minimized.value],
+  () => {
+    syncClassicOverflowResizeTarget()
+    scheduleClassicOverflowRecompute()
   },
   { flush: 'post' },
 )
@@ -1048,9 +1053,7 @@ onMounted(() => {
       syncMinimizedTabPanelAnchor()
       scheduleClassicOverflowRecompute()
     })
-    if (classicPanelRef.value) resizeObserver.observe(classicPanelRef.value)
-    if (minimizedClassicPanelRef.value)
-      resizeObserver.observe(minimizedClassicPanelRef.value)
+    syncClassicOverflowResizeTarget()
   }
   syncMinimizedTabPanelAnchor()
   scheduleClassicOverflowRecompute()
@@ -1194,7 +1197,9 @@ defineExpose<RibbonDynamicApi>(context.api)
           </template>
 
           <main
-            v-if="context.layout.value === 'classic'"
+            v-if="
+              context.minimized.value && context.layout.value === 'classic'
+            "
             ref="minimizedClassicPanelRef"
             class="ml-ribbon__panel ml-ribbon__panel--floating"
             :data-active-tab="activeTabModel.id"
@@ -1235,46 +1240,21 @@ defineExpose<RibbonDynamicApi>(context.api)
               <div
                 class="ml-ribbon-group__body ml-ribbon-group__body--overflow"
               >
-                <ElPopover
-                  trigger="click"
-                  placement="bottom-end"
-                  :width="classicOverflowPopoverWidth"
+                <MlRibbonClassicOverflow
+                  :groups="classicOverflowGroups"
+                  :popover-class="classicOverflowPopoverClass"
+                  :popover-width="classicOverflowPopoverWidth"
+                  :trigger-aria-label="
+                    ribbonTexts.overflowTriggerAriaLabel ?? ''
+                  "
+                  :gallery-preview-fallback="
+                    ribbonTexts.galleryPreviewFallback ?? ''
+                  "
                   :disabled="isActiveTabContentDisabled"
-                  :show-arrow="false"
-                  :popper-class="classicOverflowPopoverClass"
-                  @show="context.overflowOpen.value = true"
-                  @hide="context.overflowOpen.value = false"
-                >
-                  <template #reference>
-                    <button
-                      type="button"
-                      class="ml-ribbon-overflow-trigger"
-                      :aria-label="ribbonTexts.overflowTriggerAriaLabel"
-                      :disabled="isActiveTabContentDisabled"
-                    >
-                      <span class="ml-ribbon-overflow-trigger__dots">...</span>
-                    </button>
-                  </template>
-                  <div class="ml-ribbon-overflow-list">
-                    <section
-                      v-for="group in classicOverflowGroups"
-                      :key="group.id"
-                      class="ml-ribbon-overflow-group"
-                    >
-                      <header class="ml-ribbon-overflow-group__header">
-                        {{ group.title }}
-                      </header>
-                      <MlRibbonGroupContent
-                        :group="group"
-                        :gallery-preview-fallback="
-                          ribbonTexts.galleryPreviewFallback
-                        "
-                        :disabled="isActiveTabContentDisabled"
-                        @item-click="onItemClick($event.groupId, $event.itemId)"
-                      />
-                    </section>
-                  </div>
-                </ElPopover>
+                  @open="context.overflowOpen.value = true"
+                  @close="context.overflowOpen.value = false"
+                  @item-click="onItemClick($event.groupId, $event.itemId)"
+                />
               </div>
               <footer
                 class="ml-ribbon-group__footer ml-ribbon-group__footer--overflow"
@@ -1283,7 +1263,7 @@ defineExpose<RibbonDynamicApi>(context.api)
           </main>
 
           <main
-            v-else
+            v-else-if="context.minimized.value"
             class="ml-ribbon__panel ml-ribbon__panel--simplified ml-ribbon__panel--floating"
             :data-active-tab="activeTabModel.id"
           >
@@ -1369,45 +1349,19 @@ defineExpose<RibbonDynamicApi>(context.api)
           class="ml-ribbon-group ml-ribbon-group--overflow"
         >
           <div class="ml-ribbon-group__body ml-ribbon-group__body--overflow">
-            <ElPopover
-              trigger="click"
-              placement="bottom-end"
-              :width="classicOverflowPopoverWidth"
+            <MlRibbonClassicOverflow
+              :groups="classicOverflowGroups"
+              :popover-class="classicOverflowPopoverClass"
+              :popover-width="classicOverflowPopoverWidth"
+              :trigger-aria-label="ribbonTexts.overflowTriggerAriaLabel ?? ''"
+              :gallery-preview-fallback="
+                ribbonTexts.galleryPreviewFallback ?? ''
+              "
               :disabled="isActiveTabContentDisabled"
-              :popper-class="classicOverflowPopoverClass"
-              @show="context.overflowOpen.value = true"
-              @hide="context.overflowOpen.value = false"
-            >
-              <template #reference>
-                <button
-                  type="button"
-                  class="ml-ribbon-overflow-trigger"
-                  :aria-label="ribbonTexts.overflowTriggerAriaLabel"
-                  :disabled="isActiveTabContentDisabled"
-                >
-                  <span class="ml-ribbon-overflow-trigger__dots">...</span>
-                </button>
-              </template>
-              <div class="ml-ribbon-overflow-list">
-                <section
-                  v-for="group in classicOverflowGroups"
-                  :key="group.id"
-                  class="ml-ribbon-overflow-group"
-                >
-                  <header class="ml-ribbon-overflow-group__header">
-                    {{ group.title }}
-                  </header>
-                  <MlRibbonGroupContent
-                    :group="group"
-                    :gallery-preview-fallback="
-                      ribbonTexts.galleryPreviewFallback
-                    "
-                    :disabled="isActiveTabContentDisabled"
-                    @item-click="onItemClick($event.groupId, $event.itemId)"
-                  />
-                </section>
-              </div>
-            </ElPopover>
+              @open="context.overflowOpen.value = true"
+              @close="context.overflowOpen.value = false"
+              @item-click="onItemClick($event.groupId, $event.itemId)"
+            />
           </div>
           <footer
             class="ml-ribbon-group__footer ml-ribbon-group__footer--overflow"

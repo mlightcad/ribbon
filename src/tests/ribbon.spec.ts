@@ -1478,19 +1478,29 @@ describe('MlRibbonGallery', () => {
     }
   })
 
-  it('lets classic overflow group content grow instead of clipping into the next section', () => {
+  it('uses Office-style classic flyouts for overflow groups', () => {
     const styles = readFileSync(
       resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
       'utf-8',
     )
 
+    expect(styles).toContain('.ml-ribbon-overflow-group-flyout')
+    expect(styles).toContain('.ml-ribbon-overflow-group-flyout__footer')
     expect(styles).toMatch(
-      /\.ml-ribbon-overflow-popover\s+\.ml-ribbon-group__content\s*\{[\s\S]*height:\s*auto;/,
+      /\.ml-ribbon-overflow-group-flyout__footer\s*\{[\s\S]*box-sizing:\s*border-box;/,
     )
     expect(styles).toMatch(
-      /\.ml-ribbon-overflow-popover\s+\.ml-ribbon-collection--column\s*\{[\s\S]*grid-auto-flow:\s*row;/,
+      /\.ml-ribbon-overflow-group-flyout\s+\.ml-ribbon-group__content\s*\{[\s\S]*height:\s*auto;/,
+    )
+    // Keep classic 3-row column flow in the flyout (do not reflow to a tall stack).
+    expect(styles).toMatch(
+      /\.ml-ribbon-overflow-group-flyout\s+\.ml-ribbon-collection--column\s*\{[\s\S]*grid-auto-flow:\s*column;/,
     )
     expect(styles).toContain('max-height: min(70vh, 560px)')
+    // Host apps may cap all role=tooltip poppers; overflow panels must stay wide.
+    expect(styles).toMatch(
+      /\.ml-ribbon-overflow-popover\s*\{[\s\S]*max-width:\s*min\(720px,\s*calc\(100vw - 24px\)\)\s*!important;/,
+    )
   })
 
   it('limits gallery panels to four visible rows before scrolling', () => {
@@ -3154,9 +3164,22 @@ describe('MlRibbon', () => {
       await waitForRibbonLayout(wrapper)
 
       // Overflow popover is teleported to body by Element Plus.
+      const overflowFlyouts = Array.from(
+        document.body.querySelectorAll<HTMLElement>(
+          '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout',
+        ),
+      )
+      expect(overflowFlyouts.length).toBeGreaterThan(0)
+      const insertFlyout = overflowFlyouts.find((flyout) =>
+        flyout
+          .querySelector('.ml-ribbon-overflow-group-flyout__footer')
+          ?.textContent?.includes('Insert'),
+      )
+      expect(insertFlyout).toBeTruthy()
+
       const hiddenButton = Array.from(
         document.body.querySelectorAll<HTMLButtonElement>(
-          '.ml-ribbon-overflow-popover .el-button',
+          '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout .el-button',
         ),
       ).find((button) => button.textContent?.includes('Hidden Action'))
       expect(hiddenButton).toBeTruthy()
@@ -3170,6 +3193,111 @@ describe('MlRibbon', () => {
         groupId: 'g2',
         itemId: 'hidden-action',
       })
+    } finally {
+      wrapper.unmount()
+      rectSpy.mockRestore()
+      clientWidthSpy.mockRestore()
+    }
+  })
+
+  it('keeps classic overflow popover mounted across layout remeasures while open', async () => {
+    // Measured group width is wider than estimateGroupWidth's 140 fallback so a
+    // cache miss would under-count and incorrectly release the overflowed group.
+    const panelWidth = 350
+    const groupWidth = 200
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon__panel')) {
+          return new DOMRect(0, 0, panelWidth, 84)
+        }
+        if (this.classList.contains('ml-ribbon-group')) {
+          return new DOMRect(0, 0, groupWidth, 76)
+        }
+        return new DOMRect(0, 0, 90, 24)
+      })
+
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.classList.contains('ml-ribbon__panel')
+          ? panelWidth
+          : groupWidth
+      })
+
+    const overflowTabs: RibbonTabModel[] = [
+      {
+        id: 'home',
+        title: 'Home',
+        groups: [
+          {
+            id: 'g1',
+            title: 'Clipboard',
+            collections: [
+              {
+                id: 'c1',
+                items: [{ id: 'paste', type: 'button', label: 'Paste' }],
+              },
+            ],
+          },
+          {
+            id: 'g2',
+            title: 'Insert',
+            collections: [
+              {
+                id: 'c2',
+                items: [
+                  {
+                    id: 'hidden-action',
+                    type: 'button',
+                    label: 'Hidden Action',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: { tabs: overflowTabs },
+    })
+
+    try {
+      await waitForRibbonLayout(wrapper)
+
+      // Non-minimized ribbon must not mount a second dormant overflow host.
+      expect(wrapper.findAll('.ml-ribbon-overflow-trigger')).toHaveLength(1)
+
+      const overflowTrigger = wrapper.find('.ml-ribbon-overflow-trigger')
+      expect(overflowTrigger.exists()).toBe(true)
+      await overflowTrigger.trigger('click')
+      await waitForRibbonLayout(wrapper)
+
+      const openBefore = document.body.querySelectorAll(
+        '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout',
+      ).length
+      expect(openBefore).toBeGreaterThan(0)
+
+      // Force a classic-overflow recompute while the flyout is open (same path as
+      // ResizeObserver / visibleGroups watches). Must keep the overflow host mounted.
+      await wrapper.setProps({
+        tabs: [
+          {
+            ...overflowTabs[0],
+            groups: overflowTabs[0].groups.map((group) => ({ ...group })),
+          },
+        ],
+      })
+      await waitForRibbonLayout(wrapper, 5)
+
+      expect(wrapper.findAll('.ml-ribbon-overflow-trigger')).toHaveLength(1)
+      const openAfter = document.body.querySelectorAll(
+        '.ml-ribbon-overflow-popover .ml-ribbon-overflow-group-flyout',
+      ).length
+      expect(openAfter).toBeGreaterThan(0)
     } finally {
       wrapper.unmount()
       rectSpy.mockRestore()
