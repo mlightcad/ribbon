@@ -3,6 +3,7 @@
   "version": "0.1.15",
   "packageManager": "pnpm@10.33.0",
   "type": "module",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/mlightcad/ribbon"
@@ -24,6 +25,7 @@
     "dist/*.js",
     "dist/*.css",
     "dist/**/*.d.ts",
+    "LICENSE",
     "README.md"
   ],
   "publishConfig": {

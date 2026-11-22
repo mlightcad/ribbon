@@ -377,3 +377,7 @@ AGENTS.md
 - V1 baseline is implemented and buildable.
 - Core APIs and tests are available.
 - Key tips now support `Alt` activation, sequence matching, and command dispatch via `itemClick`.
+
+## License
+
+MIT
