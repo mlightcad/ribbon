@@ -5,6 +5,9 @@ import { ElConfigProvider } from 'element-plus'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import MlRibbon from '../ribbon/components/Ribbon.vue'
+import MlRibbonClassicOverflow from '../ribbon/components/RibbonClassicOverflow.vue'
+import MlRibbonGroup from '../ribbon/components/RibbonGroup.vue'
+import MlRibbonGroupContent from '../ribbon/components/RibbonGroupContent.vue'
 import MlRibbonItemHost from '../ribbon/components/RibbonItemHost.vue'
 import MlRibbonButton from '../ribbon/items/RibbonButton.vue'
 import MlRibbonDropdown from '../ribbon/items/RibbonDropdown.vue'
@@ -246,7 +249,11 @@ describe('MlRibbonDropdown', () => {
         label: 'Line Type',
         syncLabelWithSelection: true,
         options: [
-          { label: 'Continuous', value: 'continuous', tooltip: 'Continuous line' },
+          {
+            label: 'Continuous',
+            value: 'continuous',
+            tooltip: 'Continuous line',
+          },
           { label: 'Dashed', value: 'dashed', tooltip: 'Dashed line' },
         ],
       },
@@ -2014,11 +2021,11 @@ describe('MlRibbon', () => {
     expect(
       wrapper
         .findAll('.ml-ribbon-tabs .ml-ribbon-tab')
-        .map(button => button.text()),
+        .map((button) => button.text()),
     ).toEqual(['Measure'])
-    expect(wrapper.find('.ml-ribbon-tabs .ml-ribbon-tab.is-active').text()).toBe(
-      'Measure',
-    )
+    expect(
+      wrapper.find('.ml-ribbon-tabs .ml-ribbon-tab.is-active').text(),
+    ).toBe('Measure')
     wrapper.unmount()
   })
 
@@ -3198,6 +3205,94 @@ describe('MlRibbon', () => {
       rectSpy.mockRestore()
       clientWidthSpy.mockRestore()
     }
+  })
+
+  it('closes classic overflow popover after selecting an overflow item', async () => {
+    const hide = vi.fn()
+    const groups = [
+      {
+        id: 'insert',
+        title: 'Insert',
+        collections: [
+          {
+            id: 'c1',
+            items: [
+              {
+                id: 'hidden-action',
+                type: 'button' as const,
+                label: 'Hidden Action',
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mount(MlRibbonClassicOverflow, {
+      props: {
+        groups,
+        popoverClass: 'ml-ribbon-overflow-popover',
+        popoverWidth: 320,
+        triggerAriaLabel: 'More',
+        galleryPreviewFallback: 'Preview',
+      },
+      global: {
+        stubs: {
+          ElPopover: defineComponent({
+            name: 'ElPopover',
+            props: {
+              visible: { type: Boolean, default: false },
+            },
+            emits: ['show', 'hide', 'update:visible'],
+            setup(props, { emit, slots }) {
+              const hidePopover = () => {
+                hide()
+                emit('update:visible', false)
+                emit('hide')
+              }
+              return () =>
+                h('div', { class: 'ml-test-classic-overflow' }, [
+                  h(
+                    'div',
+                    {
+                      class: 'ml-test-classic-overflow__reference',
+                      onClick: () => {
+                        const next = !props.visible
+                        emit('update:visible', next)
+                        emit(next ? 'show' : 'hide')
+                      },
+                    },
+                    slots.reference?.(),
+                  ),
+                  props.visible
+                    ? h(
+                        'div',
+                        { class: 'ml-test-classic-overflow__content' },
+                        slots.default?.({ hide: hidePopover }),
+                      )
+                    : null,
+                ])
+            },
+          }),
+        },
+      },
+    })
+
+    await wrapper
+      .find('.ml-test-classic-overflow__reference')
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper
+      .find('.ml-test-classic-overflow__content .ml-ribbon-button')
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(hide).toHaveBeenCalledTimes(1)
+    expect(wrapper.emitted('close')).toBeTruthy()
+    expect(wrapper.emitted('itemClick')?.[0]?.[0]).toEqual({
+      groupId: 'insert',
+      itemId: 'hidden-action',
+    })
   })
 
   it('keeps classic overflow popover mounted across layout remeasures while open', async () => {
@@ -5745,6 +5840,212 @@ describe('MlRibbon', () => {
       expect(footerTrigger.classes()).toContain('is-open')
     } finally {
       wrapper.unmount()
+    }
+  })
+
+  it('closes footer dropdown after selecting a footer menu item', async () => {
+    const hide = vi.fn()
+    const groupModel = {
+      id: 'draw',
+      title: 'Draw',
+      footerMenuItems: [
+        { id: 'spline', type: 'button' as const, label: 'Spline' },
+      ],
+      collections: [
+        {
+          id: 'c1',
+          items: [{ id: 'line', type: 'button' as const, label: 'Line' }],
+        },
+      ],
+    }
+
+    const wrapper = mount(MlRibbonGroup, {
+      props: {
+        id: groupModel.id,
+        title: groupModel.title,
+        groupModel,
+      },
+      slots: {
+        default: () =>
+          h(MlRibbonGroupContent, {
+            group: groupModel,
+          }),
+      },
+      global: {
+        stubs: {
+          ElPopover: defineComponent({
+            name: 'ElPopover',
+            props: {
+              visible: { type: Boolean, default: false },
+            },
+            emits: ['show', 'hide', 'update:visible'],
+            setup(props, { emit, slots }) {
+              const hidePopover = () => {
+                hide()
+                emit('update:visible', false)
+                emit('hide')
+              }
+              return () =>
+                h('div', { class: 'ml-test-footer-popover' }, [
+                  h(
+                    'div',
+                    {
+                      class: 'ml-test-footer-popover__reference',
+                      onClick: () => {
+                        const next = !props.visible
+                        emit('update:visible', next)
+                        emit(next ? 'show' : 'hide')
+                      },
+                    },
+                    slots.reference?.(),
+                  ),
+                  props.visible
+                    ? h(
+                        'div',
+                        { class: 'ml-test-footer-popover__content' },
+                        slots.default?.({ hide: hidePopover }),
+                      )
+                    : null,
+                ])
+            },
+          }),
+        },
+      },
+    })
+
+    const footerTrigger = wrapper.find('.ml-ribbon-group__footer-trigger')
+    await wrapper
+      .find('.ml-test-footer-popover__reference')
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(footerTrigger.classes()).toContain('is-open')
+
+    await wrapper
+      .find('.ml-test-footer-popover__content .ml-ribbon-button')
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(hide).toHaveBeenCalledTimes(1)
+    expect(footerTrigger.classes()).not.toContain('is-open')
+    expect(wrapper.emitted('item-click')?.[0]?.[0]).toEqual({
+      groupId: 'draw-footer-menu',
+      itemId: 'spline',
+    })
+  })
+
+  it('closes group overflow dropdown after selecting an overflow item', async () => {
+    const hide = vi.fn()
+    const groupModel = {
+      id: 'grp-overflow',
+      title: 'Group',
+      collections: [
+        {
+          id: 'c1',
+          items: [
+            { id: 'btn-visible', type: 'button' as const, label: 'Visible' },
+            { id: 'btn-hidden', type: 'button' as const, label: 'Hidden' },
+          ],
+        },
+      ],
+    }
+
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('ml-ribbon-group__content')) {
+          return new DOMRect(0, 0, 100, 36)
+        }
+        if (this.classList.contains('ml-ribbon-item-host')) {
+          if (this.dataset.itemId === 'btn-hidden') {
+            return new DOMRect(110, 0, 24, 20)
+          }
+          return new DOMRect(4, 0, 24, 20)
+        }
+        return new DOMRect(0, 0, 160, 40)
+      })
+
+    try {
+      const wrapper = mount(MlRibbonGroup, {
+        props: {
+          id: groupModel.id,
+          title: groupModel.title,
+          groupModel,
+        },
+        slots: {
+          default: () =>
+            h(MlRibbonGroupContent, {
+              group: groupModel,
+            }),
+        },
+        global: {
+          stubs: {
+            ElPopover: defineComponent({
+              name: 'ElPopover',
+              props: {
+                visible: { type: Boolean, default: false },
+              },
+              emits: ['show', 'hide', 'update:visible'],
+              setup(props, { emit, slots }) {
+                const hidePopover = () => {
+                  hide()
+                  emit('update:visible', false)
+                  emit('hide')
+                }
+                return () =>
+                  h('div', { class: 'ml-test-overflow-popover' }, [
+                    h(
+                      'div',
+                      {
+                        class: 'ml-test-overflow-popover__reference',
+                        onClick: () => {
+                          const next = !props.visible
+                          emit('update:visible', next)
+                          emit(next ? 'show' : 'hide')
+                        },
+                      },
+                      slots.reference?.(),
+                    ),
+                    props.visible
+                      ? h(
+                          'div',
+                          { class: 'ml-test-overflow-popover__content' },
+                          slots.default?.({ hide: hidePopover }),
+                        )
+                      : null,
+                  ])
+              },
+            }),
+          },
+        },
+      })
+
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const overflowTrigger = wrapper.find(
+        '.ml-ribbon-group__overflow-trigger',
+      )
+      expect(overflowTrigger.exists()).toBe(true)
+      await wrapper
+        .find('.ml-test-overflow-popover__reference')
+        .trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(overflowTrigger.classes()).toContain('is-open')
+
+      await wrapper
+        .find('.ml-test-overflow-popover__content .ml-ribbon-button')
+        .trigger('click')
+      await wrapper.vm.$nextTick()
+
+      expect(hide).toHaveBeenCalledTimes(1)
+      expect(overflowTrigger.classes()).not.toContain('is-open')
+      expect(wrapper.emitted('item-click')?.[0]?.[0]).toEqual({
+        groupId: 'grp-overflow',
+        itemId: 'btn-hidden',
+      })
+      wrapper.unmount()
+    } finally {
+      rectSpy.mockRestore()
     }
   })
 })

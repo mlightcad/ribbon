@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ElPopover } from 'element-plus'
+import { ref } from 'vue'
 import type { RibbonGroupModel } from '../types'
 import MlRibbonGroupContent from './RibbonGroupContent.vue'
 
-defineProps<{
+const props = defineProps<{
   groups: RibbonGroupModel[]
   popoverClass: string
   popoverWidth: number
@@ -18,17 +19,35 @@ const emit = defineEmits<{
   itemClick: [payload: { groupId: string; itemId: string }]
 }>()
 
+const isOpen = ref(false)
+
 /**
- * Forwards item activation from a classic overflow flyout.
+ * Toggles the classic overflow popover from the trigger button.
  */
-function onItemClick(payload: { groupId: string; itemId: string }) {
+function toggleOpen() {
+  if (props.disabled) return
+  isOpen.value = !isOpen.value
+}
+
+/**
+ * Forwards item activation from a classic overflow flyout and closes the popover.
+ * @param payload Bubbled item activation payload.
+ * @param hide Optional popover hide helper from ElPopover default slot.
+ */
+function onItemClick(
+  payload: { groupId: string; itemId: string },
+  hide?: () => void,
+) {
+  hide?.()
+  isOpen.value = false
   emit('itemClick', payload)
 }
 </script>
 
 <template>
   <ElPopover
-    trigger="click"
+    v-model:visible="isOpen"
+    :trigger="[]"
     placement="bottom-end"
     :width="popoverWidth"
     :disabled="disabled"
@@ -45,6 +64,7 @@ function onItemClick(payload: { groupId: string; itemId: string }) {
         class="ml-ribbon-overflow-trigger"
         :aria-label="triggerAriaLabel"
         :disabled="disabled"
+        @click="toggleOpen"
       >
         <span class="ml-ribbon-overflow-trigger__dots">...</span>
       </button>
@@ -55,22 +75,24 @@ function onItemClick(payload: { groupId: string; itemId: string }) {
       variant (horizontal panel + footer title), stacked so every control stays
       fully visible instead of being reflowed into a clipped card.
     -->
-    <div class="ml-ribbon-overflow-list">
-      <section
-        v-for="group in groups"
-        :key="group.id"
-        class="ml-ribbon-overflow-group-flyout"
-      >
-        <MlRibbonGroupContent
-          :group="group"
-          :gallery-preview-fallback="galleryPreviewFallback"
-          :disabled="disabled"
-          @item-click="onItemClick"
-        />
-        <footer class="ml-ribbon-overflow-group-flyout__footer">
-          {{ group.title }}
-        </footer>
-      </section>
-    </div>
+    <template #default="{ hide }">
+      <div class="ml-ribbon-overflow-list">
+        <section
+          v-for="group in groups"
+          :key="group.id"
+          class="ml-ribbon-overflow-group-flyout"
+        >
+          <MlRibbonGroupContent
+            :group="group"
+            :gallery-preview-fallback="galleryPreviewFallback"
+            :disabled="disabled"
+            @item-click="onItemClick($event, hide)"
+          />
+          <footer class="ml-ribbon-overflow-group-flyout__footer">
+            {{ group.title }}
+          </footer>
+        </section>
+      </div>
+    </template>
   </ElPopover>
 </template>
