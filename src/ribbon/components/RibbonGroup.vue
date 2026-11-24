@@ -255,22 +255,6 @@ function recomputeFooterOffset() {
 }
 
 /**
- * Syncs footer menu open state from popover lifecycle.
- * @param value Next open state.
- */
-function setFooterMenuOpen(value: boolean) {
-  isFooterMenuOpen.value = value
-}
-
-/**
- * Syncs overflow menu open state from popover lifecycle.
- * @param value Next open state.
- */
-function setOverflowMenuOpen(value: boolean) {
-  isOverflowMenuOpen.value = value
-}
-
-/**
  * Toggles footer menu open state on trigger click.
  */
 function toggleFooterMenuOpen() {
@@ -284,6 +268,34 @@ function toggleFooterMenuOpen() {
 function toggleOverflowMenuOpen() {
   if (isRibbonDisabled.value) return
   isOverflowMenuOpen.value = !isOverflowMenuOpen.value
+}
+
+/**
+ * Handles an item click from the footer menu popover and closes it.
+ * @param payload Bubbled item activation payload.
+ * @param hide Optional popover hide helper from ElPopover default slot.
+ */
+function onFooterMenuItemClick(
+  payload: { groupId: string; itemId: string },
+  hide?: () => void,
+) {
+  hide?.()
+  isFooterMenuOpen.value = false
+  emit('item-click', payload)
+}
+
+/**
+ * Handles an item click from the group overflow popover and closes it.
+ * @param payload Bubbled item activation payload.
+ * @param hide Optional popover hide helper from ElPopover default slot.
+ */
+function onOverflowMenuItemClick(
+  payload: { groupId: string; itemId: string },
+  hide?: () => void,
+) {
+  hide?.()
+  isOverflowMenuOpen.value = false
+  emit('item-click', payload)
 }
 
 let resizeObserver: ResizeObserver | null = null
@@ -353,13 +365,12 @@ onUnmounted(() => {
       <span class="ml-ribbon-group__title">{{ title }}</span>
       <ElPopover
         v-if="hasFooterMenuItems && footerMenuGroupModel"
-        trigger="click"
+        v-model:visible="isFooterMenuOpen"
+        :trigger="[]"
         placement="bottom-start"
         :disabled="isRibbonDisabled"
         :popper-class="overflowPopperClass"
         :popper-options="footerPopperOptions"
-        @show="setFooterMenuOpen(true)"
-        @hide="setFooterMenuOpen(false)"
       >
         <template #reference>
           <button
@@ -377,24 +388,25 @@ onUnmounted(() => {
             /></ElIcon>
           </button>
         </template>
-        <div class="ml-ribbon-group__overflow-content">
-          <MlRibbonGroupContent
-            :group="footerMenuGroupModel"
-            :gallery-preview-fallback="galleryPreviewFallback"
-            :disabled="isRibbonDisabled"
-            @item-click="emit('item-click', $event)"
-          />
-        </div>
+        <template #default="{ hide }">
+          <div class="ml-ribbon-group__overflow-content">
+            <MlRibbonGroupContent
+              :group="footerMenuGroupModel"
+              :gallery-preview-fallback="galleryPreviewFallback"
+              :disabled="isRibbonDisabled"
+              @item-click="onFooterMenuItemClick($event, hide)"
+            />
+          </div>
+        </template>
       </ElPopover>
       <ElPopover
         v-if="hasOverflowItems && overflowGroupModel"
-        trigger="click"
+        v-model:visible="isOverflowMenuOpen"
+        :trigger="[]"
         placement="bottom-start"
         :disabled="isRibbonDisabled"
         :popper-class="overflowPopperClass"
         :popper-options="overflowPopperOptions"
-        @show="setOverflowMenuOpen(true)"
-        @hide="setOverflowMenuOpen(false)"
       >
         <template #reference>
           <button
@@ -412,14 +424,16 @@ onUnmounted(() => {
             /></ElIcon>
           </button>
         </template>
-        <div class="ml-ribbon-group__overflow-content">
-          <MlRibbonGroupContent
-            :group="overflowGroupModel"
-            :gallery-preview-fallback="galleryPreviewFallback"
-            :disabled="isRibbonDisabled"
-            @item-click="emit('item-click', $event)"
-          />
-        </div>
+        <template #default="{ hide }">
+          <div class="ml-ribbon-group__overflow-content">
+            <MlRibbonGroupContent
+              :group="overflowGroupModel"
+              :gallery-preview-fallback="galleryPreviewFallback"
+              :disabled="isRibbonDisabled"
+              @item-click="onOverflowMenuItemClick($event, hide)"
+            />
+          </div>
+        </template>
       </ElPopover>
       <ElButton
         v-if="showLauncherIcon ?? launcher"
