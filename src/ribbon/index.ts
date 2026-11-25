@@ -125,6 +125,7 @@ export type {
   RibbonCollectionModel,
   RibbonItemModel,
   RibbonDropdownOption,
+  RibbonDropdownPlacement,
   RibbonSegmentedOption,
   RibbonGalleryPreview,
   RibbonGalleryItemModel,

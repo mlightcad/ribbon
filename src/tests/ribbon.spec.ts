@@ -105,6 +105,28 @@ describe('MlRibbonBackstage', () => {
 })
 
 describe('MlRibbonDropdown', () => {
+  it('forwards placement to ElDropdown', () => {
+    const wrapper = mount(MlRibbonDropdown, {
+      props: {
+        id: 'island',
+        label: 'Island Detection',
+        placement: 'right-start',
+        options: [
+          { label: 'Normal', value: 'style-normal' },
+          { label: 'Outer', value: 'style-outer' },
+        ],
+      },
+    })
+
+    try {
+      const dropdown = wrapper.findComponent({ name: 'ElDropdown' })
+      expect(dropdown.exists()).toBe(true)
+      expect(dropdown.props('placement')).toBe('right-start')
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('can be reused directly with ribbon sizing and command memory', async () => {
     const wrapper = mount(MlRibbonDropdown, {
       props: {
@@ -5803,6 +5825,63 @@ describe('MlRibbon', () => {
     expect(wrapper.find('.ml-ribbon-group__footer-trigger').exists()).toBe(true)
   })
 
+  it('auto-sizes footer and group-overflow popovers instead of ElPopover 150px default', () => {
+    const groupModel = {
+      id: 'draw',
+      title: 'Draw',
+      footerMenuItems: [
+        { id: 'spline', type: 'button' as const, hideLabel: true },
+      ],
+      collections: [
+        {
+          id: 'c1',
+          items: [{ id: 'line', type: 'button' as const, label: 'Line' }],
+        },
+      ],
+    }
+
+    const wrapper = mount(MlRibbonGroup, {
+      props: {
+        id: groupModel.id,
+        title: groupModel.title,
+        groupModel,
+      },
+      slots: {
+        default: () => h(MlRibbonGroupContent, { group: groupModel }),
+      },
+    })
+
+    try {
+      const popovers = wrapper.findAllComponents({ name: 'ElPopover' })
+      expect(popovers.length).toBeGreaterThan(0)
+      for (const popover of popovers) {
+        expect(popover.props('width')).toBe('auto')
+      }
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('sizes footer overflow content to its children instead of a fixed width', () => {
+    const styles = readFileSync(
+      resolve(process.cwd(), 'src/ribbon/styles/ribbon.css'),
+      'utf-8',
+    )
+
+    expect(styles).toMatch(
+      /\.ml-ribbon-group__overflow-content\s*\{[\s\S]*width:\s*max-content;/,
+    )
+    expect(styles).toMatch(
+      /\.ml-ribbon-group__overflow-content\s+\.ml-ribbon-collection--column\s*\{[\s\S]*grid-template-columns:\s*max-content;/,
+    )
+    expect(styles).toContain(
+      '.ml-ribbon-item-host.type-buttonGroup\n  .ml-ribbon-button-group,',
+    )
+    expect(styles).toMatch(
+      /\.ml-ribbon-item-host\.type-buttonGroup\n\s+\.ml-ribbon-button-group\n\s+\.el-button-group\s*\{[\s\S]*?width:\s*max-content;[\s\S]*?max-width:\s*none;/,
+    )
+  })
+
   it('marks footer trigger as open after clicking footer dropdown', async () => {
     const footerMenuTabs: RibbonTabModel[] = [
       {
@@ -5839,6 +5918,308 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
       expect(footerTrigger.classes()).toContain('is-open')
     } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('stacks footer menu items when footerMenuLayout is column', async () => {
+    const groupModel = {
+      id: 'origin',
+      title: 'Origin',
+      footerMenuLayout: 'column' as const,
+      footerMenuItems: [
+        {
+          id: 'origin-presets',
+          type: 'buttonGroup' as const,
+          hideLabel: true,
+          size: 'small' as const,
+          props: {
+            wrap: false,
+            buttonSize: 'small',
+            options: [
+              { label: '', value: 'origin-bl' },
+              { label: '', value: 'origin-br' },
+            ],
+          },
+        },
+        {
+          id: 'origin-store',
+          type: 'button' as const,
+          label: 'Store as Default Origin',
+          size: 'small' as const,
+        },
+      ],
+      collections: [
+        {
+          id: 'c1',
+          items: [
+            {
+              id: 'set-origin',
+              type: 'button' as const,
+              label: 'Set Origin',
+            },
+          ],
+        },
+      ],
+    }
+
+    const wrapper = mount(MlRibbonGroup, {
+      props: {
+        id: groupModel.id,
+        title: groupModel.title,
+        groupModel,
+      },
+      slots: {
+        default: () =>
+          h(MlRibbonGroupContent, {
+            group: groupModel,
+          }),
+      },
+      global: {
+        stubs: {
+          ElPopover: defineComponent({
+            name: 'ElPopover',
+            props: {
+              visible: { type: Boolean, default: false },
+            },
+            emits: ['update:visible'],
+            setup(_props, { slots }) {
+              return () =>
+                h('div', { class: 'ml-test-footer-popover' }, [
+                  slots.reference?.(),
+                  h(
+                    'div',
+                    { class: 'ml-test-footer-popover__content' },
+                    slots.default?.({ hide: () => undefined }),
+                  ),
+                ])
+            },
+          }),
+        },
+      },
+    })
+
+    try {
+      expect(wrapper.find('.ml-ribbon-group__footer-trigger').exists()).toBe(
+        true,
+      )
+      const footerContent = wrapper.find(
+        '.ml-ribbon-group__overflow-content .ml-ribbon-group__content',
+      )
+      expect(footerContent.exists()).toBe(true)
+      expect(footerContent.classes()).toContain(
+        'ml-ribbon-group__content--column',
+      )
+      expect(
+        wrapper.find(
+          '.ml-ribbon-group__overflow-content .ml-ribbon-collection--column',
+        ).exists(),
+      ).toBe(true)
+      expect(
+        wrapper
+          .find(
+            '.ml-ribbon-group__overflow-content .ml-ribbon-item-host[data-item-id="origin-presets"]',
+          )
+          .exists(),
+      ).toBe(true)
+      expect(
+        wrapper
+          .find(
+            '.ml-ribbon-group__overflow-content .ml-ribbon-item-host[data-item-id="origin-store"]',
+          )
+          .exists(),
+      ).toBe(true)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps footer popover open while interacting with nested dropdown menus', async () => {
+    const groupModel = {
+      id: 'options',
+      title: 'Options',
+      footerMenuLayout: 'column' as const,
+      footerMenuItems: [
+        {
+          id: 'island-detection',
+          type: 'dropdown' as const,
+          label: 'Island Detection',
+          size: 'small' as const,
+          props: {
+            modelValue: 'style-outer',
+            syncLabelWithSelection: true,
+            placement: 'right-start',
+            options: [
+              { label: 'Normal', value: 'style-normal' },
+              { label: 'Outer', value: 'style-outer' },
+            ],
+          },
+        },
+      ],
+      collections: [
+        {
+          id: 'c1',
+          items: [
+            {
+              id: 'associative',
+              type: 'toggle' as const,
+              label: 'Associative',
+            },
+          ],
+        },
+      ],
+    }
+
+    const wrapper = mount(MlRibbonGroup, {
+      props: {
+        id: groupModel.id,
+        title: groupModel.title,
+        groupModel,
+      },
+      slots: {
+        default: () =>
+          h(MlRibbonGroupContent, {
+            group: groupModel,
+          }),
+      },
+      global: {
+        stubs: {
+          ElPopover: defineComponent({
+            name: 'ElPopover',
+            props: {
+              visible: { type: Boolean, default: false },
+              persistent: { type: Boolean, default: false },
+            },
+            emits: ['update:visible'],
+            setup(props, { slots }) {
+              return () =>
+                h('div', { class: 'ml-test-footer-popover' }, [
+                  slots.reference?.(),
+                  h(
+                    'div',
+                    {
+                      class:
+                        'ml-test-footer-popover__content ml-ribbon-group__overflow-popover ml-ribbon-group__popover--options-footer',
+                    },
+                    slots.default?.({ hide: () => undefined }),
+                  ),
+                ])
+            },
+          }),
+        },
+      },
+    })
+
+    try {
+      const footerTrigger = wrapper.find('.ml-ribbon-group__footer-trigger')
+      expect(footerTrigger.exists()).toBe(true)
+      await footerTrigger.trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(footerTrigger.classes()).toContain('is-open')
+
+      expect(
+        wrapper
+          .find(
+            '.ml-ribbon-group__overflow-content .ml-ribbon-item-host[data-item-id="island-detection"]',
+          )
+          .exists(),
+      ).toBe(true)
+
+      const nestedMenu = document.createElement('div')
+      nestedMenu.className = 'ml-ribbon-dropdown-menu'
+      document.body.appendChild(nestedMenu)
+      nestedMenu.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true }),
+      )
+      await wrapper.vm.$nextTick()
+      expect(footerTrigger.classes()).toContain('is-open')
+
+      document.body.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true }),
+      )
+      await wrapper.vm.$nextTick()
+      expect(footerTrigger.classes()).not.toContain('is-open')
+
+      nestedMenu.remove()
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('dismisses one group footer when interacting with another group footer popover', async () => {
+    const groupModel = {
+      id: 'group-a',
+      title: 'Group A',
+      footerMenuItems: [
+        { id: 'group-a-item', type: 'button' as const, label: 'A' },
+      ],
+      collections: [
+        {
+          id: 'c1',
+          items: [{ id: 'main', type: 'button' as const, label: 'Main' }],
+        },
+      ],
+    }
+
+    const wrapper = mount(MlRibbonGroup, {
+      props: {
+        id: groupModel.id,
+        title: groupModel.title,
+        groupModel,
+      },
+      slots: {
+        default: () =>
+          h(MlRibbonGroupContent, {
+            group: groupModel,
+          }),
+      },
+      global: {
+        stubs: {
+          ElPopover: defineComponent({
+            name: 'ElPopover',
+            props: {
+              visible: { type: Boolean, default: false },
+            },
+            emits: ['update:visible'],
+            setup(_props, { slots }) {
+              return () =>
+                h('div', { class: 'ml-test-footer-popover' }, [
+                  slots.reference?.(),
+                  h(
+                    'div',
+                    {
+                      class:
+                        'ml-test-footer-popover__content ml-ribbon-group__overflow-popover ml-ribbon-group__popover--group-a-footer',
+                    },
+                    slots.default?.({ hide: () => undefined }),
+                  ),
+                ])
+            },
+          }),
+        },
+      },
+    })
+
+    const otherGroupPopover = document.createElement('div')
+    otherGroupPopover.className =
+      'ml-ribbon-group__overflow-popover ml-ribbon-group__popover--group-b-footer'
+    document.body.appendChild(otherGroupPopover)
+
+    try {
+      const footerTrigger = wrapper.find('.ml-ribbon-group__footer-trigger')
+      expect(footerTrigger.exists()).toBe(true)
+      await footerTrigger.trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(footerTrigger.classes()).toContain('is-open')
+
+      // Shared overflow-popover class alone must not keep this group open.
+      otherGroupPopover.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true }),
+      )
+      await wrapper.vm.$nextTick()
+      expect(footerTrigger.classes()).not.toContain('is-open')
+    } finally {
+      otherGroupPopover.remove()
       wrapper.unmount()
     }
   })

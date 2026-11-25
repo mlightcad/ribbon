@@ -1649,16 +1649,19 @@ html.dark {
 }
 
 .ml-ribbon-group__overflow-content {
-  max-width: min(420px, 80vw);
+  width: max-content;
+  max-width: min(720px, calc(100vw - 24px));
 }
 
 .ml-ribbon-group__overflow-content .ml-ribbon-group__content {
+  width: max-content;
   overflow: visible;
 }
 
 .ml-ribbon-group__overflow-content .ml-ribbon-collection--column {
+  width: max-content;
   grid-auto-flow: row;
-  grid-template-columns: minmax(110px, max-content);
+  grid-template-columns: max-content;
   grid-template-rows: none;
   grid-auto-columns: auto;
 }
@@ -1675,6 +1678,25 @@ html.dark {
   .ml-ribbon-item-host
   > .el-select {
   width: auto;
+  max-width: none;
+}
+
+/* Dense nowrap button groups must size to their buttons, not stretch/clip
+   against a percentage of a narrower sibling (e.g. Store as Default Origin). */
+.ml-ribbon-group__overflow-content
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host.type-buttonGroup,
+.ml-ribbon-group__overflow-content
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host.type-buttonGroup
+  .ml-ribbon-button-group,
+.ml-ribbon-group__overflow-content
+  .ml-ribbon-collection--column
+  .ml-ribbon-item-host.type-buttonGroup
+  .ml-ribbon-button-group
+  .el-button-group {
+  width: max-content;
+  max-width: none;
 }
 
 .ml-ribbon-simplified-group {
