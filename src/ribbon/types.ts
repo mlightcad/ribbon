@@ -77,6 +77,24 @@ export interface RibbonItemModel {
   props?: Record<string, unknown>
 }
 
+/** Popper placement forwarded to Element Plus `ElDropdown`. */
+export type RibbonDropdownPlacement =
+  | 'top'
+  | 'top-start'
+  | 'top-end'
+  | 'bottom'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'left'
+  | 'left-start'
+  | 'left-end'
+  | 'right'
+  | 'right-start'
+  | 'right-end'
+  | 'auto'
+  | 'auto-start'
+  | 'auto-end'
+
 export interface RibbonDropdownOption {
   label?: string
   value?: unknown
@@ -144,7 +162,17 @@ export interface RibbonGroupModel {
   visible?: boolean
   launcher?: boolean
   showLauncherIcon?: boolean
+  /**
+   * Secondary commands shown in the group footer dropdown.
+   * Use with {@link footerMenuLayout} when items should stack (for example a
+   * dense `buttonGroup` above a labeled command).
+   */
   footerMenuItems?: RibbonItemModel[]
+  /**
+   * Layout for the footer dropdown collection that wraps {@link footerMenuItems}.
+   * Defaults to `'row'` (historical behavior).
+   */
+  footerMenuLayout?: RibbonCollectionLayout
   collections?: RibbonCollectionModel[]
 }
 

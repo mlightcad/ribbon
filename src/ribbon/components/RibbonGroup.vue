@@ -102,9 +102,27 @@ const overflowSkidOffset = ref(0)
 const footerSkidOffset = ref(0)
 const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
+const overflowPopoverToken = computed(
+  () => `ml-ribbon-group__popover--${props.id}-overflow`,
+)
+const footerPopoverToken = computed(
+  () => `ml-ribbon-group__popover--${props.id}-footer`,
+)
 const overflowPopperClass = computed(
   () =>
-    `ml-ribbon-group__overflow-popover ml-ribbon-group__overflow-popover--size-${resolvedSize.value}`,
+    [
+      'ml-ribbon-group__overflow-popover',
+      `ml-ribbon-group__overflow-popover--size-${resolvedSize.value}`,
+      overflowPopoverToken.value,
+    ].join(' '),
+)
+const footerPopperClass = computed(
+  () =>
+    [
+      'ml-ribbon-group__overflow-popover',
+      `ml-ribbon-group__overflow-popover--size-${resolvedSize.value}`,
+      footerPopoverToken.value,
+    ].join(' '),
 )
 const overflowPopperOptions = computed(() => ({
   modifiers: [
@@ -159,14 +177,15 @@ const overflowGroupModel = computed<RibbonGroupModel | null>(() => {
 
 const footerMenuGroupModel = computed<RibbonGroupModel | null>(() => {
   if (!props.groupModel?.footerMenuItems?.length) return null
+  const layout = props.groupModel.footerMenuLayout ?? 'row'
   return {
     id: `${props.groupModel.id}-footer-menu`,
     title: '',
-    orientation: 'row',
+    orientation: layout === 'column' ? 'column' : 'row',
     collections: [
       {
         id: `${props.groupModel.id}-footer-menu-collection`,
-        layout: 'row',
+        layout,
         items: props.groupModel.footerMenuItems,
       },
     ],
@@ -256,18 +275,101 @@ function recomputeFooterOffset() {
 
 /**
  * Toggles footer menu open state on trigger click.
+ * Opening the footer closes the group-overflow popover so only one surface is active.
  */
 function toggleFooterMenuOpen() {
   if (isRibbonDisabled.value) return
-  isFooterMenuOpen.value = !isFooterMenuOpen.value
+  const nextOpen = !isFooterMenuOpen.value
+  if (nextOpen) isOverflowMenuOpen.value = false
+  isFooterMenuOpen.value = nextOpen
 }
 
 /**
  * Toggles overflow menu open state on trigger click.
+ * Opening overflow closes the footer popover so only one surface is active.
  */
 function toggleOverflowMenuOpen() {
   if (isRibbonDisabled.value) return
-  isOverflowMenuOpen.value = !isOverflowMenuOpen.value
+  const nextOpen = !isOverflowMenuOpen.value
+  if (nextOpen) isFooterMenuOpen.value = false
+  isOverflowMenuOpen.value = nextOpen
+}
+
+/**
+ * True when a pointer event landed inside a teleported ribbon menu that
+ * belongs to a control hosted in a group footer/overflow popover. Those
+ * menus mount under `body`, so Element Plus would otherwise treat them as
+ * outside clicks and dismiss the host popover before the option activates.
+ */
+function isNestedRibbonMenuTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+  return Boolean(
+    target.closest(
+      [
+        '.ml-ribbon-dropdown-menu',
+        '.ml-ribbon-select-dropdown',
+        '.ml-ribbon-gallery-panel',
+        '.el-color-picker__panel',
+        '.el-picker__popper',
+      ].join(', '),
+    ),
+  )
+}
+
+/**
+ * Walks ancestors for an instance-scoped popover class token.
+ * Prefer classList over CSS selectors so ids with special characters still match
+ * in environments without `CSS.escape` (for example jsdom).
+ */
+function isInsidePopoverToken(target: Element, token: string): boolean {
+  let node: Element | null = target
+  while (node) {
+    if (node.classList?.contains(token)) return true
+    node = node.parentElement
+  }
+  return false
+}
+
+/**
+ * True when a pointer event is still interacting with the open footer surface
+ * (trigger, this group's footer popover body, or nested teleported menus).
+ */
+function isFooterSurfaceTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+  if (footerTriggerRef.value?.contains(target)) return true
+  if (isInsidePopoverToken(target, footerPopoverToken.value)) return true
+  return isNestedRibbonMenuTarget(target)
+}
+
+/**
+ * True when a pointer event is still interacting with the open group-overflow
+ * surface (trigger, this group's overflow popover body, or nested teleported menus).
+ */
+function isOverflowSurfaceTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false
+  if (overflowTriggerRef.value?.contains(target)) return true
+  if (isInsidePopoverToken(target, overflowPopoverToken.value)) return true
+  return isNestedRibbonMenuTarget(target)
+}
+
+/**
+ * Dismisses the footer popover on true outside clicks while keeping nested
+ * teleported dropdown/select menus usable.
+ */
+function onFooterOutsidePointerDown(event: PointerEvent) {
+  if (!isFooterMenuOpen.value) return
+  if (isFooterSurfaceTarget(event.target)) return
+  isFooterMenuOpen.value = false
+}
+
+/**
+ * Dismisses the group-overflow popover on true outside clicks while keeping
+ * nested teleported dropdown/select menus usable.
+ */
+function onOverflowOutsidePointerDown(event: PointerEvent) {
+  if (!isOverflowMenuOpen.value) return
+  if (isOverflowSurfaceTarget(event.target)) return
+  isOverflowMenuOpen.value = false
 }
 
 /**
@@ -328,6 +430,30 @@ watch(isRibbonDisabled, (disabled) => {
   isFooterMenuOpen.value = false
   isOverflowMenuOpen.value = false
 })
+watch(isFooterMenuOpen, (open) => {
+  if (typeof document === 'undefined') return
+  if (open) {
+    document.addEventListener('pointerdown', onFooterOutsidePointerDown, true)
+    return
+  }
+  document.removeEventListener('pointerdown', onFooterOutsidePointerDown, true)
+})
+watch(isOverflowMenuOpen, (open) => {
+  if (typeof document === 'undefined') return
+  if (open) {
+    document.addEventListener(
+      'pointerdown',
+      onOverflowOutsidePointerDown,
+      true,
+    )
+    return
+  }
+  document.removeEventListener(
+    'pointerdown',
+    onOverflowOutsidePointerDown,
+    true,
+  )
+})
 
 onMounted(() => {
   if (typeof ResizeObserver !== 'undefined') {
@@ -344,6 +470,18 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
+  if (typeof document !== 'undefined') {
+    document.removeEventListener(
+      'pointerdown',
+      onFooterOutsidePointerDown,
+      true,
+    )
+    document.removeEventListener(
+      'pointerdown',
+      onOverflowOutsidePointerDown,
+      true,
+    )
+  }
 })
 </script>
 
@@ -368,8 +506,10 @@ onUnmounted(() => {
         v-model:visible="isFooterMenuOpen"
         :trigger="[]"
         placement="bottom-start"
+        width="auto"
         :disabled="isRibbonDisabled"
-        :popper-class="overflowPopperClass"
+        :persistent="true"
+        :popper-class="footerPopperClass"
         :popper-options="footerPopperOptions"
       >
         <template #reference>
@@ -404,7 +544,9 @@ onUnmounted(() => {
         v-model:visible="isOverflowMenuOpen"
         :trigger="[]"
         placement="bottom-start"
+        width="auto"
         :disabled="isRibbonDisabled"
+        :persistent="true"
         :popper-class="overflowPopperClass"
         :popper-options="overflowPopperOptions"
       >

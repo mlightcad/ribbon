@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, Check } from '@element-plus/icons-vue'
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Check,
+} from '@element-plus/icons-vue'
 import { computed, ref, watch } from 'vue'
 import {
   ElButton,
@@ -11,7 +17,11 @@ import {
   useGlobalConfig,
 } from 'element-plus'
 import type { Component } from 'vue'
-import type { RibbonDropdownOption, RibbonItemSize } from '../types'
+import type {
+  RibbonDropdownOption,
+  RibbonDropdownPlacement,
+  RibbonItemSize,
+} from '../types'
 import {
   flattenRibbonLabel,
   splitRibbonLabelLines,
@@ -59,6 +69,12 @@ const props = withDefaults(
     tooltipShowAfter?: number
     tooltipHideAfter?: number
     popperClass?: string
+    /**
+     * Popper placement for the option menu. Defaults to Element Plus
+     * `bottom-end`. Use `right-start` for cascading menus inside footer
+     * popovers (AutoCAD-style secondary panels).
+     */
+    placement?: RibbonDropdownPlacement
     modelValue?: unknown
   }>(),
   {
@@ -73,9 +89,25 @@ const props = withDefaults(
     tooltipShowAfter: 1000,
     tooltipHideAfter: 0,
     popperClass: undefined,
+    placement: undefined,
     modelValue: undefined,
   },
 )
+
+const resolvedPlacement = computed<RibbonDropdownPlacement>(
+  () => props.placement ?? 'bottom-end',
+)
+/** Cascading footer/submenu placements use a side chevron like AutoCAD. */
+const triggerArrowIcon = computed(() => {
+  const placement = resolvedPlacement.value
+  if (placement === 'right' || placement.startsWith('right-')) {
+    return isOpen.value ? ArrowLeft : ArrowRight
+  }
+  if (placement === 'left' || placement.startsWith('left-')) {
+    return isOpen.value ? ArrowRight : ArrowLeft
+  }
+  return isOpen.value ? ArrowUp : ArrowDown
+})
 
 const emit = defineEmits<{
   (e: 'command', command: unknown): void
@@ -293,6 +325,7 @@ watch(
     ]"
     trigger="click"
     :disabled="disabled"
+    :placement="resolvedPlacement"
     :popper-class="dropdownPopperClass"
     @visible-change="setOpen"
     @command="handleCommand"
@@ -342,7 +375,7 @@ watch(
             class="ml-ribbon-item-host__dropdown-arrow ml-ribbon-dropdown__arrow"
             :class="{ 'is-open': isOpen }"
           >
-            <component :is="isOpen ? ArrowUp : ArrowDown" />
+            <component :is="triggerArrowIcon" />
           </ElIcon>
         </span>
       </span>

@@ -10,7 +10,11 @@ import {
 } from 'element-plus'
 import type { Component } from 'vue'
 import { ribbonKey } from '../context'
-import type { RibbonGalleryCategoryModel, RibbonItemModel } from '../types'
+import type {
+  RibbonDropdownPlacement,
+  RibbonGalleryCategoryModel,
+  RibbonItemModel,
+} from '../types'
 import MlRibbonButton from '../items/RibbonButton.vue'
 import MlRibbonButtonGroup from '../items/RibbonButtonGroup.vue'
 import MlRibbonDropdown from '../items/RibbonDropdown.vue'
@@ -173,6 +177,30 @@ const comboBoxWidth = computed(() =>
   ),
 )
 const comboBoxModelValue = computed(() => props.item.props?.modelValue)
+const dropdownPlacement = computed<RibbonDropdownPlacement | undefined>(() => {
+  const value = props.item.props?.placement
+  if (typeof value !== 'string') return undefined
+  switch (value) {
+    case 'top':
+    case 'top-start':
+    case 'top-end':
+    case 'bottom':
+    case 'bottom-start':
+    case 'bottom-end':
+    case 'left':
+    case 'left-start':
+    case 'left-end':
+    case 'right':
+    case 'right-start':
+    case 'right-end':
+    case 'auto':
+    case 'auto-start':
+    case 'auto-end':
+      return value
+    default:
+      return undefined
+  }
+})
 const inputNumberWidth = computed(() =>
   normalizeCssSize(
     props.item.props?.width ?? props.item.props?.inputNumberWidth,
@@ -624,6 +652,7 @@ function humanizeItemId(value: string): string {
         :hide-label="item.hideLabel === true"
         :item-size="item.size ?? 'medium'"
         :sync-label-with-selection="item.props?.syncLabelWithSelection === true"
+        :placement="dropdownPlacement"
         :tooltip-show-after="resolvedTooltipShowAfter"
         :tooltip-hide-after="resolvedTooltipHideAfter"
         @command="handleDropdownCommand"
