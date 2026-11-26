@@ -19,13 +19,11 @@ import {
 import type { Component } from 'vue'
 import type {
   RibbonDropdownOption,
+  RibbonDropdownOptionIconSize,
   RibbonDropdownPlacement,
   RibbonItemSize,
 } from '../types'
-import {
-  flattenRibbonLabel,
-  splitRibbonLabelLines,
-} from '../utils/labelLines'
+import { flattenRibbonLabel, splitRibbonLabelLines } from '../utils/labelLines'
 
 defineOptions({
   name: 'MlRibbonDropdown',
@@ -46,6 +44,7 @@ defineOptions({
  * @prop disabled - Disables trigger and options.
  * @prop hideLabel - Hides trigger label while preserving arrow/icon affordance.
  * @prop syncLabelWithSelection - Mirrors the current command on the trigger (icon + label). Falls back to the first option before any selection; does not render the menu check column.
+ * @prop optionIconSize - `large` renders big preview icons in the option menu (AutoCAD-style, e.g. hatch island detection); defaults to `default`.
  * @prop modelValue - When not `undefined`, keeps the trigger/menu selection in sync (controlled mode) and enables the menu check column.
  *
  * @event command - Emitted with the selected/current option value.
@@ -75,6 +74,11 @@ const props = withDefaults(
      * popovers (AutoCAD-style secondary panels).
      */
     placement?: RibbonDropdownPlacement
+    /**
+     * Icon size for option rows. `large` shows big preview icons so each
+     * option's effect is visible before picking it.
+     */
+    optionIconSize?: RibbonDropdownOptionIconSize
     modelValue?: unknown
   }>(),
   {
@@ -90,6 +94,7 @@ const props = withDefaults(
     tooltipHideAfter: 0,
     popperClass: undefined,
     placement: undefined,
+    optionIconSize: 'default',
     modelValue: undefined,
   },
 )
@@ -192,6 +197,9 @@ const dropdownPopperClass = computed(() =>
     'ml-ribbon-dropdown-menu',
     'ml-ribbon-popper',
     `ml-ribbon-popper--size-${resolvedSize.value}`,
+    props.optionIconSize === 'large'
+      ? 'ml-ribbon-dropdown-menu--large-icons'
+      : undefined,
     props.popperClass,
   ]
     .filter(Boolean)

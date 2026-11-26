@@ -94,6 +94,7 @@ Events:
 - `RibbonGroupModel.footerMenuItems?: RibbonItemModel[]` for footer-triggered secondary commands (supports nested `dropdown` / `comboBox` / gallery menus; footer and group-overflow popovers stay open while interacting with teleported option menus, and dismiss on true outside clicks)
 - `RibbonGroupModel.footerMenuLayout?: 'row' | 'column'` for the footer dropdown collection layout (default `'row'`)
 - Dropdown item option: `RibbonItemModel.props.placement?: RibbonDropdownPlacement` forwards to Element Plus `ElDropdown` placement (for example `'right-start'` for cascading menus inside footer popovers)
+- Dropdown item option: `RibbonItemModel.props.optionIconSize?: RibbonDropdownOptionIconSize` (`'default' | 'large'`); `large` renders big preview icons in the option menu so each option's effect is visible (default `'default'`)
 - `RibbonGroupModel.width?: number` for fixed group width in pixels; omitted width means the group auto-sizes to its content
 - Dropdown item option: `RibbonItemModel.props.syncLabelWithSelection?: boolean` mirrors the current command on the trigger (icon + label), falling back to the first option before any selection; does not enable the menu check column (default `false`). Controlled `modelValue` keeps selection in sync and enables the check column.
 - Custom item option: `RibbonItemModel.props.component?: Component` mounts a host-supplied Vue component

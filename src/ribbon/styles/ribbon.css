@@ -231,6 +231,22 @@ html.dark {
   height: 1em;
 }
 
+/* AutoCAD-style option menu with big preview icons (optionIconSize: 'large'). */
+.ml-ribbon-dropdown-menu--large-icons .el-dropdown-menu__item {
+  padding: calc(4px * var(--ml-rb-popper-scale, 1))
+    calc(12px * var(--ml-rb-popper-scale, 1));
+  font-size: calc(var(--el-font-size-base) * var(--ml-rb-popper-scale, 1));
+}
+
+.ml-ribbon-dropdown-menu--large-icons .ml-ribbon-dropdown-item__content,
+.ml-ribbon-dropdown-menu--large-icons .ml-ribbon-dropdown-item__main {
+  gap: calc(10px * var(--ml-rb-popper-scale, 1));
+}
+
+.ml-ribbon-dropdown-menu--large-icons .ml-ribbon-dropdown-item__icon {
+  font-size: calc(48px * var(--ml-rb-popper-scale, 1));
+}
+
 .ml-ribbon-dropdown-item__label {
   line-height: 1.2;
 }

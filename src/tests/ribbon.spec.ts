@@ -127,6 +127,35 @@ describe('MlRibbonDropdown', () => {
     }
   })
 
+  it('adds the large-icon menu class only when optionIconSize is large', () => {
+    const options = [
+      { label: 'Normal', value: 'style-normal' },
+      { label: 'Outer', value: 'style-outer' },
+    ]
+    const large = mount(MlRibbonDropdown, {
+      props: { id: 'island', optionIconSize: 'large', options },
+    })
+    const normal = mount(MlRibbonDropdown, {
+      props: { id: 'island', options },
+    })
+
+    try {
+      expect(
+        String(
+          large.findComponent({ name: 'ElDropdown' }).props('popperClass'),
+        ),
+      ).toContain('ml-ribbon-dropdown-menu--large-icons')
+      expect(
+        String(
+          normal.findComponent({ name: 'ElDropdown' }).props('popperClass'),
+        ),
+      ).not.toContain('ml-ribbon-dropdown-menu--large-icons')
+    } finally {
+      large.unmount()
+      normal.unmount()
+    }
+  })
+
   it('can be reused directly with ribbon sizing and command memory', async () => {
     const wrapper = mount(MlRibbonDropdown, {
       props: {
@@ -3300,9 +3329,7 @@ describe('MlRibbon', () => {
       },
     })
 
-    await wrapper
-      .find('.ml-test-classic-overflow__reference')
-      .trigger('click')
+    await wrapper.find('.ml-test-classic-overflow__reference').trigger('click')
     await wrapper.vm.$nextTick()
     await wrapper
       .find('.ml-test-classic-overflow__content .ml-ribbon-button')
@@ -6011,9 +6038,11 @@ describe('MlRibbon', () => {
         'ml-ribbon-group__content--column',
       )
       expect(
-        wrapper.find(
-          '.ml-ribbon-group__overflow-content .ml-ribbon-collection--column',
-        ).exists(),
+        wrapper
+          .find(
+            '.ml-ribbon-group__overflow-content .ml-ribbon-collection--column',
+          )
+          .exists(),
       ).toBe(true)
       expect(
         wrapper
@@ -6295,9 +6324,7 @@ describe('MlRibbon', () => {
     })
 
     const footerTrigger = wrapper.find('.ml-ribbon-group__footer-trigger')
-    await wrapper
-      .find('.ml-test-footer-popover__reference')
-      .trigger('click')
+    await wrapper.find('.ml-test-footer-popover__reference').trigger('click')
     await wrapper.vm.$nextTick()
     expect(footerTrigger.classes()).toContain('is-open')
 
@@ -6403,9 +6430,7 @@ describe('MlRibbon', () => {
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
 
-      const overflowTrigger = wrapper.find(
-        '.ml-ribbon-group__overflow-trigger',
-      )
+      const overflowTrigger = wrapper.find('.ml-ribbon-group__overflow-trigger')
       expect(overflowTrigger.exists()).toBe(true)
       await wrapper
         .find('.ml-test-overflow-popover__reference')
