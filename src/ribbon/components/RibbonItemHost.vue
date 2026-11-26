@@ -653,6 +653,9 @@ function humanizeItemId(value: string): string {
         :item-size="item.size ?? 'medium'"
         :sync-label-with-selection="item.props?.syncLabelWithSelection === true"
         :placement="dropdownPlacement"
+        :option-icon-size="
+          item.props?.optionIconSize === 'large' ? 'large' : 'default'
+        "
         :tooltip-show-after="resolvedTooltipShowAfter"
         :tooltip-hide-after="resolvedTooltipHideAfter"
         @command="handleDropdownCommand"

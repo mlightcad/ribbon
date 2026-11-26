@@ -77,6 +77,13 @@ export interface RibbonItemModel {
   props?: Record<string, unknown>
 }
 
+/**
+ * Icon size for dropdown option rows. `large` renders AutoCAD-style preview
+ * icons (for example hatch island detection styles) so users can see the
+ * effect of each option before picking it.
+ */
+export type RibbonDropdownOptionIconSize = 'default' | 'large'
+
 /** Popper placement forwarded to Element Plus `ElDropdown`. */
 export type RibbonDropdownPlacement =
   | 'top'
