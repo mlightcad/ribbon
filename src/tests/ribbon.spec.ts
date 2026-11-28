@@ -2516,6 +2516,149 @@ describe('MlRibbon', () => {
     }
   })
 
+  it('does not emit select when clicking a submenu parent row', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: {
+        tabs,
+        showOpenBackstage: false,
+        fileMenuItems: [
+          {
+            id: 'export',
+            label: 'Export',
+            children: [
+              { id: 'export-dxf', label: 'Export to DXF' },
+              { id: 'export-pdf', label: 'Export to PDF' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const fileTab = wrapper.find('.ml-ribbon-tab--file')
+      expect(fileTab.exists()).toBe(true)
+      await fileTab.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const submenuItem = document.body.querySelector(
+        '.ml-ribbon-file-menu-submenu.el-dropdown-menu__item',
+      ) as HTMLElement | null
+      expect(submenuItem).toBeTruthy()
+      submenuItem?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      // Element Plus defaults unset command to {}; parent rows must not forward it.
+      expect(wrapper.emitted('fileMenuSelect')).toBeUndefined()
+      // hide-on-click is false so the File menu stays open for the hover submenu.
+      expect(
+        document.body.querySelector(
+          '.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item',
+        ),
+      ).toBeTruthy()
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits the leaf id when selecting a nested file menu command', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: {
+        tabs,
+        showOpenBackstage: false,
+        fileMenuItems: [
+          {
+            id: 'export',
+            label: 'Export',
+            children: [
+              { id: 'export-dxf', label: 'Export to DXF' },
+              { id: 'export-pdf', label: 'Export to PDF' },
+            ],
+          },
+        ],
+      },
+    })
+
+    try {
+      const fileTab = wrapper.find('.ml-ribbon-tab--file')
+      await fileTab.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const submenuTrigger = document.body.querySelector(
+        '.ml-ribbon-file-menu-submenu__trigger',
+      ) as HTMLElement | null
+      expect(submenuTrigger).toBeTruthy()
+      submenuTrigger?.dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: true }),
+      )
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const leaf = Array.from(
+        document.body.querySelectorAll(
+          '.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item',
+        ),
+      ).find((item) => item.textContent?.includes('Export to DXF')) as
+        | HTMLElement
+        | undefined
+      expect(leaf).toBeTruthy()
+      leaf?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('fileMenuSelect')?.[0]).toEqual(['export-dxf'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('emits select for a top-level file menu command when hide-on-click is false', async () => {
+    const wrapper = mount(MlRibbon, {
+      attachTo: document.body,
+      props: {
+        tabs,
+        showOpenBackstage: false,
+        fileMenuItems: [
+          { id: 'new', label: 'New' },
+          { id: 'open', label: 'Open' },
+        ],
+      },
+    })
+
+    try {
+      const fileTab = wrapper.find('.ml-ribbon-tab--file')
+      await fileTab.trigger('click')
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      const leaf = Array.from(
+        document.body.querySelectorAll(
+          '.ml-ribbon-file-menu-dropdown .el-dropdown-menu__item',
+        ),
+      ).find((item) => item.textContent?.includes('New')) as
+        | HTMLElement
+        | undefined
+      expect(leaf).toBeTruthy()
+      leaf?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('fileMenuSelect')?.[0]).toEqual(['new'])
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
   it('renders file menu item dividers from model', async () => {
     const wrapper = mount(MlRibbon, {
       attachTo: document.body,

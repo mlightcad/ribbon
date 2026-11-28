@@ -300,7 +300,7 @@ const tabs = [
 
 ### 4.5 Nested file menu items and dividers
 
-Pass `file-menu-items` as `FileMenuItemModel[]`. Items with a non-empty `children` array render as hover submenus to the right; leaf items without `children` behave like plain commands. `@file-menu-select` always receives the selected leaf command `id` (parents with children do not emit on their own).
+Pass `file-menu-items` as `FileMenuItemModel[]`. Items with a non-empty `children` array render as hover submenus to the right; leaf items without `children` behave like plain commands. `@file-menu-select` always receives the selected leaf command `id` (parents with children do not emit on their own, including when the parent row is clicked — the File menu stays open so the hover submenu can be used).
 
 Set `divided: true` on an item (including nested `children`) to show a divider line **above** that row — the same Element Plus `ElDropdownItem` `divided` behavior used by dropdown options. When `show-open-backstage` is enabled, a divider is also drawn automatically above the first configured file menu item.
 
