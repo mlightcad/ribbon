@@ -6,6 +6,7 @@ import {
   ElDropdownMenu,
   useGlobalConfig,
 } from 'element-plus'
+import type { DropdownInstance } from 'element-plus'
 
 import type { FileMenuItemModel } from '../types'
 import RibbonFileMenuItem from './RibbonFileMenuItem.vue'
@@ -47,6 +48,7 @@ const emit = defineEmits<{
   (e: 'open-backstage'): void
 }>()
 const opened = ref(false)
+const dropdownRef = ref<DropdownInstance>()
 const globalSize = useGlobalConfig('size', '')
 const resolvedSize = computed(() => globalSize.value || 'default')
 const popperClass = computed(
@@ -62,30 +64,43 @@ function onVisibleChange(value: boolean) {
   opened.value = value
 }
 
+function closeMenu() {
+  dropdownRef.value?.handleClose()
+  opened.value = false
+}
+
 /**
  * Routes dropdown command either to backstage action or standard file command.
+ * Ignores non-string values (Element Plus defaults unset `command` to `{}`).
+ * Closes manually because `hide-on-click` is false so submenu parents can be
+ * clicked without dismissing the File menu.
  * @param value Dropdown command id.
  */
-function onCommand(value: string) {
+function onCommand(value: unknown) {
+  if (typeof value !== 'string') return
   if (value === '__backstage') {
     emit('open-backstage')
+    closeMenu()
     return
   }
   emit('select', value)
+  closeMenu()
 }
 
 watch(
   () => props.disabled,
   (disabled) => {
-    if (disabled) opened.value = false
+    if (disabled) closeMenu()
   },
 )
 </script>
 
 <template>
   <ElDropdown
+    ref="dropdownRef"
     trigger="click"
     :disabled="props.disabled"
+    :hide-on-click="false"
     :popper-class="popperClass"
     @command="onCommand"
     @visible-change="onVisibleChange"

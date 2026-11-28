@@ -22,8 +22,25 @@ const emit = defineEmits<{
 const hasChildren = (item: FileMenuItemModel) =>
   Array.isArray(item.children) && item.children.length > 0
 
-function onCommand(value: string) {
+/**
+ * Forwards leaf command ids only. Element Plus defaults `command` to `{}`
+ * when unset; parent submenu rows must never emit that.
+ */
+function onCommand(value: unknown) {
+  if (typeof value !== 'string') return
   emit('select', value)
+}
+
+/**
+ * Parent submenu rows must not run ElDropdownItem's default click path:
+ * without an explicit `command`, Element Plus emits `{}`. Combined with
+ * `hide-on-click=false` on nested (and root) dropdowns, this keeps the
+ * File menu open so the teleported hover submenu is not orphaned.
+ * Note: Element Plus still runs its command path on keyboard activation
+ * even after preventDefault; the string-only `onCommand` guard covers that.
+ */
+function onSubmenuParentClick(event: MouseEvent) {
+  event.preventDefault()
 }
 </script>
 
@@ -33,6 +50,7 @@ function onCommand(value: string) {
     :divided="props.divided"
     :disabled="props.item.disabled"
     class="ml-ribbon-file-menu-submenu"
+    @click="onSubmenuParentClick"
   >
     <ElDropdown
       trigger="hover"
@@ -40,6 +58,7 @@ function onCommand(value: string) {
       :teleported="true"
       :show-timeout="0"
       :hide-timeout="100"
+      :hide-on-click="false"
       :popper-class="props.popperClass"
       @command="onCommand"
     >
